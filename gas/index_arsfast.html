@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>アースファスト作業報告書</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif; background: #f5f5f0; color: #1a1a1a; }
+.wrap { max-width: 620px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+.hdr { text-align: center; margin-bottom: 2rem; }
+.hdr .brand { font-size: 13px; font-weight: 700; color: #185FA5; margin-bottom: 6px; }
+.hdr h1 { font-size: 22px; font-weight: 700; }
+.sec { background: #fff; border: 1px solid #e8e8e4; border-radius: 12px; padding: 1.2rem; margin-bottom: 1rem; }
+.sec-title { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 14px; }
+.field { margin-bottom: 10px; }
+.field:last-child { margin-bottom: 0; }
+.lbl { font-size: 12px; color: #666; margin-bottom: 4px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+input[type=text], input[type=date], input[type=time], input[type=tel], input[type=email], textarea, select {
+  width: 100%; font-size: 15px; font-family: inherit;
+  border: 1px solid #ddd; border-radius: 8px;
+  padding: 9px 12px; background: #fff; color: #1a1a1a;
+  outline: none; -webkit-appearance: none;
+}
+input:focus, textarea:focus, select:focus { border-color: #185FA5; box-shadow: 0 0 0 3px rgba(24,95,165,.1); }
+textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+.radios { display: flex; gap: 16px; flex-wrap: wrap; }
+.radios label { display: flex; align-items: center; gap: 7px; font-size: 15px; cursor: pointer; }
+.radios input[type=radio] { width: 18px; height: 18px; accent-color: #185FA5; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl th { font-size: 11px; font-weight: 700; color: #888; padding: 6px 4px; border-bottom: 1px solid #eee; text-align: left; }
+.tbl td { padding: 4px; border-bottom: 1px solid #f0f0f0; }
+.tbl td input { border: none; border-radius: 6px; background: #f8f8f6; padding: 7px 9px; width: 100%; font-size: 14px; outline: none; }
+.sign-hint { font-size: 12px; color: #888; text-align: center; margin-bottom: 8px; }
+.sign-wrap { border: 1.5px dashed #ccc; border-radius: 10px; background: #f0f6ff; padding: 1rem; text-align: center; cursor: pointer; }
+.sign-wrap:hover { background: #e8f0ff; }
+.sign-tap-hint { font-size: 14px; color: #185FA5; font-weight: 600; }
+.sign-sub { font-size: 12px; color: #999; margin-top: 4px; }
+.sig-status { flex: 1; font-size: 12px; color: #888; }
+/* モーダル */
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; }
+.modal-overlay.active { display: flex; }
+.modal-box { background: #fff; border-radius: 16px; padding: 1.5rem; width: 95%; max-width: 600px; }
+.modal-title { font-size: 16px; font-weight: 700; margin-bottom: 12px; text-align: center; }
+.modal-canvas-wrap { border: 1.5px dashed #ccc; border-radius: 10px; background: #fafafa; }
+.modal-canvas { display: block; width: 100%; height: 300px; cursor: crosshair; touch-action: none; }
+.modal-btns { display: flex; gap: 10px; margin-top: 12px; }
+.modal-btns .btn { flex: 1; }
+.btn-ok { background: #185FA5; color: #fff; border-color: #185FA5; font-weight: 700; }
+.photo-upload-area { border: 1.5px dashed #ccc; border-radius: 10px; background: #fafafa; padding: 1.2rem; text-align: center; cursor: pointer; }
+.photo-upload-area:hover { border-color: #185FA5; background: #f0f6ff; }
+.photo-upload-text { font-size: 14px; color: #888; margin-bottom: 4px; }
+.photo-preview { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.photo-preview-item { position: relative; width: 80px; height: 80px; }
+.photo-preview-item img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; }
+.photo-preview-item .remove-btn { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; background: #e74c3c; color: #fff; border: none; border-radius: 50%; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.photo-count { font-size: 12px; color: #185FA5; margin-top: 8px; font-weight: 500; }
+.photo-section-label { font-size: 13px; font-weight: 600; color: #185FA5; margin-bottom: 8px; }
+.email-preview { font-size: 12px; color: #666; background: #f8f8f6; border-radius: 8px; padding: 10px 12px; line-height: 1.8; margin-top: 8px; }
+.btn { padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: #fff; color: #1a1a1a; font-size: 14px; cursor: pointer; font-family: inherit; }
+.btn-primary { background: #185FA5; color: #fff; border-color: #185FA5; font-size: 16px; font-weight: 700; width: 100%; padding: 16px; border-radius: 10px; margin-top: 6px; }
+.status-bar { display: none; margin-top: 14px; padding: 14px 18px; border-radius: 10px; font-size: 14px; text-align: center; font-weight: 500; }
+.status-ok { background: #eaf6ef; color: #1a7a45; border: 1px solid #a3d9b8; }
+.status-err { background: #fef0f0; color: #c0392b; border: 1px solid #f5a5a5; }
+.loading { background: #fff9e6; color: #856404; border: 1px solid #ffc107; }
+.divider { border: none; border-top: 1px solid #f0f0f0; margin: 14px 0; }
+.signed-preview { margin-top: 10px; border-radius: 8px; border: 1px solid #ddd; width: 100%; max-height: 100px; object-fit: contain; display: none; }
+</style>
+</head>
+<body>
+
+<!-- 署名モーダル -->
+<div class="modal-overlay" id="sigModal">
+  <div class="modal-box">
+    <div class="modal-title">確認者サイン</div>
+    <div class="sign-hint">下の枠内に指またはペンでサインしてください</div>
+    <div class="modal-canvas-wrap">
+      <canvas class="modal-canvas" id="sig"></canvas>
+    </div>
+    <div class="modal-btns">
+      <button class="btn" onclick="clearSig()">クリア</button>
+      <button class="btn btn-ok" onclick="closeSigModal()">完了</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="hdr">
+    <div class="brand">ARS fast</div>
+    <h1>アースファスト作業報告書</h1>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">案件を選択</div>
+    <div id="orderListWrap">
+      <div id="orderLoading" style="text-align:center;padding:16px;color:#888;font-size:14px;">案件を読み込み中...</div>
+      <div id="orderList" style="display:none;"></div>
+      <div id="orderEmpty" style="display:none;text-align:center;padding:16px;color:#888;font-size:13px;">未対応の案件がありません</div>
+    </div>
+    <div id="selectedOrderBox" style="display:none;margin-top:10px;padding:10px 12px;background:#eaf4ff;border-radius:8px;border:1.5px solid #185FA5;">
+      <div style="font-size:11px;color:#185FA5;font-weight:700;margin-bottom:4px;">✓ 送信先（自動設定）</div>
+      <div style="font-size:12px;color:#444;line-height:1.8;">
+        <span id="selectedTo"></span><br>
+        <span id="selectedCc" style="display:none;"></span>
+      </div>
+      <button type="button" onclick="clearOrderSelection()" style="margin-top:6px;font-size:11px;color:#888;background:none;border:none;cursor:pointer;text-decoration:underline;">選び直す</button>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">基本情報</div>
+    <div class="field"><div class="lbl">店舗No.</div><input type="text" id="storeNo" placeholder="例：A001"></div>
+    <div class="field"><div class="lbl">お客様名</div><input type="text" id="clientName" placeholder="〇〇株式会社"></div>
+    <div class="field"><div class="lbl">住所</div><input type="text" id="address" placeholder="大阪府〇〇市…"></div>
+    <div class="row2">
+      <div class="field"><div class="lbl">TEL</div><input type="tel" id="tel" placeholder="06-0000-0000"></div>
+      <div class="field"><div class="lbl">御依頼者</div><input type="text" id="requester" placeholder="山田 太郎"></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">依頼情報</div>
+    <div class="row2">
+      <div class="field"><div class="lbl">御依頼日</div><input type="date" id="reqDate"></div>
+      <div class="field"><div class="lbl">依頼時刻</div><input type="time" id="reqTime"></div>
+    </div>
+    <div class="field">
+      <div class="lbl" style="margin-bottom:8px;">依頼内容</div>
+      <div class="radios">
+        <label><input type="radio" name="wtype" value="工事"> 工事</label>
+        <label><input type="radio" name="wtype" value="修理"> 修理</label>
+        <label><input type="radio" name="wtype" value="見積調査"> 見積調査</label>
+        <label><input type="radio" name="wtype" value="点検"> 点検</label>
+      </div>
+    </div>
+    <div class="field"><div class="lbl">依頼内容詳細</div><textarea id="requestDetail" placeholder="依頼の詳細を入力してください…"></textarea></div>
+    <div class="field"><div class="lbl">作業者名</div><input type="text" id="workerName" placeholder="田中 一郎"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">作業情報</div>
+    <div class="row3">
+      <div class="field"><div class="lbl">作業日</div><input type="date" id="workDate"></div>
+      <div class="field"><div class="lbl">開始</div><input type="time" id="startTime"></div>
+      <div class="field"><div class="lbl">終了</div><input type="time" id="endTime"></div>
+    </div>
+    <div class="field">
+      <div class="lbl" style="margin-bottom:8px;">完了状況</div>
+      <div class="radios">
+        <label><input type="radio" name="status" value="完了"> 完了</label>
+        <label><input type="radio" name="status" value="一部完了"> 一部完了</label>
+        <label><input type="radio" name="status" value="未完了"> 未完了</label>
+      </div>
+    </div>
+    <div class="field"><div class="lbl">作業内容</div><textarea id="workDetail" placeholder="実際に行った作業の詳細を入力してください…"></textarea></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">故障機器</div>
+    <table class="tbl">
+      <thead><tr><th style="width:38%">機器名</th><th style="width:38%">形式</th><th style="width:24%">個数</th></tr></thead>
+      <tbody>
+        <tr><td><input type="text" class="f-name" placeholder="機器名"></td><td><input type="text" class="f-type" placeholder="形式"></td><td><input type="text" class="f-qty"></td></tr>
+        <tr><td><input type="text" class="f-name"></td><td><input type="text" class="f-type"></td><td><input type="text" class="f-qty"></td></tr>
+        <tr><td><input type="text" class="f-name"></td><td><input type="text" class="f-type"></td><td><input type="text" class="f-qty"></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">使用部品</div>
+    <table class="tbl">
+      <thead><tr><th style="width:38%">部品名</th><th style="width:38%">形式</th><th style="width:24%">個数</th></tr></thead>
+      <tbody>
+        <tr><td><input type="text" class="p-name" placeholder="部品名"></td><td><input type="text" class="p-type" placeholder="形式"></td><td><input type="text" class="p-qty"></td></tr>
+        <tr><td><input type="text" class="p-name"></td><td><input type="text" class="p-type"></td><td><input type="text" class="p-qty"></td></tr>
+        <tr><td><input type="text" class="p-name"></td><td><input type="text" class="p-type"></td><td><input type="text" class="p-qty"></td></tr>
+        <tr><td><input type="text" class="p-name"></td><td><input type="text" class="p-type"></td><td><input type="text" class="p-qty"></td></tr>
+        <tr><td><input type="text" class="p-name"></td><td><input type="text" class="p-type"></td><td><input type="text" class="p-qty"></td></tr>
+        <tr><td><input type="text" class="p-name"></td><td><input type="text" class="p-type"></td><td><input type="text" class="p-qty"></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">施工写真</div>
+    <div class="field">
+      <div class="photo-section-label">📷 施工前</div>
+      <div class="photo-upload-area" onclick="document.getElementById('photoBeforeInput').click()">
+        <div class="photo-upload-text">タップして施工前写真を選択（複数枚OK）</div>
+        <div style="font-size:12px;color:#aaa;">カメラロールから選べます</div>
+        <input type="file" id="photoBeforeInput" accept="image/jpeg,image/png,image/gif,image/webp" multiple style="display:none;" onchange="handlePhotos(this,'before')">
+      </div>
+      <div class="photo-preview" id="photoBeforePreview"></div>
+      <div class="photo-count" id="photoBeforeCount"></div>
+    </div>
+    <hr class="divider">
+    <div class="field">
+      <div class="photo-section-label">📷 施工後</div>
+      <div class="photo-upload-area" onclick="document.getElementById('photoAfterInput').click()">
+        <div class="photo-upload-text">タップして施工後写真を選択（複数枚OK）</div>
+        <div style="font-size:12px;color:#aaa;">カメラロールから選べます</div>
+        <input type="file" id="photoAfterInput" accept="image/jpeg,image/png,image/gif,image/webp" multiple style="display:none;" onchange="handlePhotos(this,'after')">
+      </div>
+      <div class="photo-preview" id="photoAfterPreview"></div>
+      <div class="photo-count" id="photoAfterCount"></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-title">確認者サイン</div>
+    <div class="sign-wrap" onclick="openSigModal()">
+      <div class="sign-tap-hint">✏️ タップしてサインする</div>
+      <div class="sign-sub" id="sigSt">未署名</div>
+    </div>
+    <img id="signedPreview" class="signed-preview" />
+  </div>
+
+  <button class="btn btn-primary" onclick="submitForm()">送信してPDFを保存・メール送付</button>
+  <div class="status-bar" id="statusBar"></div>
+</div>
+
+<script>
+const canvas = document.getElementById('sig');
+const ctx = canvas.getContext('2d');
+let drawing = false, signed = false;
+let photoFilesBefore = [];
+let photoFilesAfter = [];
+
+// 選択中の案件情報
+var selectedOrder = null;
+
+// 案件一覧を読み込む
+window.addEventListener('load', function() {
+  google.script.run
+    .withSuccessHandler(function(orders) {
+      document.getElementById('orderLoading').style.display = 'none';
+      if (!orders || orders.length === 0) {
+        document.getElementById('orderEmpty').style.display = 'block';
+        return;
+      }
+      var list = document.getElementById('orderList');
+      list.style.display = 'block';
+      orders.forEach(function(o) {
+        var ccArr = Array.isArray(o.reply_cc_emails) ? o.reply_cc_emails : [];
+        var card = document.createElement('div');
+        card.style.cssText = 'border:1.5px solid #e8e8e4;border-radius:10px;padding:12px 14px;margin-bottom:8px;cursor:pointer;background:#fff;transition:border-color .15s;';
+        card.innerHTML =
+          '<div style="font-size:12px;font-weight:700;color:#185FA5;margin-bottom:3px;">' +
+            (o.site_no ? o.site_no + '　' : '') + escapeHtml(o.site_name || '') +
+          '</div>' +
+          (o.work_type ? '<div style="font-size:11px;color:#888;margin-bottom:4px;">' + escapeHtml(o.work_type) + '</div>' : '') +
+          '<div style="font-size:11px;color:#aaa;">返信先: ' + escapeHtml(o.reply_to_email || '') +
+            (ccArr.length > 0 ? ' +' + ccArr.length + '名CC' : '') + '</div>';
+        card.addEventListener('mouseover', function() { card.style.borderColor = '#185FA5'; });
+        card.addEventListener('mouseout', function() { if (selectedOrder && selectedOrder.id === o.id) return; card.style.borderColor = '#e8e8e4'; });
+        card.addEventListener('click', function() { selectOrder(o, card); });
+        list.appendChild(card);
+      });
+    })
+    .withFailureHandler(function() {
+      document.getElementById('orderLoading').textContent = '案件の読み込みに失敗しました';
+    })
+    .getOrders();
+});
+
+function escapeHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function selectOrder(o, card) {
+  selectedOrder = o;
+  var ccArr = Array.isArray(o.reply_cc_emails) ? o.reply_cc_emails : [];
+
+  // フォームに自動入力
+  if (o.site_no)   setVal('storeNo',   o.site_no);
+  if (o.site_name) setVal('clientName', o.site_name);
+  if (o.site_address) setVal('address', o.site_address);
+  if (o.site_tel)  setVal('tel',        o.site_tel);
+  if (o.requester) setVal('requester',  o.requester);
+
+  // 送信先表示
+  document.getElementById('selectedTo').textContent = 'TO: ' + (o.reply_to_email || '');
+  var ccEl = document.getElementById('selectedCc');
+  if (ccArr.length > 0) {
+    ccEl.textContent = 'CC: ' + ccArr.join(', ');
+    ccEl.style.display = 'inline';
+  } else {
+    ccEl.style.display = 'none';
+  }
+  document.getElementById('orderListWrap').style.display = 'none';
+  document.getElementById('selectedOrderBox').style.display = 'block';
+}
+
+function clearOrderSelection() {
+  selectedOrder = null;
+  document.getElementById('orderListWrap').style.display = 'block';
+  document.getElementById('selectedOrderBox').style.display = 'none';
+}
+
+function setVal(id, val) {
+  var el = document.getElementById(id);
+  if (el && !el.value) el.value = val;
+}
+
+// 署名モーダル
+function openSigModal() {
+  document.getElementById('sigModal').classList.add('active');
+  initCanvas();
+}
+function closeSigModal() {
+  if (!signed) {
+    document.getElementById('sigModal').classList.remove('active');
+    return;
+  }
+  // プレビュー表示
+  const preview = document.getElementById('signedPreview');
+  preview.src = canvas.toDataURL('image/jpeg', 0.5);
+  preview.style.display = 'block';
+  document.getElementById('sigSt').textContent = '✅ 署名済み';
+  document.getElementById('sigSt').style.color = '#1a7a45';
+  document.getElementById('sigModal').classList.remove('active');
+}
+function initCanvas() {
+  const r = canvas.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+  canvas.width = Math.min(r.width * dpr, 600);
+  canvas.height = Math.min(300 * dpr, 450);
+  ctx.scale(canvas.width / r.width, canvas.height / 300);
+  ctx.strokeStyle = '#185FA5';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+function pos(e) {
+  const r = canvas.getBoundingClientRect();
+  const src = e.touches ? e.touches[0] : e;
+  return { x: src.clientX - r.left, y: src.clientY - r.top };
+}
+canvas.addEventListener('mousedown', e => { drawing = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
+canvas.addEventListener('mousemove', e => { if (!drawing) return; const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); signed = true; });
+canvas.addEventListener('mouseup', () => drawing = false);
+canvas.addEventListener('mouseleave', () => drawing = false);
+canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); }, {passive:false});
+canvas.addEventListener('touchmove', e => { e.preventDefault(); if (!drawing) return; const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); signed = true; }, {passive:false});
+canvas.addEventListener('touchend', () => drawing = false);
+
+function clearSig() {
+  const r = canvas.getBoundingClientRect();
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  signed = false;
+}
+
+function handlePhotos(input, type) {
+  const files = Array.from(input.files);
+  const target = type === 'before' ? photoFilesBefore : photoFilesAfter;
+  files.forEach(file => {
+    if (!target.find(f => f.name === file.name && f.size === file.size)) target.push(file);
+  });
+  renderPhotoPreview(type);
+  input.value = '';
+}
+
+function renderPhotoPreview(type) {
+  const files = type === 'before' ? photoFilesBefore : photoFilesAfter;
+  const previewId = type === 'before' ? 'photoBeforePreview' : 'photoAfterPreview';
+  const countId = type === 'before' ? 'photoBeforeCount' : 'photoAfterCount';
+  const preview = document.getElementById(previewId);
+  const count = document.getElementById(countId);
+  preview.innerHTML = '';
+  files.forEach((file, i) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const item = document.createElement('div');
+      item.className = 'photo-preview-item';
+      item.innerHTML = '<img src="' + e.target.result + '"><button class="remove-btn" onclick="removePhoto(\'' + type + '\',' + i + ')">×</button>';
+      preview.appendChild(item);
+    };
+    reader.readAsDataURL(file);
+  });
+  count.textContent = files.length > 0 ? files.length + '枚選択済み' : '';
+}
+
+function removePhoto(type, index) {
+  if (type === 'before') photoFilesBefore.splice(index, 1);
+  else photoFilesAfter.splice(index, 1);
+  renderPhotoPreview(type);
+}
+
+function v(id) { return (document.getElementById(id)||{}).value||''; }
+function radio(name) { const el = document.querySelector('input[name="' + name + '"]:checked'); return el ? el.value : ''; }
+function tableRows(c1,c2,c3) {
+  const n=document.querySelectorAll(c1), t=document.querySelectorAll(c2), q=document.querySelectorAll(c3);
+  const rows=[];
+  for(let i=0;i<n.length;i++) if(n[i].value||t[i].value||q[i].value) rows.push([n[i].value,t[i].value,q[i].value]);
+  return rows;
+}
+
+function showStatus(msg, type) {
+  const el = document.getElementById('statusBar');
+  el.textContent = msg;
+  el.className = 'status-bar ' + type;
+  el.style.display = 'block';
+}
+
+async function submitForm() {
+  if (!selectedOrder) { showStatus('案件を選択してください', 'status-err'); return; }
+  if (!v('clientName')) { showStatus('お客様名を入力してください', 'status-err'); return; }
+  if (!signed) { showStatus('確認者のサインをもらってください', 'status-err'); return; }
+
+  showStatus('送信中…写真が多い場合は少し時間がかかります', 'loading');
+
+  const toBase64 = file => new Promise(resolve => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const maxSize = 1024;
+      let w = img.width, h = img.height;
+      if (w > maxSize || h > maxSize) {
+        if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+        else { w = Math.round(w * maxSize / h); h = maxSize; }
+      }
+      const cv = document.createElement('canvas');
+      cv.width = w; cv.height = h;
+      cv.getContext('2d').drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      resolve({ name: file.name, base64: cv.toDataURL('image/jpeg', 0.7) });
+    };
+    img.src = url;
+  });
+
+  const photoDataBefore = await Promise.all(photoFilesBefore.map(toBase64));
+  const photoDataAfter = await Promise.all(photoFilesAfter.map(toBase64));
+
+  var ccArr = selectedOrder && Array.isArray(selectedOrder.reply_cc_emails) ? selectedOrder.reply_cc_emails : [];
+  const data = {
+    toEmail: (selectedOrder && selectedOrder.reply_to_email) || '',
+    ccEmail: ccArr.join(','),
+    pendingOrderId: selectedOrder ? selectedOrder.id : null,
+    storeNo: v('storeNo'),
+    clientName: v('clientName'),
+    address: v('address'),
+    tel: v('tel'),
+    requester: v('requester'),
+    reqDate: v('reqDate'),
+    reqTime: v('reqTime'),
+    workType: radio('wtype'),
+    requestDetail: v('requestDetail'),
+    workerName: v('workerName'),
+    workDate: v('workDate'),
+    startTime: v('startTime'),
+    endTime: v('endTime'),
+    workStatus: radio('status'),
+    workDetail: v('workDetail'),
+    faults: tableRows('.f-name','.f-type','.f-qty'),
+    parts: tableRows('.p-name','.p-type','.p-qty'),
+    signImage: (function() {
+      const tmpCanvas = document.createElement('canvas');
+      tmpCanvas.width = 400;
+      tmpCanvas.height = 150;
+      const tmpCtx = tmpCanvas.getContext('2d');
+      tmpCtx.fillStyle = '#ffffff';
+      tmpCtx.fillRect(0, 0, 400, 150);
+      tmpCtx.drawImage(canvas, 0, 0, 400, 150);
+      return tmpCanvas.toDataURL('image/jpeg', 0.5);
+    })(),
+    photosBefore: photoDataBefore,
+    photosAfter: photoDataAfter
+  };
+
+  google.script.run
+    .withSuccessHandler(function(url) {
+      showStatus('送信完了！ドライブに保存・メール送付しました！', 'status-ok');
+    })
+    .withFailureHandler(function(err) {
+      showStatus('エラー：' + err.message, 'status-err');
+    })
+    .createPDF(data);
+}
+</script>
+</body>
+</html>

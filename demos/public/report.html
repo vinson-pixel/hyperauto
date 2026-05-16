@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>日報自動生成 | マルケン電工</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #0D1B3E; --navyMid: #152347; --blue: #2563EB;
+    --blueLt: #3B82F6; --accent: #60A5FA; --white: #fff;
+    --gray: #94A3B8; --grayLt: #CBD5E1; --green: #22C55E; --orange: #F59E0B;
+  }
+  body { font-family: "Meiryo","メイリオ",sans-serif; background: var(--navy); color: var(--white); min-height: 100vh; }
+
+  header {
+    background: var(--navyMid); border-bottom: 2px solid var(--blue);
+    padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between;
+  }
+  .header-logo { font-size: 13px; color: var(--accent); letter-spacing: 0.1em; }
+  .header-title { font-size: 18px; font-weight: bold; }
+  .header-back { font-size: 12px; color: var(--gray); text-decoration: none; }
+  .header-back:hover { color: var(--accent); }
+
+  main { max-width: 960px; margin: 2rem auto; padding: 0 1.5rem 4rem; }
+
+  .section-label { font-size: 10px; color: var(--accent); letter-spacing: 0.12em; font-weight: bold; margin-bottom: 6px; }
+  h2 { font-size: 1.6rem; font-weight: bold; margin-bottom: 0.4rem; }
+  .sub { font-size: 13px; color: var(--gray); margin-bottom: 2rem; }
+
+  /* Before / After イメージ */
+  .ba-row {
+    display: grid; grid-template-columns: 1fr auto 1fr; gap: 1rem;
+    margin-bottom: 2rem; align-items: center;
+  }
+  .ba-card {
+    border-radius: 10px; padding: 1rem 1.25rem;
+  }
+  .ba-before { background: #1a2855; border: 1.5px solid var(--orange); }
+  .ba-after  { background: #12302b; border: 1.5px solid var(--green); }
+  .ba-label { font-size: 11px; font-weight: bold; margin-bottom: 0.5rem; }
+  .ba-before .ba-label { color: var(--orange); }
+  .ba-after  .ba-label { color: var(--green); }
+  .ba-body { font-size: 12px; color: var(--grayLt); line-height: 1.8; }
+  .ba-arrow { font-size: 1.8rem; color: var(--blue); text-align: center; }
+
+  .form-card {
+    background: var(--navyMid); border: 1.5px solid var(--blue);
+    border-radius: 12px; padding: 2rem; margin-bottom: 1.5rem;
+  }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1/-1; }
+  label { font-size: 12px; color: var(--accent); font-weight: bold; }
+  input, textarea {
+    background: #0f1e3d; border: 1px solid #2a3f6f; border-radius: 8px;
+    color: var(--white); padding: 10px 14px; font-family: inherit; font-size: 14px;
+    outline: none; transition: border-color 0.2s;
+  }
+  input:focus, textarea:focus { border-color: var(--blue); }
+
+  /* LINE風メモ入力 */
+  .line-box {
+    background: #0f1e3d; border: 1.5px solid var(--green); border-radius: 12px;
+    padding: 1rem 1.25rem;
+  }
+  .line-header {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--green); font-weight: bold; margin-bottom: 0.75rem;
+  }
+  .line-dot { width: 10px; height: 10px; background: var(--green); border-radius: 50%; }
+  textarea.line-input {
+    background: none; border: none; width: 100%; min-height: 100px;
+    font-size: 14px; color: var(--white); resize: vertical;
+  }
+  textarea.line-input:focus { outline: none; }
+
+  .btn {
+    display: block; width: 100%; padding: 14px; margin-top: 1.5rem;
+    background: var(--blue); color: var(--white); border: none; border-radius: 8px;
+    font-family: inherit; font-size: 16px; font-weight: bold; cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .btn:hover { background: var(--blueLt); transform: translateY(-1px); }
+
+  .sample-btn {
+    font-size: 11px; color: var(--accent); background: none; border: 1px solid #2a3f6f;
+    border-radius: 6px; padding: 4px 10px; cursor: pointer; float: right;
+    font-family: inherit; transition: border-color 0.2s;
+  }
+  .sample-btn:hover { border-color: var(--accent); }
+
+  /* Loading */
+  #loading { display: none; text-align: center; padding: 3rem 0; }
+  .spinner {
+    width: 48px; height: 48px; border: 4px solid #2a3f6f;
+    border-top-color: var(--blue); border-radius: 50%;
+    animation: spin 0.8s linear infinite; margin: 0 auto 1.5rem;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-steps { list-style: none; display: inline-block; text-align: left; }
+  .loading-steps li { font-size: 13px; color: var(--gray); padding: 4px 0; }
+  .loading-steps li.active { color: var(--accent); font-weight: bold; }
+  .loading-steps li.done { color: var(--green); }
+  .loading-steps li.done::before { content: "✓ "; }
+  .loading-steps li.active::before { content: "▶ "; }
+
+  /* Result */
+  #result { display: none; }
+
+  .report-wrap {
+    background: var(--navyMid); border: 1.5px solid var(--green);
+    border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem;
+  }
+  .report-banner {
+    background: var(--green); color: var(--navy);
+    padding: 10px 20px; font-weight: bold; font-size: 14px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .report-inner { padding: 1.5rem 2rem; }
+  .report-meta {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;
+    margin-bottom: 1.5rem; padding-bottom: 1.25rem;
+    border-bottom: 1px solid #1e3060;
+  }
+  .meta-item label { font-size: 10px; color: var(--gray); display: block; margin-bottom: 3px; }
+  .meta-item span { font-size: 13px; color: var(--white); font-weight: bold; }
+
+  .r-section { margin-bottom: 1.5rem; }
+  .r-section-title {
+    font-size: 11px; color: var(--accent); font-weight: bold;
+    letter-spacing: 0.1em; margin-bottom: 0.6rem;
+    padding-bottom: 4px; border-bottom: 1px solid #1e3060;
+  }
+
+  /* 作業項目テーブル */
+  .work-table { width: 100%; border-collapse: collapse; }
+  .work-table th {
+    font-size: 10px; color: var(--gray); padding: 6px 10px;
+    border-bottom: 1px solid #1e3060; text-align: left; font-weight: normal;
+  }
+  .work-table td {
+    font-size: 12.5px; color: var(--white); padding: 8px 10px;
+    border-bottom: 1px solid #1e3060;
+  }
+  .work-table tr:last-child td { border-bottom: none; }
+  .work-table .area { color: var(--accent); font-weight: bold; }
+
+  /* 進捗バー */
+  .progress-bar {
+    background: #1e3060; border-radius: 8px; height: 14px; overflow: hidden;
+    margin: 8px 0;
+  }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, var(--blue), var(--green));
+    border-radius: 8px; transition: width 1s ease;
+  }
+  .progress-label {
+    display: flex; justify-content: space-between;
+    font-size: 12px; color: var(--gray);
+  }
+
+  .tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    font-size: 11.5px; padding: 4px 12px; border-radius: 6px;
+    background: #1e3060; color: var(--grayLt);
+  }
+  .tag.issue { background: #2a1a0a; color: var(--orange); }
+  .tag.tomorrow { background: #0f2230; color: var(--accent); }
+  .tag.safety { background: #0f2f1a; color: var(--green); }
+
+  .issue-row { margin-bottom: 0.5rem; }
+  .issue-content { font-size: 12.5px; color: var(--orange); }
+  .issue-action { font-size: 12px; color: var(--grayLt); padding-left: 1rem; }
+  .issue-action::before { content: "→ "; }
+
+  .memo-box {
+    background: #0f1e3d; border-left: 3px solid var(--blue);
+    padding: 10px 14px; border-radius: 0 8px 8px 0;
+    font-size: 12.5px; color: var(--grayLt); line-height: 1.7;
+  }
+
+  .auto-send-notice {
+    background: #0f2230; border: 1px solid var(--blueLt);
+    border-radius: 8px; padding: 10px 14px; margin-top: 1rem;
+    font-size: 12px; color: var(--accent);
+  }
+  .auto-send-notice strong { color: var(--white); }
+
+  .print-btn {
+    display: block; width: 100%; padding: 12px; margin-top: 1.5rem;
+    background: none; color: var(--accent); border: 1.5px solid var(--accent);
+    border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: bold;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .print-btn:hover { background: var(--accent); color: var(--navy); }
+  .reset-btn {
+    display: block; width: 100%; padding: 10px; margin-top: 0.75rem;
+    background: none; color: var(--gray); border: 1px solid #2a3f6f;
+    border-radius: 8px; font-family: inherit; font-size: 13px; cursor: pointer;
+  }
+
+  @media print {
+    header, .ba-row, .form-card, .print-btn, .reset-btn, .sample-btn, .auto-send-notice { display: none !important; }
+    body { background: #fff; color: #000; }
+    #result { display: block !important; }
+    .report-wrap { border-color: #ccc; }
+    .report-banner { background: #22C55E; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="header-logo">株式会社マルケン電工 — AI施工管理システム</div>
+    <div class="header-title">📱 日報・作業報告書 自動生成</div>
+  </div>
+  <a class="header-back" href="/">← 戻る</a>
+</header>
+
+<main>
+  <div id="form-section">
+    <div class="section-label">DEMO 02 — DAILY REPORTING</div>
+    <h2>LINEのメモを<br>正式な報告書に変換</h2>
+    <p class="sub">現場からのひとことメモをAIが整形。30秒で完成します。</p>
+
+    <div class="ba-row">
+      <div class="ba-card ba-before">
+        <div class="ba-label">BEFORE（今まで）</div>
+        <div class="ba-body">
+          紙の日報を手書き<br>
+          事務所に持ち帰って転記<br>
+          報告書作成に30〜60分<br>
+          電話で状況確認が必要
+        </div>
+      </div>
+      <div class="ba-arrow">→</div>
+      <div class="ba-card ba-after">
+        <div class="ba-label">AFTER（AIシステム導入後）</div>
+        <div class="ba-body">
+          LINEにひとこと送るだけ<br>
+          AIが自動で報告書を作成<br>
+          <strong style="color:var(--green);">30秒で完成</strong><br>
+          翌朝、発注先に自動送付
+        </div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+        <span style="font-size:13px;color:var(--accent);font-weight:bold;">現場情報を入力</span>
+        <button class="sample-btn" onclick="fillSample()">サンプルを入力</button>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>担当者名 *</label>
+          <input id="worker" type="text" placeholder="例: たけ">
+        </div>
+        <div class="form-group">
+          <label>現場名 *</label>
+          <input id="site" type="text" placeholder="例: 影山工務店様 恵比寿店舗">
+        </div>
+        <div class="form-group">
+          <label>日付</label>
+          <input id="date" type="text" placeholder="例: 2026年5月11日">
+        </div>
+        <div class="form-group full">
+          <label>LINEメッセージ（現場からの報告メモ）*</label>
+          <div class="line-box">
+            <div class="line-header">
+              <div class="line-dot"></div>
+              LINE メッセージ
+            </div>
+            <textarea class="line-input" id="message" placeholder="例: 今日ホールのA区画コンセント4か所終わった。ボックス取付も完了。天井の照明は明日やる。カウンター裏が狭くて手間取ったけど問題なく完了。明日はキッチンのC区画から始める予定。"></textarea>
+          </div>
+        </div>
+      </div>
+      <button class="btn" id="generateBtn" onclick="generate()">
+        作業日報を自動生成する（AI処理）
+      </button>
+    </div>
+  </div>
+
+  <div id="loading">
+    <div class="spinner"></div>
+    <ul class="loading-steps" id="steps">
+      <li id="s1">メッセージを解析中...</li>
+      <li id="s2">作業項目を整理中...</li>
+      <li id="s3">進捗状況を算出中...</li>
+      <li id="s4">報告書フォーマットに変換中...</li>
+    </ul>
+  </div>
+
+  <div id="result"></div>
+</main>
+
+<script>
+function fillSample() {
+  document.getElementById("worker").value = "たけ";
+  document.getElementById("site").value = "影山工務店様 恵比寿店舗工事";
+  const today = new Date().toLocaleDateString("ja-JP",{year:"numeric",month:"long",day:"numeric"});
+  document.getElementById("date").value = today;
+  document.getElementById("message").value = "今日ホールのA区画コンセント4か所終わった。ボックス取付も全部完了。天井の照明は明日やる。カウンター裏が狭くて少し手間取ったけど問題なく完了。B区画の配線は半分くらい進んだ。明日はまずキッチンのC区画から始めて、午後にB区画の残りをやる予定。特に安全上の問題はなし。";
+}
+
+async function generate() {
+  if (!document.getElementById("worker").value.trim() ||
+      !document.getElementById("site").value.trim() ||
+      !document.getElementById("message").value.trim()) {
+    alert("必須項目（*）をすべて入力してください");
+    return;
+  }
+
+  document.getElementById("form-section").style.display = "none";
+  document.getElementById("loading").style.display = "block";
+
+  const steps = ["s1","s2","s3","s4"].map(id => document.getElementById(id));
+  let si = 0;
+  steps[si].className = "active";
+  const timer = setInterval(() => {
+    steps[si].className = "done"; si++;
+    if (si < steps.length) steps[si].className = "active";
+  }, 1500);
+
+  try {
+    const dateVal = document.getElementById("date").value ||
+      new Date().toLocaleDateString("ja-JP",{year:"numeric",month:"long",day:"numeric"});
+    const res = await fetch("/api/generate-report", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        worker:  document.getElementById("worker").value,
+        site:    document.getElementById("site").value,
+        date:    dateVal,
+        message: document.getElementById("message").value,
+      }),
+    });
+    clearInterval(timer);
+    steps.forEach(s => s.className = "done");
+
+    const body = await res.json();
+    if (!body.ok) throw new Error(body.error);
+    render(body.data);
+  } catch(e) {
+    clearInterval(timer);
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("form-section").style.display = "block";
+    alert("エラー: " + e.message);
+  }
+}
+
+function render(d) {
+  const h = d.header;
+  const pct = Math.min(100, Math.max(0, d.progress?.percentage || 0));
+
+  let workRows = (d.workItems || []).map(w => `
+    <tr>
+      <td class="area">${w.area}</td>
+      <td>${w.content}</td>
+      <td>${w.quantity || "—"}</td>
+      <td>${w.result}</td>
+    </tr>`).join("");
+
+  let issueHtml = "";
+  if (d.issues && d.issues.length) {
+    issueHtml = (d.issues).map(i => `
+      <div class="issue-row">
+        <div class="issue-content">⚠ ${i.content}</div>
+        <div class="issue-action">${i.action}</div>
+      </div>`).join("");
+  } else {
+    issueHtml = `<span style="color:var(--green);font-size:13px;">✓ 課題なし</span>`;
+  }
+
+  let tomorrowHtml = (d.tomorrow || []).map(t =>
+    `<div class="tag tomorrow">▶ ${t}</div>`).join("");
+
+  let safetyHtml = (d.safety?.checks || []).map(c =>
+    `<div class="tag safety">✓ ${c}</div>`).join("");
+
+  let html = `
+    <div class="report-wrap">
+      <div class="report-banner">
+        <span>✅ 作業日報 — 自動生成完了</span>
+        <span style="font-size:12px;font-weight:normal;">${h.reportNo || ""}</span>
+      </div>
+      <div class="report-inner">
+
+        <div class="report-meta">
+          <div class="meta-item"><label>日付</label><span>${h.date}</span></div>
+          <div class="meta-item"><label>現場名</label><span>${h.site}</span></div>
+          <div class="meta-item"><label>担当者</label><span>${h.worker}</span></div>
+          <div class="meta-item"><label>安全</label><span style="color:var(--green);">${d.safety?.incidents || "なし"}</span></div>
+        </div>
+
+        <div class="r-section">
+          <div class="r-section-title">作業内容</div>
+          <table class="work-table">
+            <thead><tr>
+              <th>エリア</th><th>作業内容</th><th>施工数量</th><th>結果</th>
+            </tr></thead>
+            <tbody>${workRows}</tbody>
+          </table>
+        </div>
+
+        <div class="r-section">
+          <div class="r-section-title">本日の進捗</div>
+          <div class="progress-label">
+            <span>${d.progress?.comment || ""}</span>
+            <span style="color:var(--accent);font-weight:bold;">${pct}%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progFill" style="width:0%"></div>
+          </div>
+        </div>
+
+        <div class="r-section">
+          <div class="r-section-title">課題・対応事項</div>
+          ${issueHtml}
+        </div>
+
+        <div class="r-section">
+          <div class="r-section-title">明日の作業予定</div>
+          <div class="tag-list">${tomorrowHtml}</div>
+        </div>
+
+        <div class="r-section">
+          <div class="r-section-title">安全確認</div>
+          <div class="tag-list">${safetyHtml}</div>
+        </div>
+
+        ${d.memo ? `<div class="r-section">
+          <div class="r-section-title">特記事項</div>
+          <div class="memo-box">${d.memo}</div>
+        </div>` : ""}
+
+        <div class="auto-send-notice">
+          📧 <strong>自動送付予定：</strong>この報告書は翌朝8:00に発注先様（影山工務店）へ自動メール送付されます。
+        </div>
+      </div>
+    </div>
+    <button class="print-btn" onclick="window.print()">🖨 印刷 / PDF保存</button>
+    <button class="reset-btn" onclick="location.reload()">↩ 別の日報を入力する</button>`;
+
+  document.getElementById("loading").style.display = "none";
+  const el = document.getElementById("result");
+  el.innerHTML = html;
+  el.style.display = "block";
+
+  setTimeout(() => {
+    const fill = document.getElementById("progFill");
+    if (fill) fill.style.width = pct + "%";
+  }, 200);
+}
+</script>
+</body>
+</html>

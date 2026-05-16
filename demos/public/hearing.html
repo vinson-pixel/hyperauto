@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>着工前ヒアリングシート自動生成 | マルケン電工</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #0D1B3E; --navyMid: #152347; --blue: #2563EB;
+    --blueLt: #3B82F6; --accent: #60A5FA; --white: #fff;
+    --gray: #94A3B8; --grayLt: #CBD5E1; --green: #22C55E; --orange: #F59E0B;
+  }
+  body { font-family: "Meiryo","メイリオ",sans-serif; background: var(--navy); color: var(--white); min-height: 100vh; }
+
+  header {
+    background: var(--navyMid); border-bottom: 2px solid var(--blue);
+    padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between;
+  }
+  .header-logo { font-size: 13px; color: var(--accent); letter-spacing: 0.1em; }
+  .header-title { font-size: 18px; font-weight: bold; }
+  .header-back { font-size: 12px; color: var(--gray); text-decoration: none; }
+  .header-back:hover { color: var(--accent); }
+
+  main { max-width: 960px; margin: 2rem auto; padding: 0 1.5rem 4rem; }
+
+  .section-label {
+    font-size: 10px; color: var(--accent); letter-spacing: 0.12em;
+    font-weight: bold; margin-bottom: 6px;
+  }
+  h2 { font-size: 1.6rem; font-weight: bold; margin-bottom: 0.4rem; }
+  .sub { font-size: 13px; color: var(--gray); margin-bottom: 2rem; }
+
+  .form-card {
+    background: var(--navyMid); border: 1.5px solid var(--blue);
+    border-radius: 12px; padding: 2rem; margin-bottom: 1.5rem;
+  }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1/-1; }
+  label { font-size: 12px; color: var(--accent); font-weight: bold; }
+  input, textarea, select {
+    background: #0f1e3d; border: 1px solid #2a3f6f; border-radius: 8px;
+    color: var(--white); padding: 10px 14px; font-family: inherit; font-size: 14px;
+    outline: none; transition: border-color 0.2s;
+  }
+  input:focus, textarea:focus { border-color: var(--blue); }
+  textarea { resize: vertical; min-height: 80px; }
+
+  .btn {
+    display: block; width: 100%; padding: 14px; margin-top: 1.5rem;
+    background: var(--blue); color: var(--white); border: none; border-radius: 8px;
+    font-family: inherit; font-size: 16px; font-weight: bold; cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .btn:hover { background: var(--blueLt); transform: translateY(-1px); }
+  .btn:disabled { background: #2a3f6f; cursor: not-allowed; transform: none; }
+
+  /* サンプル入力ボタン */
+  .sample-btn {
+    font-size: 11px; color: var(--accent); background: none; border: 1px solid #2a3f6f;
+    border-radius: 6px; padding: 4px 10px; cursor: pointer; float: right;
+    font-family: inherit; margin-top: -2px;
+    transition: border-color 0.2s;
+  }
+  .sample-btn:hover { border-color: var(--accent); }
+
+  /* ローディング */
+  #loading {
+    display: none; text-align: center; padding: 3rem 0;
+  }
+  .spinner {
+    width: 48px; height: 48px; border: 4px solid #2a3f6f;
+    border-top-color: var(--blue); border-radius: 50%;
+    animation: spin 0.8s linear infinite; margin: 0 auto 1.5rem;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-steps { list-style: none; display: inline-block; text-align: left; }
+  .loading-steps li { font-size: 13px; color: var(--gray); padding: 4px 0; }
+  .loading-steps li.active { color: var(--accent); font-weight: bold; }
+  .loading-steps li.done { color: var(--green); }
+  .loading-steps li.done::before { content: "✓ "; }
+  .loading-steps li.active::before { content: "▶ "; }
+
+  /* 結果 */
+  #result { display: none; }
+  .result-header {
+    background: var(--navyMid); border: 1.5px solid var(--green);
+    border-radius: 12px; padding: 1.5rem 2rem; margin-bottom: 1.5rem;
+  }
+  .result-header h3 { font-size: 1.3rem; margin-bottom: 0.5rem; }
+  .result-header p { font-size: 13px; color: var(--grayLt); line-height: 1.7; }
+
+  .cat-card {
+    background: var(--navyMid); border: 1.5px solid var(--blue);
+    border-radius: 10px; margin-bottom: 1rem; overflow: hidden;
+  }
+  .cat-head {
+    background: var(--blue); padding: 10px 16px;
+    font-weight: bold; font-size: 13px;
+  }
+  .item-row {
+    display: grid; grid-template-columns: 1fr 1.4fr;
+    border-bottom: 1px solid #1e3060; padding: 10px 16px; gap: 1rem;
+  }
+  .item-row:last-child { border-bottom: none; }
+  .item-q { font-size: 12.5px; color: var(--grayLt); }
+  .item-q.imp { color: var(--white); font-weight: bold; }
+  .item-a { font-size: 12.5px; color: var(--accent); }
+  .imp-badge {
+    display: inline-block; font-size: 9px; background: var(--orange);
+    color: var(--navy); padding: 1px 6px; border-radius: 4px; margin-left: 6px;
+    font-weight: bold; vertical-align: middle;
+  }
+
+  .risk-section, .action-section {
+    background: var(--navyMid); border-radius: 10px; padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .risk-section { border: 1.5px solid var(--orange); }
+  .action-section { border: 1.5px solid var(--green); }
+  .section-head { font-weight: bold; font-size: 13px; margin-bottom: 0.75rem; }
+  .risk-section .section-head { color: var(--orange); }
+  .action-section .section-head { color: var(--green); }
+  .risk-item { font-size: 12.5px; color: var(--grayLt); padding: 4px 0; }
+  .risk-item::before { content: "⚠ "; color: var(--orange); }
+  .action-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 0.5rem; padding: 6px 0; border-bottom: 1px solid #1e3060; font-size: 12px; }
+  .action-row:last-child { border-bottom: none; }
+  .action-content { color: var(--white); }
+  .action-date { color: var(--accent); }
+  .action-who { color: var(--gray); }
+
+  .print-btn {
+    display: block; width: 100%; padding: 12px; margin-top: 1.5rem;
+    background: none; color: var(--accent); border: 1.5px solid var(--accent);
+    border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: bold;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .print-btn:hover { background: var(--accent); color: var(--navy); }
+
+  .reset-btn {
+    display: block; width: 100%; padding: 10px; margin-top: 0.75rem;
+    background: none; color: var(--gray); border: 1px solid #2a3f6f;
+    border-radius: 8px; font-family: inherit; font-size: 13px; cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .reset-btn:hover { border-color: var(--gray); }
+
+  @media print {
+    header, .form-card, .print-btn, .reset-btn, .sample-btn { display: none !important; }
+    body { background: #fff; color: #000; }
+    #result { display: block !important; }
+    .cat-card, .risk-section, .action-section, .result-header { border-color: #ccc; }
+    .cat-head { background: #2563EB; color: #fff; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="header-logo">株式会社マルケン電工 — AI施工管理システム</div>
+    <div class="header-title">📋 着工前ヒアリングシート自動生成</div>
+  </div>
+  <a class="header-back" href="/">← 戻る</a>
+</header>
+
+<main>
+  <div id="form-section">
+    <div class="section-label">DEMO 01 — PRE-CONSTRUCTION HEARING</div>
+    <h2>着工前ヒアリング<br>シートを生成する</h2>
+    <p class="sub">案件情報を入力すると、AIが着工前の確認項目を自動で整理します。</p>
+
+    <div class="form-card">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem;">
+        <span style="font-size:13px; color:var(--accent); font-weight:bold;">案件情報を入力</span>
+        <button class="sample-btn" onclick="fillSample()">サンプルを入力</button>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>案件名 *</label>
+          <input id="projectName" type="text" placeholder="例: 〇〇ビル テナント改修工事">
+        </div>
+        <div class="form-group">
+          <label>発注先・施主 *</label>
+          <input id="client" type="text" placeholder="例: 影山工務店">
+        </div>
+        <div class="form-group">
+          <label>現場住所 *</label>
+          <input id="address" type="text" placeholder="例: 東京都渋谷区〇〇町1-2-3">
+        </div>
+        <div class="form-group">
+          <label>着工予定日</label>
+          <input id="startDate" type="text" placeholder="例: 2026年5月20日">
+        </div>
+        <div class="form-group full">
+          <label>工事内容 *</label>
+          <input id="workType" type="text" placeholder="例: 店舗新装工事に伴う電気工事一式（コンセント・照明・エアコン電源）">
+        </div>
+        <div class="form-group full">
+          <label>備考・特記事項</label>
+          <textarea id="notes" placeholder="例: 既存配線との整合性確認が必要。内装業者との調整あり。"></textarea>
+        </div>
+      </div>
+      <button class="btn" id="generateBtn" onclick="generate()">
+        ヒアリングシートを生成する（AI処理）
+      </button>
+    </div>
+  </div>
+
+  <div id="loading">
+    <div class="spinner"></div>
+    <ul class="loading-steps" id="steps">
+      <li id="s1">案件情報を分析中...</li>
+      <li id="s2">確認項目を洗い出し中...</li>
+      <li id="s3">リスクポイントを評価中...</li>
+      <li id="s4">書類を整形中...</li>
+    </ul>
+  </div>
+
+  <div id="result"></div>
+</main>
+
+<script>
+function fillSample() {
+  document.getElementById("projectName").value = "たちばな店舗 新装工事";
+  document.getElementById("client").value = "影山工務店";
+  document.getElementById("address").value = "東京都渋谷区恵比寿1丁目";
+  document.getElementById("startDate").value = "2026年5月20日";
+  document.getElementById("workType").value = "店舗新装工事に伴う電気工事一式（コンセント・照明・エアコン電源・厨房機器電源）";
+  document.getElementById("notes").value = "既存配線との整合性確認が必要。内装業者・空調業者との施工区分を事前に明確化すること。カウンター裏は狭隘作業あり。";
+}
+
+async function generate() {
+  const fields = ["projectName","client","address","workType"];
+  for (const f of fields) {
+    if (!document.getElementById(f).value.trim()) {
+      alert("必須項目（*）をすべて入力してください");
+      return;
+    }
+  }
+
+  document.getElementById("form-section").style.display = "none";
+  document.getElementById("loading").style.display = "block";
+  document.getElementById("result").style.display = "none";
+
+  const steps = [
+    document.getElementById("s1"),
+    document.getElementById("s2"),
+    document.getElementById("s3"),
+    document.getElementById("s4"),
+  ];
+
+  let si = 0;
+  steps[si].className = "active";
+  const stepTimer = setInterval(() => {
+    steps[si].className = "done";
+    si++;
+    if (si < steps.length) steps[si].className = "active";
+  }, 1800);
+
+  try {
+    const res = await fetch("/api/generate-hearing", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        projectName: document.getElementById("projectName").value,
+        client:      document.getElementById("client").value,
+        address:     document.getElementById("address").value,
+        workType:    document.getElementById("workType").value,
+        startDate:   document.getElementById("startDate").value,
+        notes:       document.getElementById("notes").value,
+      }),
+    });
+    clearInterval(stepTimer);
+    steps.forEach(s => s.className = "done");
+
+    const body = await res.json();
+    if (!body.ok) throw new Error(body.error);
+    render(body.data);
+  } catch (e) {
+    clearInterval(stepTimer);
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("form-section").style.display = "block";
+    alert("エラーが発生しました: " + e.message);
+  }
+}
+
+function render(d) {
+  const today = new Date().toLocaleDateString("ja-JP", { year:"numeric", month:"long", day:"numeric" });
+  const client = document.getElementById("client").value;
+  const project = document.getElementById("projectName").value;
+
+  let html = `
+    <div class="result-header">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.75rem;">
+        <div>
+          <div style="font-size:10px;color:var(--green);letter-spacing:0.1em;font-weight:bold;margin-bottom:4px;">着工前ヒアリングシート — 生成完了</div>
+          <h3>${project}</h3>
+          <div style="font-size:12px;color:var(--gray);margin-top:4px;">発注先: ${client} ／ 作成日: ${today}</div>
+        </div>
+        <div style="text-align:right;font-size:22px;color:var(--green);">✓</div>
+      </div>
+      <p>${d.projectSummary}</p>
+    </div>`;
+
+  for (const cat of d.categories) {
+    html += `<div class="cat-card">
+      <div class="cat-head">📌 ${cat.name}</div>`;
+    for (const item of cat.items) {
+      html += `<div class="item-row">
+        <div class="item-q ${item.important ? 'imp' : ''}">${item.question}${item.important ? '<span class="imp-badge">重要</span>' : ''}</div>
+        <div class="item-a">${item.answer}</div>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+
+  if (d.riskPoints && d.riskPoints.length) {
+    html += `<div class="risk-section">
+      <div class="section-head">⚠ リスクポイント</div>`;
+    for (const r of d.riskPoints) {
+      html += `<div class="risk-item">${r}</div>`;
+    }
+    html += `</div>`;
+  }
+
+  if (d.nextActions && d.nextActions.length) {
+    html += `<div class="action-section">
+      <div class="section-head">✅ 次のアクション</div>
+      <div class="action-row" style="color:var(--gray);font-size:11px;border-bottom:1px solid #1e3060;">
+        <span>アクション</span><span>期限</span><span>担当</span>
+      </div>`;
+    for (const a of d.nextActions) {
+      html += `<div class="action-row">
+        <span class="action-content">${a.action}</span>
+        <span class="action-date">${a.deadline}</span>
+        <span class="action-who">${a.responsible}</span>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+
+  html += `
+    <button class="print-btn" onclick="window.print()">🖨 印刷 / PDF保存</button>
+    <button class="reset-btn" onclick="location.reload()">↩ 別の案件を入力する</button>`;
+
+  document.getElementById("loading").style.display = "none";
+  const resultEl = document.getElementById("result");
+  resultEl.innerHTML = html;
+  resultEl.style.display = "block";
+}
+</script>
+</body>
+</html>

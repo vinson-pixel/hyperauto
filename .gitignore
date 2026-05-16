@@ -1,0 +1,28 @@
+# 環境変数・APIキー（絶対にコミットしない）
+.env
+.env.*
+*.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+
+# ログ（ローカル専用）
+logs/
+*.log
+
+# macOS
+.DS_Store
+
+# Node（dashboardなど）
+node_modules/
+
+# 一時ファイル
+*.tmp
+*.bak

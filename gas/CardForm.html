@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>名刺登録 | JECA 2026</title>
+  <style>
+    :root {
+      --blue:   #1a237e;
+      --blue2:  #283593;
+      --red:    #c62828;
+      --orange: #e65100;
+      --green:  #1b5e20;
+      --gray:   #f4f5f7;
+      --border: #dde1e8;
+      --text:   #1a1a2e;
+      --sub:    #6b7280;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: -apple-system, 'Hiragino Sans', sans-serif;
+      background: var(--gray);
+      color: var(--text);
+      font-size: 17px;
+      line-height: 1.5;
+    }
+
+    /* ─── ヘッダー ──────────────────────────── */
+    header {
+      background: var(--blue);
+      color: #fff;
+      padding: 16px 20px 14px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    header .title { font-size: 20px; font-weight: 700; }
+    header .sub   { font-size: 13px; opacity: 0.75; margin-top: 2px; }
+
+    /* ─── メインコンテナ ──────────────────── */
+    .screen { display: none; padding: 20px 16px 40px; max-width: 480px; margin: 0 auto; }
+    .screen.active { display: block; }
+
+    /* ─── カード ──────────────────────────── */
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--blue);
+      margin-bottom: 14px;
+    }
+
+    /* ─── 撮影ボタン（大） ─────────────────── */
+    .shoot-btn {
+      width: 100%;
+      height: 220px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 700;
+      box-shadow: 0 4px 16px rgba(26,35,126,0.35);
+      transition: opacity 0.15s;
+      margin-bottom: 16px;
+    }
+    .shoot-btn:active { opacity: 0.85; }
+    .shoot-icon { font-size: 56px; }
+
+    /* ─── 撮影済みプレビュー ───────────────── */
+    #preview-wrap {
+      display: none;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    #preview-img {
+      width: 100%;
+      border-radius: 12px;
+      display: block;
+      max-height: 280px;
+      object-fit: cover;
+    }
+    .retake-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0,0,0,0.55);
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      padding: 7px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* hidden file input */
+    #fileInput { display: none; }
+
+    /* ─── 解析ボタン ───────────────────────── */
+    .analyze-btn {
+      width: 100%;
+      padding: 18px;
+      background: var(--blue2);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      display: none;
+    }
+    .analyze-btn:active  { opacity: 0.85; }
+    .analyze-btn.visible { display: block; }
+
+    /* ─── ローディング ─────────────────────── */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 40px 0;
+    }
+    .loading.show { display: block; }
+    .spinner {
+      width: 48px; height: 48px;
+      border: 5px solid #e0e4f0;
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    .loading-text { font-size: 16px; color: var(--sub); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── 入力フォーム ─────────────────────── */
+    .field { margin-bottom: 16px; }
+    .field label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--sub);
+      margin-bottom: 6px;
+    }
+    .field input, .field textarea {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 13px 14px;
+      font-size: 17px;
+      font-family: inherit;
+      background: #fafbfc;
+      color: var(--text);
+      transition: border-color 0.2s;
+    }
+    .field input:focus, .field textarea:focus {
+      outline: none;
+      border-color: var(--blue);
+      background: #fff;
+    }
+    .field textarea { min-height: 90px; resize: vertical; }
+
+    /* 抽出済みフィールドの強調 */
+    .field input.filled { background: #eef0fb; border-color: #9fa8da; }
+
+    /* ─── 登録ボタン ───────────────────────── */
+    .submit-btn {
+      width: 100%;
+      padding: 20px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      font-size: 19px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: opacity 0.15s;
+      box-shadow: 0 4px 12px rgba(26,35,126,0.3);
+    }
+    .submit-btn:active   { opacity: 0.85; }
+    .submit-btn:disabled { background: #aaa; box-shadow: none; cursor: not-allowed; }
+
+    /* ─── 結果表示 ─────────────────────────── */
+    .result-card {
+      border-radius: 16px;
+      padding: 28px 20px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .result-card.success { background: #e8f5e9; border: 2px solid #43a047; }
+    .result-card.error   { background: #ffebee; border: 2px solid #e53935; }
+
+    .rank-circle {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      line-height: 80px;
+      font-size: 38px;
+      font-weight: 800;
+      color: #fff;
+      margin: 0 auto 16px;
+    }
+    .rank-A { background: var(--red); }
+    .rank-B { background: var(--orange); }
+    .rank-C { background: var(--green); }
+
+    .result-company { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    .result-name    { font-size: 17px; color: var(--sub); margin-bottom: 12px; }
+    .result-need    { font-size: 15px; color: #374151; margin-bottom: 6px; }
+    .result-score   { font-size: 14px; color: var(--sub); margin-bottom: 16px; }
+    .result-ok      { font-size: 15px; color: #2e7d32; font-weight: 600; }
+
+    .next-btn {
+      width: 100%;
+      padding: 18px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .back-btn {
+      width: 100%;
+      padding: 15px;
+      background: transparent;
+      color: var(--sub);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+
+    /* ─── エラー表示 ───────────────────────── */
+    .error-msg {
+      display: none;
+      background: #ffebee;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 15px;
+      color: #c62828;
+      margin-bottom: 16px;
+    }
+    .error-msg.show { display: block; }
+
+    /* ─── カウンター ───────────────────────── */
+    .counter {
+      text-align: center;
+      font-size: 14px;
+      color: var(--sub);
+      padding: 8px 0 0;
+    }
+    .counter strong { color: var(--blue); font-size: 18px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="title">名刺登録</div>
+  <div class="sub">JECA FAIR 2026 — マルケン電工</div>
+</header>
+
+<!-- 撮影画面 -->
+<div id="screen-shoot" class="screen active">
+  <div class="card">
+    <button class="shoot-btn" onclick="openCamera()">
+      <span class="shoot-icon">📷</span>
+      <span>名刺を撮影する</span>
+    </button>
+    <input type="file" id="fileInput" accept="image/*" capture="environment">
+
+    <div id="preview-wrap">
+      <img id="preview-img" src="" alt="名刺プレビュー">
+      <button class="retake-btn" onclick="retake()">撮り直す</button>
+    </div>
+
+    <button class="analyze-btn" id="analyze-btn" onclick="analyzeImage()">
+      AIで情報を読み取る
+    </button>
+  </div>
+
+  <div class="loading" id="loading-analyze">
+    <div class="spinner"></div>
+    <div class="loading-text">名刺を読み取り中...</div>
+  </div>
+
+  <div class="counter" id="counter" style="display:none">
+    本日登録済み: <strong id="count-num">0</strong> 件
+  </div>
+</div>
+
+<!-- 確認・登録画面 -->
+<div id="screen-confirm" class="screen">
+  <div class="error-msg" id="error-msg"></div>
+
+  <div class="card">
+    <div class="card-title">抽出された情報を確認</div>
+
+    <div class="field">
+      <label>会社名</label>
+      <input type="text" id="f-company" placeholder="株式会社〇〇">
+    </div>
+    <div class="field">
+      <label>氏名</label>
+      <input type="text" id="f-name" placeholder="山田 太郎">
+    </div>
+    <div class="field">
+      <label>役職</label>
+      <input type="text" id="f-title" placeholder="部長">
+    </div>
+    <div class="field">
+      <label>メール</label>
+      <input type="email" id="f-email" inputmode="email" placeholder="yamada@example.com">
+    </div>
+    <div class="field">
+      <label>電話</label>
+      <input type="tel" id="f-phone" inputmode="tel" placeholder="090-0000-0000">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">会話メモ <span style="font-weight:400;color:var(--sub)">（任意）</span></div>
+    <div class="field" style="margin-bottom:0">
+      <textarea id="f-memo" placeholder="展示会での会話内容・ニーズ・印象など&#10;例: LED改修の相談あり。来月見積もり希望。"></textarea>
+    </div>
+  </div>
+
+  <button class="submit-btn" id="submit-btn" onclick="submitCard()">
+    CRMに登録する
+  </button>
+  <button class="back-btn" onclick="backToShoot()">← 撮り直す</button>
+
+  <div class="loading" id="loading-submit" style="margin-top:16px">
+    <div class="spinner"></div>
+    <div class="loading-text">スコア計算・登録中...</div>
+  </div>
+</div>
+
+<!-- 完了画面 -->
+<div id="screen-result" class="screen">
+  <div class="result-card success" id="result-card">
+    <div class="rank-circle rank-A" id="result-rank">A</div>
+    <div class="result-company" id="result-company"></div>
+    <div class="result-name"    id="result-name"></div>
+    <div class="result-need">主要ニーズ: <span id="result-need"></span></div>
+    <div class="result-score">スコア: <span id="result-score"></span> 点</div>
+    <div class="result-ok" id="result-ok">✅ CRMに登録完了</div>
+  </div>
+
+  <button class="next-btn" onclick="nextCard()">次の名刺を登録する</button>
+
+  <div class="counter" style="margin-top:14px">
+    本日登録済み: <strong id="count-num2">0</strong> 件
+  </div>
+</div>
+
+<script>
+var capturedBase64 = '';
+var capturedMime   = 'image/jpeg';
+var registeredCount = 0;
+
+// ─── カメラ起動 ─────────────────────────────────
+function openCamera() {
+  document.getElementById('fileInput').click();
+}
+
+document.getElementById('fileInput').addEventListener('change', function(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+
+  capturedMime = file.type || 'image/jpeg';
+
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    var dataUrl  = ev.target.result;
+    // base64部分だけ取り出す（"data:image/jpeg;base64," を除去）
+    capturedBase64 = dataUrl.split(',')[1];
+
+    // プレビュー表示
+    document.getElementById('preview-img').src   = dataUrl;
+    document.getElementById('preview-wrap').style.display = 'block';
+    document.getElementById('analyze-btn').classList.add('visible');
+  };
+  reader.readAsDataURL(file);
+});
+
+// ─── 撮り直す ───────────────────────────────────
+function retake() {
+  capturedBase64 = '';
+  document.getElementById('preview-wrap').style.display = 'none';
+  document.getElementById('analyze-btn').classList.remove('visible');
+  document.getElementById('fileInput').value = '';
+  openCamera();
+}
+
+// ─── AI解析 ─────────────────────────────────────
+function analyzeImage() {
+  if (!capturedBase64) { alert('先に名刺を撮影してください'); return; }
+
+  document.getElementById('analyze-btn').style.display = 'none';
+  document.getElementById('preview-wrap').style.display = 'none';
+  document.getElementById('loading-analyze').classList.add('show');
+
+  // iPhoneの写真は大きすぎるのでCanvasで縮小してから送る
+  resizeBase64(capturedBase64, capturedMime, 1200, function(resized) {
+    google.script.run
+      .withSuccessHandler(onExtracted)
+      .withFailureHandler(onExtractError)
+      .extractCardFromImage(resized, 'image/jpeg');
+  });
+}
+
+// 長辺をmaxPxに収めてJPEGで返す
+function resizeBase64(base64, mime, maxPx, callback) {
+  var img = new Image();
+  img.onload = function() {
+    var w = img.width, h = img.height;
+    if (w > maxPx || h > maxPx) {
+      if (w > h) { h = Math.round(h * maxPx / w); w = maxPx; }
+      else       { w = Math.round(w * maxPx / h); h = maxPx; }
+    }
+    var canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    var resized = canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+    callback(resized);
+  };
+  img.src = 'data:' + mime + ';base64,' + base64;
+}
+
+function onExtracted(info) {
+  document.getElementById('loading-analyze').classList.remove('show');
+
+  // 確認フォームに反映
+  setField('f-company', info.company);
+  setField('f-name',    info.name);
+  setField('f-title',   info.title);
+  setField('f-email',   info.email);
+  setField('f-phone',   info.phone);
+  document.getElementById('f-memo').value = '';
+
+  showScreen('screen-confirm');
+}
+
+function onExtractError(err) {
+  document.getElementById('loading-analyze').classList.remove('show');
+  document.getElementById('analyze-btn').classList.add('visible');
+  document.getElementById('analyze-btn').style.display = '';
+  document.getElementById('preview-wrap').style.display = 'block';
+  var msg = String(err);
+  // GASがnullを返した場合はAPIキー未設定の可能性を案内
+  if (msg === 'null' || msg === '' || msg.includes('null')) {
+    msg = 'CLAUDE_API_KEY が未設定の可能性があります。\nGASのスクリプトプロパティを確認してください。';
+  }
+  alert('読み取りに失敗しました:\n' + msg);
+}
+
+function setField(id, val) {
+  var el = document.getElementById(id);
+  el.value = val || '';
+  el.className = val ? 'filled' : '';
+}
+
+// ─── CRM登録 ─────────────────────────────────────
+function submitCard() {
+  var company = document.getElementById('f-company').value.trim();
+  if (!company) {
+    showError('会社名を入力してください');
+    return;
+  }
+
+  hideError();
+  document.getElementById('submit-btn').disabled = true;
+  document.getElementById('loading-submit').classList.add('show');
+
+  // 確認フォームの内容でrawCardTextを組み立ててrunCardRegistrationへ渡す
+  var rawText = [
+    document.getElementById('f-company').value,
+    document.getElementById('f-name').value,
+    document.getElementById('f-title').value,
+    document.getElementById('f-email').value,
+    document.getElementById('f-phone').value,
+  ].filter(Boolean).join('\n');
+
+  var memo = document.getElementById('f-memo').value.trim();
+
+  google.script.run
+    .withSuccessHandler(onRegistered)
+    .withFailureHandler(onRegisterError)
+    .runCardRegistration(rawText, memo);
+}
+
+function onRegistered(result) {
+  document.getElementById('loading-submit').classList.remove('show');
+  document.getElementById('submit-btn').disabled = false;
+
+  if (!result || !result.success) {
+    showError('登録に失敗しました: ' + (result && result.error ? result.error : '不明なエラー'));
+    return;
+  }
+
+  registeredCount++;
+  document.getElementById('count-num').textContent  = registeredCount;
+  document.getElementById('count-num2').textContent = registeredCount;
+
+  var rank = result.rank || 'C';
+  var rankEl = document.getElementById('result-rank');
+  rankEl.textContent  = rank;
+  rankEl.className    = 'rank-circle rank-' + rank;
+
+  document.getElementById('result-company').textContent = result.company   || '';
+  document.getElementById('result-name').textContent    = result.name      || '';
+  document.getElementById('result-need').textContent    = result.primaryNeed || '';
+  document.getElementById('result-score').textContent   = result.score     || 0;
+  document.getElementById('result-ok').textContent      = '✅ CRMに登録完了（本日' + registeredCount + '件目）';
+
+  showScreen('screen-result');
+}
+
+function onRegisterError(err) {
+  document.getElementById('loading-submit').classList.remove('show');
+  document.getElementById('submit-btn').disabled = false;
+  showError('エラーが発生しました: ' + String(err));
+}
+
+// ─── 確認画面から撮影画面へ戻る ─────────────────
+function backToShoot() {
+  capturedBase64 = '';
+  capturedMime   = 'image/jpeg';
+  document.getElementById('fileInput').value        = '';
+  document.getElementById('preview-img').src        = '';
+  document.getElementById('preview-wrap').style.display  = 'none';
+  document.getElementById('analyze-btn').classList.remove('visible');
+  document.getElementById('analyze-btn').style.display   = '';
+  hideError();
+  showScreen('screen-shoot');
+  openCamera();
+}
+
+// ─── 次の名刺へ ──────────────────────────────────
+function nextCard() {
+  capturedBase64 = '';
+  capturedMime   = 'image/jpeg';
+  document.getElementById('fileInput').value        = '';
+  document.getElementById('preview-img').src        = '';
+  document.getElementById('preview-wrap').style.display = 'none';
+  document.getElementById('analyze-btn').classList.remove('visible');
+  document.getElementById('analyze-btn').style.display = '';
+  document.getElementById('counter').style.display  = 'block';
+  document.getElementById('count-num').textContent  = registeredCount;
+  showScreen('screen-shoot');
+}
+
+// ─── 画面切り替え ────────────────────────────────
+function showScreen(id) {
+  ['screen-shoot','screen-confirm','screen-result'].forEach(function(s) {
+    document.getElementById(s).classList.remove('active');
+  });
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ─── エラー表示 ──────────────────────────────────
+function showError(msg) {
+  var el = document.getElementById('error-msg');
+  el.textContent = msg;
+  el.classList.add('show');
+  window.scrollTo(0, 0);
+}
+function hideError() {
+  document.getElementById('error-msg').classList.remove('show');
+}
+</script>
+
+</body>
+</html>
