@@ -430,26 +430,8 @@ ${data.jobs.map(j =>
  * P-02-4: LINEに日報送信
  */
 function p02_lineSender(summary, data) {
-  agentLog('P-02', 'LINE', '日報LINE送信');
-
-  const header = [
-    '📊 ' + data.date + ' 日報',
-    '─────────────────',
-  ].join('\n');
-
-  const footer = [
-    '',
-    '─────────────────',
-    '稼働: ' + data.activeJobs + '件 ／ 完工: ' + data.completedToday + '件',
-  ].join('\n');
-
-  sendLineToManager(
-    header + '\n' + (summary || '（サマリーなし）') + footer,
-    [
-      lineQR('案件確認', 'p02_jobs'),
-      lineQR('明日の予定', 'p02_tomorrow'),
-    ]
-  );
+  agentLog('P-02', 'LINE', '日報はスプレッドシートのみ記録（LINEグループ送信スキップ）');
+  // グループには案件通知のみ送るため、日報サマリーのLINE送信は行わない
 }
 
 

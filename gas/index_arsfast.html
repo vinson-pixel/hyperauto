@@ -100,10 +100,14 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
       <div id="orderEmpty" style="display:none;text-align:center;padding:16px;color:#888;font-size:13px;">未対応の案件がありません</div>
     </div>
     <div id="selectedOrderBox" style="display:none;margin-top:10px;padding:10px 12px;background:#eaf4ff;border-radius:8px;border:1.5px solid #185FA5;">
-      <div style="font-size:11px;color:#185FA5;font-weight:700;margin-bottom:4px;">✓ 送信先（自動設定）</div>
-      <div style="font-size:12px;color:#444;line-height:1.8;">
-        <span id="selectedTo"></span><br>
-        <span id="selectedCc" style="display:none;"></span>
+      <div style="font-size:11px;color:#185FA5;font-weight:700;margin-bottom:6px;">✓ 送信先</div>
+      <div class="field">
+        <div class="lbl" style="font-size:11px;">TO（必須）</div>
+        <input type="email" id="toEmailInput" placeholder="例：kawa@arsfast.com" style="font-size:13px;">
+      </div>
+      <div class="field" style="margin-top:6px;">
+        <div class="lbl" style="font-size:11px;">CC（カンマ区切りで複数可）</div>
+        <input type="text" id="ccEmailInput" placeholder="例：info@marukendenkou.com" style="font-size:13px;">
       </div>
       <button type="button" onclick="clearOrderSelection()" style="margin-top:6px;font-size:11px;color:#888;background:none;border:none;cursor:pointer;text-decoration:underline;">選び直す</button>
     </div>
@@ -232,16 +236,24 @@ let photoFilesAfter = [];
 // 選択中の案件情報
 var selectedOrder = null;
 
-// 案件一覧を読み込む
-window.addEventListener('load', function() {
+// 案件一覧をサーバーから取得して再描画
+function loadOrders() {
+  var list = document.getElementById('orderList');
+  var loading = document.getElementById('orderLoading');
+  var empty = document.getElementById('orderEmpty');
+  list.innerHTML = '';
+  list.style.display = 'none';
+  empty.style.display = 'none';
+  loading.style.display = 'block';
+  loading.textContent = '案件を読み込み中...';
+
   google.script.run
     .withSuccessHandler(function(orders) {
-      document.getElementById('orderLoading').style.display = 'none';
+      loading.style.display = 'none';
       if (!orders || orders.length === 0) {
-        document.getElementById('orderEmpty').style.display = 'block';
+        empty.style.display = 'block';
         return;
       }
-      var list = document.getElementById('orderList');
       list.style.display = 'block';
       orders.forEach(function(o) {
         var ccArr = Array.isArray(o.reply_cc_emails) ? o.reply_cc_emails : [];
@@ -260,11 +272,13 @@ window.addEventListener('load', function() {
         list.appendChild(card);
       });
     })
-    .withFailureHandler(function() {
-      document.getElementById('orderLoading').textContent = '案件の読み込みに失敗しました';
+    .withFailureHandler(function(err) {
+      loading.textContent = '案件の読み込みに失敗しました';
     })
     .getOrders();
-});
+}
+
+window.addEventListener('load', loadOrders);
 
 function escapeHtml(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -275,21 +289,24 @@ function selectOrder(o, card) {
   var ccArr = Array.isArray(o.reply_cc_emails) ? o.reply_cc_emails : [];
 
   // フォームに自動入力
-  if (o.site_no)   setVal('storeNo',   o.site_no);
-  if (o.site_name) setVal('clientName', o.site_name);
-  if (o.site_address) setVal('address', o.site_address);
-  if (o.site_tel)  setVal('tel',        o.site_tel);
-  if (o.requester) setVal('requester',  o.requester);
-
-  // 送信先表示
-  document.getElementById('selectedTo').textContent = 'TO: ' + (o.reply_to_email || '');
-  var ccEl = document.getElementById('selectedCc');
-  if (ccArr.length > 0) {
-    ccEl.textContent = 'CC: ' + ccArr.join(', ');
-    ccEl.style.display = 'inline';
-  } else {
-    ccEl.style.display = 'none';
+  if (o.site_name)      setVal('clientName',    o.site_name);
+  if (o.site_address)   setVal('address',       o.site_address);
+  if (o.site_tel)       setVal('tel',           o.site_tel);
+  if (o.requester)      setVal('requester',     o.requester);
+  if (o.work_date)      setVal('reqDate',       o.work_date);
+  if (o.requested_at) {
+    var d = new Date(o.requested_at);
+    var hh = ('0' + (d.getUTCHours() + 9)).slice(-2);
+    var mm = ('0' + d.getUTCMinutes()).slice(-2);
+    if (parseInt(hh) >= 24) hh = ('0' + (parseInt(hh) - 24)).slice(-2);
+    setVal('reqTime', hh + ':' + mm);
   }
+  if (o.request_detail) setVal('requestDetail', o.request_detail);
+  if (o.work_type)      setWorkTypeRadio(o.work_type);
+
+  // 送信先をinput欄にセット
+  document.getElementById('toEmailInput').value = o.reply_to_email || '';
+  document.getElementById('ccEmailInput').value = buildCcEmails(ccArr);
   document.getElementById('orderListWrap').style.display = 'none';
   document.getElementById('selectedOrderBox').style.display = 'block';
 }
@@ -298,11 +315,48 @@ function clearOrderSelection() {
   selectedOrder = null;
   document.getElementById('orderListWrap').style.display = 'block';
   document.getElementById('selectedOrderBox').style.display = 'none';
+  loadOrders();  // サーバーから最新の案件リストを再取得
 }
 
 function setVal(id, val) {
   var el = document.getElementById(id);
   if (el && !el.value) el.value = val;
+}
+
+function setWorkTypeRadio(workType) {
+  if (!workType) return;
+  var wt = workType;
+  var val = null;
+  if (/修理|交換|故障|不具合|復旧/.test(wt)) val = '修理';
+  else if (/工事|施工|設置|取付|配線/.test(wt)) val = '工事';
+  else if (/見積|調査/.test(wt)) val = '見積調査';
+  else if (/点検|検査|定期/.test(wt)) val = '点検';
+  if (val) {
+    var radios = document.querySelectorAll('input[name="wtype"]');
+    radios.forEach(function(r) { if (r.value === val) r.checked = true; });
+  }
+}
+
+function buildCcEmails(ccArr) {
+  // "Name <email>" や "<email>" 形式からアドレスだけ取り出す
+  function extractAddr(s) {
+    var m = String(s || '').match(/<([^>]+)>/);
+    return (m ? m[1] : String(s || '')).trim().toLowerCase();
+  }
+
+  var seen = {};
+  var result = [];
+  (ccArr || []).forEach(function(item) {
+    var email = extractAddr(item);
+    if (!email || email.indexOf('@') === -1) return;
+    // 社長個人Gmail・弊社アドレス（info@除く）は除外
+    if (email === 'mky7584gd@gmail.com') return;
+    if (email.indexOf('@marukendenkou.com') !== -1 && email !== 'info@marukendenkou.com') return;
+    if (!seen[email]) { seen[email] = true; result.push(email); }
+  });
+  // info@marukendenkou.com は必ず含める
+  if (!seen['info@marukendenkou.com']) result.push('info@marukendenkou.com');
+  return result.join(',');
 }
 
 // 署名モーダル
@@ -412,6 +466,7 @@ function showStatus(msg, type) {
 
 async function submitForm() {
   if (!selectedOrder) { showStatus('案件を選択してください', 'status-err'); return; }
+  if (!document.getElementById('toEmailInput').value.trim()) { showStatus('送信先TOメールアドレスを入力してください', 'status-err'); return; }
   if (!v('clientName')) { showStatus('お客様名を入力してください', 'status-err'); return; }
   if (!signed) { showStatus('確認者のサインをもらってください', 'status-err'); return; }
 
@@ -439,11 +494,11 @@ async function submitForm() {
   const photoDataBefore = await Promise.all(photoFilesBefore.map(toBase64));
   const photoDataAfter = await Promise.all(photoFilesAfter.map(toBase64));
 
-  var ccArr = selectedOrder && Array.isArray(selectedOrder.reply_cc_emails) ? selectedOrder.reply_cc_emails : [];
   const data = {
-    toEmail: (selectedOrder && selectedOrder.reply_to_email) || '',
-    ccEmail: ccArr.join(','),
+    toEmail: document.getElementById('toEmailInput').value.trim(),
+    ccEmail: document.getElementById('ccEmailInput').value.trim(),
     pendingOrderId: selectedOrder ? selectedOrder.id : null,
+    inReplyTo: selectedOrder ? (selectedOrder.in_reply_to || null) : null,
     storeNo: v('storeNo'),
     clientName: v('clientName'),
     address: v('address'),

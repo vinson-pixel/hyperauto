@@ -112,6 +112,42 @@ function trigger_evening_18() {
 }
 
 /**
+ * trigger_night_23 — 毎日23時: リード発掘バッチ①＋その他夜間処理
+ */
+function trigger_night_23() {
+  const AGENT_ID = 'TRIGGER-NIGHT-23';
+  agentLog(AGENT_ID, 'START', nowStr());
+  _runSafe(AGENT_ID, '自動リード発掘①', function() { autoDiscoverLeads(); });
+  _runSafe(AGENT_ID, 'Web情報自動補完', function() { autoFillCompanyDetails(); });
+  _runSafe(AGENT_ID, '成約フォローアラート', function() { checkWonFollowups(); });
+  agentLog(AGENT_ID, 'DONE', '夜間バッチ①完了');
+}
+
+/** trigger_night_1 — 毎日1時: リード発掘バッチ② */
+function trigger_night_1() {
+  const AGENT_ID = 'TRIGGER-NIGHT-01';
+  agentLog(AGENT_ID, 'START', nowStr());
+  _runSafe(AGENT_ID, '自動リード発掘②', function() { autoDiscoverLeads(); });
+  agentLog(AGENT_ID, 'DONE', '夜間バッチ②完了');
+}
+
+/** trigger_night_3 — 毎日3時: リード発掘バッチ③ */
+function trigger_night_3() {
+  const AGENT_ID = 'TRIGGER-NIGHT-03';
+  agentLog(AGENT_ID, 'START', nowStr());
+  _runSafe(AGENT_ID, '自動リード発掘③', function() { autoDiscoverLeads(); });
+  agentLog(AGENT_ID, 'DONE', '夜間バッチ③完了');
+}
+
+/** trigger_night_5 — 毎日5時: リード発掘バッチ④ */
+function trigger_night_5() {
+  const AGENT_ID = 'TRIGGER-NIGHT-05';
+  agentLog(AGENT_ID, 'START', nowStr());
+  _runSafe(AGENT_ID, '自動リード発掘④', function() { autoDiscoverLeads(); });
+  agentLog(AGENT_ID, 'DONE', '夜間バッチ④完了');
+}
+
+/**
  * trigger_monday_8 — 毎週月曜8時に実行
  * A-04: 週次スケジュール管理・工程調整
  */
@@ -128,6 +164,10 @@ function trigger_monday_8() {
 
   _runSafe(AGENT_ID, 'A-04 スケジュール管理', function() {
     runScheduleManagerTeam();
+  });
+
+  _runSafe(AGENT_ID, '週次営業戦略レポート', function() {
+    sendWeeklyStrategyReport();
   });
 
   agentLog(AGENT_ID, 'DONE', '週次バッチ完了');
@@ -170,40 +210,99 @@ function trigger_monthly_1() {
 // ============================================================
 
 /**
- * doGet — スマホ用名刺入力フォームを返す
- * GASウェブアプリとしてデプロイされている場合にブラウザからアクセスできる。
- * 展示会当日にスマホでQRコードを読み込んで名刺を登録する用途。
+ * doGet — URLパラメーターでフォームをルーティング
+ *   ?page=card  → 名刺登録フォーム（JECA用）
+ *   デフォルト  → アースファスト作業報告書
  */
 function doGet(e) {
-  return HtmlService.createHtmlOutputFromFile('CardForm')
-    .setTitle('名刺登録 | マルケン電工 JECA 2026')
+  var page = (e && e.parameter && e.parameter.page) || 'arsfast';
+  if (page === 'card') {
+    return HtmlService.createHtmlOutputFromFile('CardForm')
+      .setTitle('名刺登録 | マルケン電工 JECA 2026')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  }
+  if (page === 'prospecting') {
+    var action = (e && e.parameter && e.parameter.action) || '';
+    if (action) {
+      return handleProspectingApi_(e);
+    }
+    var tmpl = HtmlService.createTemplateFromFile('index_prospecting');
+    tmpl.scriptUrl = ScriptApp.getService().getUrl();
+    return tmpl.evaluate()
+      .setTitle('営業リスト管理 | マルケン電工')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  }
+  return HtmlService.createHtmlOutputFromFile('index_arsfast')
+    .setTitle('アースファスト作業報告書')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
-/**
- * doPost — LINE Webhookエントリーポイント
- * クイックリプライボタンのアクションを解析して各チームを起動する。
- *
- * 対応アクション:
- *   action=called              — 電話対応済みとしてスプシ更新
- *   action=quote_request       — 見積書生成 (company必須)
- *   action=script_request      — トークスクリプト生成 (company, industry必須)
- *   action=jeca_batch_draft    — JECA御礼メール下書き作成
- *   action=jeca_batch_send     — JECA御礼メール一括送信
- *   action=followup_campaign   — フォローアップキャンペーン起動
- */
+// ─── 営業リスト API（GETベース） ──────────────────────────────────
+
+function handleProspectingApi_(e) {
+  var p      = e.parameter;
+  var action = p.action || '';
+  var result;
+  try {
+    if      (action === 'getProspects')  result = getProspects(parseInt(p.limit) || 100);
+    else if (action === 'getStats')      result = getStats();
+    else if (action === 'searchLeads')   result = searchLeads(p.keyword, p.area, p.source, parseInt(p.maxResults) || 20, p.quick === '1');
+    else if (action === 'cleanSheet')    result = cleanProspectSheet();
+    else if (action === 'fillIndustry')  result = fillMissingIndustry();
+    else if (action === 'cleanIndustry') result = cleanIndustryField();
+    else if (action === 'fillCorpNum')   result = autoFillCorpNum();
+    else if (action === 'lookupCorpNum') {
+      if (!getProp('NTA_APP_ID')) { result = { error: 'NTA_APP_ID未設定 — 国税庁Web-APIに登録してスクリプトプロパティに設定してください' }; }
+      else { result = { corpNum: lookupCorpNum_(p.name||'') }; }
+    }
+    else if (action === 'autoDiscover')  result = autoDiscoverLeads();
+    else if (action === 'analyzeFeedback')   result = analyzeFeedback();
+    else if (action === 'fillDetails')       result = autoFillCompanyDetails();
+    else if (action === 'bulkCleanup')       result = bulkCleanup();
+    else if (action === 'getHumanTasks')     result = getHumanTasks();
+    else if (action === 'getVisitList')      result = getVisitList(p.area, p.maxCount);
+    else if (action === 'weeklyReport')      result = sendWeeklyStrategyReport();
+    else if (action === 'ping')              result = { ok: true };
+    else result = { error: '不明なアクション: ' + action };
+  } catch(err) {
+    result = { error: err.toString() };
+  }
+  return ContentService.createTextOutput(JSON.stringify(result))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
 function doPost(e) {
-  // Webhookボディが空の場合は即時200 OKを返す（LINE疎通確認用）
   if (!e || !e.postData || !e.postData.contents) {
     return _jsonResponse({ ok: true, message: 'no content' });
   }
 
-  let body;
+  var body;
   try {
     body = JSON.parse(e.postData.contents);
   } catch (parseErr) {
     Logger.log('Webhook JSON parse error: ' + parseErr);
     return _jsonResponse({ ok: false, error: 'invalid json' });
+  }
+
+  // 営業リスト POST API
+  if (body.prospectAction) {
+    var r;
+    try {
+      var a = body.prospectAction;
+      if      (a === 'logCallResult')             r = logCallResult(body.rowIndex, body.result, body.notes);
+      else if (a === 'addProspects')              r = addProspects(body.places);
+      else if (a === 'generateTalkScript')        r = generateTalkScript(body.rowIndex);
+      else if (a === 'generatePersonalizedEmail') r = generatePersonalizedEmail(body.rowIndex, body.templateId, body.note);
+      else if (a === 'previewEmail')              r = previewEmail(body.rowIndex, body.templateId, body.note);
+      else if (a === 'sendProspectEmail')         r = sendProspectEmail(body.rowIndex, body.templateId, body.note, body.asDraft);
+      else if (a === 'updateCell')                r = updateProspectCell(body.rowIndex, body.col, body.value);
+      else if (a === 'analyzeCompany')            r = analyzeCompany(body.rowIndex);
+      else if (a === 'analyzeCompanyDeep')        r = analyzeCompanyDeep(body.rowIndex);
+      else if (a === 'generateCampaign')          r = generateCampaign(body.product, body.limit);
+      else r = { error: '不明なアクション' };
+    } catch(err) { r = { error: err.toString() }; }
+    return ContentService.createTextOutput(JSON.stringify(r))
+      .setMimeType(ContentService.MimeType.JSON);
   }
 
   const events = body.events || [];
@@ -323,6 +422,21 @@ function _handleWebhookEvent(event) {
     // 対応済みマーク（メール案件用）
     case 'registered':
       _lineReply(replyToken, '✅ 案件スプシに記録済みです');
+      break;
+
+    // 返信不要メール: 削除
+    case 'delete_mail':
+      _handleDeleteMail(params, replyToken);
+      break;
+
+    // 返信不要メール: 配信停止（アーカイブ）
+    case 'unsubscribe_mail':
+      _handleUnsubscribeMail(params, replyToken);
+      break;
+
+    // 返信不要メール: 無視（何もしない）
+    case 'ignore_mail':
+      _lineReply(replyToken, '👁 無視しました');
       break;
 
     default:
@@ -497,78 +611,42 @@ function _handleFollowUpCampaign(replyToken) {
  * 実行前に既存トリガーをすべて削除するため冪等に使える。
  */
 function setupAllTriggers() {
-  Logger.log('=== 全トリガーセットアップ開始 ===');
+  Logger.log('=== トリガーセットアップ開始 ===');
 
   // 既存トリガーを全削除
   const existingTriggers = ScriptApp.getProjectTriggers();
-  existingTriggers.forEach(function(t) {
-    ScriptApp.deleteTrigger(t);
-  });
+  existingTriggers.forEach(function(t) { ScriptApp.deleteTrigger(t); });
   Logger.log('既存トリガー削除: ' + existingTriggers.length + '件');
 
-  // ─── 15分おき ──────────────────────────────────────────────
-  // S-01: メール受信・AI判定
+  // ─── 15分おき: S-01 メール受信・AI判定→LINE通知 ───────────
   ScriptApp.newTrigger('trigger_15min')
-    .timeBased()
-    .everyMinutes(15)
-    .create();
-  Logger.log('✅ trigger_15min: 15分おき');
+    .timeBased().everyMinutes(15).create();
+  Logger.log('✅ trigger_15min: 15分おき（S-01 メール判定）');
 
-  // ─── 毎朝8時 ───────────────────────────────────────────────
-  // A-01: 業務報告 / F-01: 請求書 / S-04: フォローアップ
-  ScriptApp.newTrigger('trigger_morning_8')
-    .timeBased()
-    .atHour(8)
-    .everyDays(1)
-    .inTimezone('Asia/Tokyo')
-    .create();
-  Logger.log('✅ trigger_morning_8: 毎日8時');
-
-  // ─── 毎日12時 ──────────────────────────────────────────────
-  // A-02: Watchdog / F-02: 入金確認
-  ScriptApp.newTrigger('trigger_noon_12')
-    .timeBased()
-    .atHour(12)
-    .everyDays(1)
-    .inTimezone('Asia/Tokyo')
-    .create();
-  Logger.log('✅ trigger_noon_12: 毎日12時');
-
-  // ─── 毎日18時 ──────────────────────────────────────────────
-  // P-02: 日報
-  ScriptApp.newTrigger('trigger_evening_18')
-    .timeBased()
-    .atHour(18)
-    .everyDays(1)
-    .inTimezone('Asia/Tokyo')
-    .create();
-  Logger.log('✅ trigger_evening_18: 毎日18時');
-
-  // ─── 毎週月曜8時 ───────────────────────────────────────────
-  // A-04: スケジュール管理
-  // GASのweekly()はタイムゾーン設定がないため、月曜日に毎日8時トリガーで
-  // trigger_monday_8内で曜日チェックを行う設計とする。
-  // （GASのnewTrigger().timeBased().onWeekDay()はタイムゾーンが不正確なため）
+  // ─── 毎週月曜8時: 週次営業レポート→LINE ─────────────────
   ScriptApp.newTrigger('trigger_monday_8')
-    .timeBased()
-    .atHour(8)
-    .everyDays(1)
-    .inTimezone('Asia/Tokyo')
-    .create();
-  Logger.log('✅ trigger_monday_8: 毎日8時（月曜のみ実行、関数内で曜日チェック）');
+    .timeBased().atHour(8).everyDays(1).inTimezone('Asia/Tokyo').create();
+  Logger.log('✅ trigger_monday_8: 毎日8時（月曜のみ実行・週次レポートLINE）');
 
-  // ─── 毎月1日8時 ────────────────────────────────────────────
-  // F-04: 月次報告 / A-03: 成長提案
-  // GASには月初トリガーがないため、毎日8時トリガーで日付チェックする。
-  ScriptApp.newTrigger('trigger_monthly_1')
-    .timeBased()
-    .atHour(8)
-    .everyDays(1)
-    .inTimezone('Asia/Tokyo')
-    .create();
-  Logger.log('✅ trigger_monthly_1: 毎日8時（1日のみ実行、関数内で日付チェック）');
+  // ─── 毎日23時: リード発掘バッチ①＋夜間処理 ─────────────
+  ScriptApp.newTrigger('trigger_night_23')
+    .timeBased().atHour(23).everyDays(1).inTimezone('Asia/Tokyo').create();
+  Logger.log('✅ trigger_night_23: 毎日23時（リード発掘①＋補完）');
 
-  Logger.log('=== 全トリガーセットアップ完了 ===');
+  // ─── 毎日1時・3時・5時: リード発掘バッチ②③④ ───────────
+  ScriptApp.newTrigger('trigger_night_1')
+    .timeBased().atHour(1).everyDays(1).inTimezone('Asia/Tokyo').create();
+  Logger.log('✅ trigger_night_1: 毎日1時（リード発掘②）');
+
+  ScriptApp.newTrigger('trigger_night_3')
+    .timeBased().atHour(3).everyDays(1).inTimezone('Asia/Tokyo').create();
+  Logger.log('✅ trigger_night_3: 毎日3時（リード発掘③）');
+
+  ScriptApp.newTrigger('trigger_night_5')
+    .timeBased().atHour(5).everyDays(1).inTimezone('Asia/Tokyo').create();
+  Logger.log('✅ trigger_night_5: 毎日5時（リード発掘④）');
+
+  Logger.log('=== トリガーセットアップ完了（6件）===');
 
   // 完了をLINEに通知
   try {
@@ -679,87 +757,6 @@ function checkAllApiKeys() {
     });
     const managerId = getManagerLineId();
     Logger.log('Manager ID: ' + (managerId || '❌ 取得失敗'));
-  }
-}
-
-/**
- * setupJecaSpreadsheet — JECA CRMスプレッドシートを新規作成してプロパティに登録する
- * 初回セットアップ時にGASエディタから手動実行する。
- * 実行後は JECA_SHEET_ID が自動で設定され、他のJECA関数がすぐに使える。
- */
-function setupJecaSpreadsheet() {
-  Logger.log('=== JECA CRMスプレッドシート作成開始 ===');
-
-  // すでに設定済みかチェック
-  const existing = getProp('JECA_SHEET_ID');
-  if (existing) {
-    Logger.log('ℹ️ JECA_SHEET_ID はすでに設定されています: ' + existing);
-    Logger.log('再作成する場合は先にスクリプトプロパティから JECA_SHEET_ID を削除してください。');
-    sendLineToManager('ℹ️ JECA CRMスプシはすでに登録済みです\nID: ' + existing);
-    return;
-  }
-
-  try {
-    // 新規スプレッドシート作成
-    const ss = SpreadsheetApp.create('マルケン電工 JECA FAIR 2026 CRM');
-    const sheetId = ss.getId();
-
-    // デフォルトシートを JECA_CRM にリネーム
-    const sheet = ss.getActiveSheet();
-    sheet.setName('JECA_CRM');
-
-    // ヘッダー設定（Code_jeca_team.gs と完全一致の16列）
-    const headers = [
-      '登録日',       // A
-      '会社名',       // B
-      '名前',         // C
-      '役職',         // D
-      'メール',       // E
-      '電話',         // F
-      '住所',         // G
-      '業界',         // H
-      '企業規模',     // I
-      'ニーズ',       // J
-      'スコア',       // K
-      'ランク',       // L
-      '会話メモ',     // M
-      '御礼送信日',   // N
-      'フォロー送信日', // O
-      'ステータス',   // P
-    ];
-
-    const headerRange = sheet.getRange(1, 1, 1, headers.length);
-    headerRange.setValues([headers]);
-    headerRange.setBackground('#1a237e');
-    headerRange.setFontColor('#ffffff');
-    headerRange.setFontWeight('bold');
-    headerRange.setHorizontalAlignment('center');
-    sheet.setFrozenRows(1);
-
-    // 列幅調整
-    sheet.setColumnWidth(2, 200);  // 会社名
-    sheet.setColumnWidth(5, 220);  // メール
-    sheet.setColumnWidth(10, 250); // ニーズ
-    sheet.setColumnWidth(13, 300); // 会話メモ
-
-    // スクリプトプロパティに JECA_SHEET_ID を自動登録
-    getProps().setProperty('JECA_SHEET_ID', sheetId);
-
-    const url = 'https://docs.google.com/spreadsheets/d/' + sheetId + '/edit';
-    const msg = '✅ JECA CRMスプレッドシート作成完了\n' +
-                'シート名: JECA_CRM\n' +
-                'ID: ' + sheetId + '\n' +
-                'URL: ' + url + '\n' +
-                '実行時刻: ' + nowStr();
-
-    Logger.log(msg);
-    sendLineToManager(msg);
-
-    Logger.log('=== JECA CRMスプレッドシート作成完了 ===');
-
-  } catch (e) {
-    Logger.log('❌ スプレッドシート作成エラー: ' + e);
-    sendLineToManager('❌ JECA CRMスプシ作成失敗\n' + e.toString());
   }
 }
 
@@ -1565,6 +1562,44 @@ function _handleReplyConfirm(params, replyToken) {
   } catch (err) {
     _lineReply(replyToken, '❌ 送信エラー: ' + err.toString() + '\nGmailの下書きから手動で送信してください。');
     Logger.log('LINE返信送信エラー: ' + err.toString());
+  }
+}
+
+/**
+ * _handleDeleteMail — 返信不要メールをGmailから削除
+ */
+function _handleDeleteMail(params, replyToken) {
+  const threadId = decodeURIComponent(params.threadId || '');
+  if (!threadId) { _lineReply(replyToken, '❌ スレッドIDが不明です'); return; }
+  try {
+    const thread = GmailApp.getThreadById(threadId);
+    if (thread) {
+      thread.moveToTrash();
+      _lineReply(replyToken, '🗑 削除しました');
+    } else {
+      _lineReply(replyToken, '⚠️ スレッドが見つかりません（すでに処理済みかも）');
+    }
+  } catch(e) {
+    _lineReply(replyToken, '❌ 削除エラー: ' + e.toString().substring(0, 100));
+  }
+}
+
+/**
+ * _handleUnsubscribeMail — 返信不要メールをアーカイブ（配信停止扱い）
+ */
+function _handleUnsubscribeMail(params, replyToken) {
+  const threadId = decodeURIComponent(params.threadId || '');
+  if (!threadId) { _lineReply(replyToken, '❌ スレッドIDが不明です'); return; }
+  try {
+    const thread = GmailApp.getThreadById(threadId);
+    if (thread) {
+      thread.moveToArchive();
+      _lineReply(replyToken, '🚫 配信停止（アーカイブ）しました\n送信元からの配信停止手続きはGmailから行ってください');
+    } else {
+      _lineReply(replyToken, '⚠️ スレッドが見つかりません（すでに処理済みかも）');
+    }
+  } catch(e) {
+    _lineReply(replyToken, '❌ アーカイブエラー: ' + e.toString().substring(0, 100));
   }
 }
 

@@ -259,9 +259,9 @@ function j01_crmWriter(all) {
     sheet.appendRow([
       '登録日', '会社名', '名前', '役職', 'メール', '電話', '住所',
       '業界', '企業規模', 'ニーズ', 'スコア', 'ランク', '会話メモ',
-      '御礼送信日', 'フォロー送信日', 'ステータス'
+      '御礼送信日', 'フォロー送信日', 'ステータス', 'リードタイプ'
     ]);
-    sheet.getRange(1, 1, 1, 16).setFontWeight('bold').setBackground('#1a237e').setFontColor('#ffffff');
+    sheet.getRange(1, 1, 1, 17).setFontWeight('bold').setBackground('#1a237e').setFontColor('#ffffff');
   }
 
   const needsText = [all.needs.primaryNeed, ...(all.needs.secondaryNeeds || [])].join(' / ');
@@ -283,6 +283,7 @@ function j01_crmWriter(all) {
     '',                            // N: 御礼送信日
     '',                            // O: フォロー送信日
     '登録済み',                    // P: ステータス
+    all.leadType || 'その他',      // Q: リードタイプ
   ];
 
   const ok = appendRow(sheet, row);
@@ -301,16 +302,25 @@ function j01_crmWriter(all) {
 
 /**
  * J-01 メイン: 単一名刺の登録処理
- * @param {string} rawCardText - 名刺テキスト（OCRまたは手入力）
+ * @param {string} rawCardText - 名刺テキスト（OCRまたは手入力）。base64Data指定時は無視される
  * @param {string} meetingMemo - 展示会での会話メモ
+ * @param {string} leadType   - リードタイプ（元請け候補/下請け候補/その他/なし）
+ * @param {string} base64Data - 名刺画像のbase64データ（省略可）
+ * @param {string} mimeType   - 画像MIMEタイプ（省略時: image/jpeg）
  * @returns {object} - 登録結果サマリー
  */
-function runCardRegistration(rawCardText, meetingMemo) {
+function runCardRegistration(rawCardText, meetingMemo, leadType, base64Data, mimeType) {
   agentLog(JECA_AGENT_ID, 'START', 'J-01 CardRegistrationTeam 開始');
 
   try {
-    // Step 1: 名刺テキスト解析
-    const cardInfo = j01_cardParser(rawCardText);
+    // Step 1: 名刺情報取得（画像優先 → テキストフォールバック）
+    let cardInfo;
+    if (base64Data) {
+      agentLog(JECA_AGENT_ID, 'INFO', '画像データあり → OCR+AI解析');
+      cardInfo = extractCardFromImage(base64Data, mimeType || 'image/jpeg');
+    } else {
+      cardInfo = j01_cardParser(rawCardText);
+    }
 
     // Step 2: 業界・決裁権分類
     const industryInfo = j01_industryClassifier(cardInfo.company, cardInfo.title);
@@ -329,7 +339,7 @@ function runCardRegistration(rawCardText, meetingMemo) {
     const scoring = j01_leadScorer(cardInfo, industryInfo, needs);
 
     // Step 5: CRM書き込み
-    const all = { cardInfo, industryInfo, needs, scoring, meetingMemo: meetingMemo || '' };
+    const all = { cardInfo, industryInfo, needs, scoring, meetingMemo: meetingMemo || '', leadType: leadType || 'その他' };
     const written = j01_crmWriter(all);
 
     const result = {
@@ -375,10 +385,6 @@ function batchRegisterCards(cardArray) {
     else failCount++;
   });
 
-  // LINE通知
-  const summary = `【${JECA_EVENT_NAME}】\n名刺バッチ登録完了\n✅ 成功: ${successCount}件\n❌ 失敗: ${failCount}件\n合計: ${cardArray.length}件`;
-  sendLineToManager(summary);
-
   agentLog(JECA_AGENT_ID, 'DONE', `バッチ登録完了: 成功${successCount} / 失敗${failCount}`);
   return { total: cardArray.length, success: successCount, failed: failCount, results };
 }
@@ -407,18 +413,22 @@ function j02_crmLoader() {
     return [];
   }
 
-  const data = sheet.getRange(2, 1, lastRow - 1, 16).getValues();
+  const data = sheet.getRange(2, 1, lastRow - 1, 17).getValues();
   const contacts = [];
 
   data.forEach((row, idx) => {
-    const email = row[4];      // E列: メール
+    const email    = row[4];   // E列: メール
     const thankDate = row[13]; // N列: 御礼送信日
-    const status = row[15];    // P列: ステータス
+    const status   = row[15];  // P列: ステータス
+    const leadType = row[16];  // Q列: リードタイプ
+
+    // 「なし」はメール送信しない
+    if (leadType === 'なし') return;
 
     // メールアドレスがあり、まだ御礼未送信のものを抽出
     if (email && !thankDate && status !== '御礼送信済み') {
       contacts.push({
-        rowIndex: idx + 2, // シートの実際の行番号（1-indexed、ヘッダー除く）
+        rowIndex: idx + 2,
         registeredDate: row[0],
         company: row[1],
         name: row[2],
@@ -432,6 +442,7 @@ function j02_crmLoader() {
         score: row[10],
         rank: row[11],
         meetingMemo: row[12],
+        leadType: leadType || 'その他',
       });
     }
   });
@@ -492,14 +503,25 @@ ${MARUKEN_PROFILE}`;
 function j02_emailComposer(cardInfo, personalization) {
   agentLog('J-02-C', 'START', `メール文案生成: ${cardInfo.company}`);
 
+  const leadType = cardInfo.leadType || 'その他';
+
+  // カテゴリ別の打ち合わせ提案内容
+  const meetingInstruction =
+    leadType === '元請け候補'
+      ? '・末尾に「一度お伺いしてご挨拶させていただけますでしょうか」と対面での打ち合わせをご提案ください。日程は相手に合わせる形で。'
+      : leadType === '下請け候補'
+      ? '・末尾に「一度オンラインでお話できればと思っております」とオンライン打ち合わせをご提案ください。日程は相手に合わせる形で。'
+      : '・打ち合わせの提案は不要です。御礼のみで締めてください。';
+
   const systemPrompt = `あなたはマルケン電工の営業担当者です。
 ${JECA_EVENT_NAME}後の御礼メールを作成してください。
 
 要件:
 - 丁寧で温かみのある文体
 - パーソナライズ要素を自然に盛り込む
-- 押しつけがましくない（次回の連絡への期待を示す程度）
+- 押しつけがましくない自然な文章
 - 400文字以内の本文
+${meetingInstruction}
 - JSONで返す
 
 返すJSON形式:
@@ -553,7 +575,8 @@ function j02_batchSender(contacts, mode) {
       const personalization = j02_personalizationAgent(contact);
 
       // メール文案生成
-      const email = j02_emailComposer(contact, personalization);
+      const contactWithType = Object.assign({ leadType: contact.leadType }, contact);
+      const email = j02_emailComposer(contactWithType, personalization);
 
       let ok = false;
       if (mode === 'send') {
@@ -609,7 +632,6 @@ function runThankYouBatch(mode) {
     const contacts = j02_crmLoader();
 
     if (contacts.length === 0) {
-      sendLineToManager(`【${JECA_EVENT_NAME}】\n御礼メール対象者なし\n（未送信・メールあり）`);
       agentLog(JECA_AGENT_ID, 'DONE', '対象者なし');
       return;
     }
@@ -621,16 +643,11 @@ function runThankYouBatch(mode) {
     const successCount = results.filter(r => r.success).length;
     const failCount = results.filter(r => !r.success).length;
 
-    // LINE通知
     const actionLabel = mode === 'send' ? '送信完了' : '下書き作成完了';
-    const lineMsg = `【${JECA_EVENT_NAME}】\n御礼メール${actionLabel}\n✅ 成功: ${successCount}件\n❌ 失敗: ${failCount}件\n合計: ${contacts.length}件`;
-    sendLineToManager(lineMsg);
-
     agentLog(JECA_AGENT_ID, 'DONE', `J-02完了 | ${actionLabel} | 成功${successCount} / 失敗${failCount}`);
 
   } catch (e) {
     agentLog(JECA_AGENT_ID, 'ERROR', 'J-02 例外: ' + e);
-    sendLineToManager(`【${JECA_EVENT_NAME}】\n御礼メール処理でエラー発生:\n${e}`);
   }
 }
 
@@ -865,7 +882,6 @@ function runFollowUpCampaign() {
     const targets = j03_priorityFilter();
 
     if (targets.length === 0) {
-      sendLineToManager(`【${JECA_EVENT_NAME}】\nフォロー対象なし（A/Bランク・フォロー未送信）`);
       agentLog(JECA_AGENT_ID, 'DONE', 'フォロー対象なし');
       return;
     }
@@ -900,19 +916,10 @@ function runFollowUpCampaign() {
       }
     });
 
-    // LINE通知
-    const lineMsg = `【${JECA_EVENT_NAME}】\nフォローアップ下書き作成完了\n✅ 下書き: ${successCount}件\n❌ 失敗: ${failCount}件\n対象ランク: A/Bランクのみ\n\nGmailの下書きをご確認ください。`;
-
-    sendLineToManager(lineMsg, [
-      lineQR('📧 Gmail確認', 'open_gmail_draft'),
-      lineQR('📊 CRM確認', 'open_jeca_crm'),
-    ]);
-
     agentLog(JECA_AGENT_ID, 'DONE', `J-03完了 | 下書き${successCount}件 / 失敗${failCount}件`);
 
   } catch (e) {
     agentLog(JECA_AGENT_ID, 'ERROR', 'J-03 例外: ' + e);
-    sendLineToManager(`【${JECA_EVENT_NAME}】\nフォローキャンペーンでエラー:\n${e}`);
   }
 }
 
@@ -1011,7 +1018,6 @@ Cランク: ${stats.rankC}件
 フォロー済: ${stats.followSent}件`;
 
   Logger.log(msg);
-  sendLineToManager(msg);
 }
 
 /**

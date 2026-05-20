@@ -117,19 +117,61 @@ function callClaudeVision(base64Data, mimeType, userPrompt, model) {
 function callClaudeVisionJSON(base64Data, mimeType, userPrompt, model) {
   const text = callClaudeVision(base64Data, mimeType, userPrompt + '\nJSONのみで返答。説明文・コードブロック不要。', model);
   if (!text) return null;
-  const match = text.match(/\{[\s\S]*\}/);
-  if (!match) return null;
-  try { return JSON.parse(match[0]); }
+  const raw = extractOutermostJson_(text);
+  if (!raw) return null;
+  try { return JSON.parse(sanitizeAndFixJson_(raw)); }
   catch(e) { Logger.log('Claude Vision JSON parse error: ' + e); return null; }
 }
 
 function callClaudeJSON(systemPrompt, userPrompt, model) {
   const text = callClaude(systemPrompt + '\n\nJSONのみで返答。説明文・コードブロック不要。', userPrompt, model);
   if (!text) return null;
-  const match = text.match(/\{[\s\S]*\}/);
-  if (!match) { Logger.log('Claude JSON not found in: ' + text.substring(0, 200)); return null; }
-  try { return JSON.parse(match[0]); }
+  const raw = extractOutermostJson_(text);
+  if (!raw) { Logger.log('Claude JSON not found in: ' + text.substring(0, 200)); return null; }
+  try { return JSON.parse(sanitizeAndFixJson_(raw)); }
   catch(e) { Logger.log('Claude JSON parse error: ' + e); return null; }
+}
+
+// utils.gs 側で使う sanitize（Code_prospecting.gs の sanitizeJson_ と同等）
+function sanitizeAndFixJson_(text) {
+  var result = '';
+  var inString = false;
+  var escaped = false;
+  for (var i = 0; i < text.length; i++) {
+    var c = text[i];
+    var code = text.charCodeAt(i);
+    if (escaped) { result += c; escaped = false; continue; }
+    if (c === '\\') { result += c; escaped = true; continue; }
+    if (c === '"') { inString = !inString; result += c; continue; }
+    if (inString && code < 0x20) {
+      if (c === '\t')      { result += '\\t'; }
+      else if (c === '\n') { result += '\\n'; }
+      else if (c === '\r') { result += '\\r'; }
+      else { result += '\\u' + ('000' + code.toString(16)).slice(-4); }
+      continue;
+    }
+    result += c;
+  }
+  return result.replace(/,(\s*[}\]])/g, '$1');
+}
+
+function extractOutermostJson_(text) {
+  var start = text.indexOf('{');
+  if (start === -1) return null;
+  var depth = 0;
+  var inStr = false;
+  var esc = false;
+  for (var i = start; i < text.length; i++) {
+    var c = text[i];
+    if (esc) { esc = false; continue; }
+    if (c === '\\' && inStr) { esc = true; continue; }
+    if (c === '"') { inStr = !inStr; continue; }
+    if (!inStr) {
+      if (c === '{') depth++;
+      else if (c === '}') { depth--; if (depth === 0) return text.slice(start, i + 1); }
+    }
+  }
+  return null;
 }
 
 // ─── Grok API ─────────────────────────────────────────────────

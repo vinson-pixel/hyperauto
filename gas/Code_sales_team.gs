@@ -29,20 +29,29 @@
 
 // ─── 案件管理スプシ 列定数 (S-01用) ─────────────────────────
 const COL_S = {
-  DATE:      1,  // A: 記録日時
-  EMAIL_ID:  2,  // B: メールID（重複防止）
-  SUBJECT:   3,  // C: 件名
-  FROM:      4,  // D: 送信元
-  CATEGORY:  5,  // E: 分類（案件/返信必要/不要）
-  PRIORITY:  6,  // F: 優先度
-  CUSTOMER:  7,  // G: 顧客名
-  LOCATION:  8,  // H: 現場住所
-  WORK_TYPE: 9,  // I: 工事種別
-  AMOUNT:    10, // J: 推定金額
-  STATUS:    11, // K: ステータス
-  REGION:    12, // L: 地域
-  URGENCY:   13, // M: 緊急度
-  NOTES:     14, // N: 備考
+  COMPANY:      1,  // A: 会社名
+  SITE:         2,  // B: 現場名
+  WORK_TYPE:    3,  // C: 施工内容
+  WORK_DATE:    4,  // D: 施工日
+  COMPLETE_DATE:5,  // E: 完了日
+  AI_DATE:      6,  // F: AIから転送日
+  STAFF:        7,  // G: 担当者
+  SCHEDULE:     8,  // H: 日程連絡
+  CALENDAR:     9,  // I: カレンダー入力
+  REPORT:       10, // J: 完了報告
+  STATUS:       11, // K: ステータス
+  AMOUNT:       12, // L: 金額
+  NOTES:        13, // M: 備考（メールID埋め込み・重複防止用）
+  GROUP:        14, // N: グループ
+  HELPER:       15, // O: 応援職人
+  HELPER_COST:  16, // P: 応援費
+  MATERIAL:     17, // Q: 材料費
+  EXPENSE:      18, // R: 経費
+  HELPER_STAFF: 19, // S: 応援社員
+  WORK_CLASS:   20, // T: 作業区分
+  START_TIME:   21, // U: 開始時間
+  END_TIME:     22, // V: 終了時間
+  REPORT_URL:   23, // W: 日報URL
 };
 
 // ─── CRMスプシ 列定数 (S-03用) ───────────────────────────────
@@ -135,8 +144,8 @@ urgency: 「緊急」「通常」「余裕あり」のいずれか
 {
   "category": "案件"|"返信必要"|"不要",
   "priority": "high"|"medium"|"low",
-  "customer": "顧客名または会社名（不明はnull）",
-  "location": "現場住所または地域（不明はnull）",
+  "customer": "依頼元の会社名（例：アースファスト、ウエルシア薬局株式会社。不明はnull）",
+  "location": "工事現場となる店舗・施設の名前（住所や地域名ではなく店舗名。例：ウエルシア熱田5番町店、キクチメガネ知立店。不明はnull）",
   "workType": "工事種別（不明はnull）",
   "estAmount": 数値またはnull,
   "region": "都道府県名（不明は不明）",
@@ -221,57 +230,27 @@ function s01_crmWriter(emailData, result) {
   // 案件管理スプシ（メインシート）
   const sheet = getSheet('SHEET_ID', '案件一覧');
   if (sheet) {
-    // 重複チェック（EMAIL_ID列でルックアップ）
+    // 重複チェック（備考列にメールIDが埋め込まれているか確認）
     const lastRow = sheet.getLastRow();
     if (lastRow > 1) {
-      const ids = sheet.getRange(2, COL_S.EMAIL_ID, lastRow - 1).getValues().flat();
-      if (ids.includes(emailData.id)) {
+      const notes = sheet.getRange(2, COL_S.NOTES, lastRow - 1).getValues().flat();
+      if (notes.some(function(n) { return String(n).includes('[ID:' + emailData.id + ']'); })) {
         agentLog('S-01-④', 'SKIP', 'メールID重複: ' + emailData.id);
         return false;
       }
     }
 
-    const row = new Array(14).fill('');
-    row[COL_S.DATE      - 1] = nowStr();
-    row[COL_S.EMAIL_ID  - 1] = emailData.id;
-    row[COL_S.SUBJECT   - 1] = emailData.subject;
-    row[COL_S.FROM      - 1] = emailData.from;
-    row[COL_S.CATEGORY  - 1] = result.category  || '';
-    row[COL_S.PRIORITY  - 1] = result.priority  || '';
-    row[COL_S.CUSTOMER  - 1] = result.customer  || '';
-    row[COL_S.LOCATION  - 1] = result.location  || '';
+    const row = new Array(23).fill('');
+    row[COL_S.COMPANY   - 1] = result.customer  || '';
+    row[COL_S.SITE      - 1] = result.location  || result.customer || '';
     row[COL_S.WORK_TYPE - 1] = result.workType  || '';
-    row[COL_S.AMOUNT    - 1] = result.estAmount || '';
+    row[COL_S.AI_DATE   - 1] = nowStr();
     row[COL_S.STATUS    - 1] = '新規';
-    row[COL_S.REGION    - 1] = result.region    || '不明';
-    row[COL_S.URGENCY   - 1] = result.urgency   || '通常';
-    row[COL_S.NOTES     - 1] = result.notes     || '';
+    row[COL_S.AMOUNT    - 1] = result.estAmount || '';
+    row[COL_S.NOTES     - 1] = '[ID:' + emailData.id + '] ' + (result.notes || '');
 
     appendRow(sheet, row);
     agentLog('S-01-④', 'OK', '案件一覧に記録完了');
-  }
-
-  // 案件のみ既存スプシ（一覧シート）にも転写
-  if (result.category === '案件') {
-    const existingSheet = getSheet('EXISTING_SHEET_ID', '一覧');
-    if (existingSheet) {
-      const exRow = new Array(13).fill('');
-      exRow[0]  = result.customer  || '';   // A: 元受け会社
-      exRow[1]  = result.location  || '';   // B: 現場名
-      exRow[2]  = result.workType  || '';   // C: 施工内容
-      exRow[3]  = '';                       // D: 施工日（未定）
-      exRow[4]  = '';                       // E: 完了日（未定）
-      exRow[5]  = nowStr();                 // F: AI記録日
-      exRow[6]  = '';                       // G: 担当者
-      exRow[7]  = '';                       // H: 日程連絡
-      exRow[8]  = '';                       // I: カレンダー入力
-      exRow[9]  = '';                       // J: 完了報告
-      exRow[10] = '新規';                   // K: ステータス
-      exRow[11] = result.estAmount || '';   // L: 金額
-      exRow[12] = result.notes     || '';   // M: 備考
-      appendRow(existingSheet, exRow);
-      agentLog('S-01-④', 'OK', '既存スプシ（一覧）に転写完了');
-    }
   }
 
   return true;
@@ -340,7 +319,10 @@ function runEmailIntakeTeam() {
       const msg = thread.getMessages()[0];
       const msgId = msg.getId();
       const subject = msg.getSubject();
-      const normSub = subject.replace(/^(Re:|RE:|Fw:|FW:|転送:|【転送】)\s*/gi, '').trim().toLowerCase();
+      const normSub = subject
+        .replace(/^(Re:|RE:|Fw:|FW:|転送:|【転送】)\s*/gi, '')
+        .replace(/[（(]再送[）)]/gi, '')
+        .trim().toLowerCase();
 
       // 件名重複チェック（転送・RE:などの重複排除）
       if (processedSubjects.includes(normSub)) {
@@ -354,6 +336,7 @@ function runEmailIntakeTeam() {
         id:      msgId,
         subject: subject,
         from:    msg.getFrom(),
+        cc:      msg.getCc(),
         body:    msg.getPlainBody().substring(0, 6000),
         date:    msg.getDate().toString(),
       };
@@ -362,10 +345,9 @@ function runEmailIntakeTeam() {
       const result = s01_classifier(emailData);
 
       if (result.category === '不要') {
-        // 不要メールは自動アーカイブ
-        thread.moveToArchive();
-        thread.addLabel(label);
-        agentLog('S-01', 'SKIP', '自動アーカイブ: ' + subject);
+        // LINEに通知して削除/配信停止/無視をユーザーが選択
+        s01_junkyNotifier(emailData, thread.getId());
+        agentLog('S-01', 'SKIP', '返信不要→LINE通知: ' + subject);
         skipped++;
 
       } else {
@@ -374,6 +356,11 @@ function runEmailIntakeTeam() {
 
         // ④ CRM記録（スプシ）
         s01_crmWriter(emailData, result);
+
+        // ⑤ アースファスト案件の場合Supabaseに登録
+        if (result.category === '案件' && s01_isArsfastOrder(emailData)) {
+          s01_arsfastWriter(emailData, thread.getId());
+        }
 
         // Gmail下書き作成
         let draftCreated = false;
@@ -389,13 +376,13 @@ function runEmailIntakeTeam() {
           agentLog('S-01', 'WARN', '下書き作成エラー: ' + draftErr);
         }
 
-        // ⑤ LINE通知
+        // ⑥ LINE通知
         s01_notifier(result, msgId, draftCreated);
 
-        // S-02 ヒアリングチームに引き渡し（見積依頼の場合）
-        if (result.category === '案件') {
-          runHearingTeam(emailData, result);
-        }
+        // S-02 ヒアリングチーム: 作戦検討中のため一時停止
+        // if (result.category === '案件') {
+        //   runHearingTeam(emailData, result);
+        // }
 
         processed++;
       }
@@ -415,6 +402,345 @@ function runEmailIntakeTeam() {
   agentLog('S-01', 'END', '=== EmailIntakeTeam 完了 | 処理: ' + processed + '件 / スキップ: ' + skipped + '件 ===');
 }
 
+
+/**
+ * s01_isArsfastOrder — アースファスト案件かどうか判定
+ * ダイナム・すき家は別フォーマットのため除外。
+ */
+function s01_isArsfastOrder(emailData) {
+  // 自社アドレスからのメール（送信済み等）は除外
+  // 社長Gmailからの転送は除外しない（転送メールとして別途処理）
+  if (emailData.from && emailData.from.includes('marukendenkou.com')) return false;
+
+  const combined = [emailData.body, emailData.subject, emailData.from]
+    .join(' ').toLowerCase();
+  const isArsfast = combined.includes('アースファスト') ||
+                    combined.includes('arsfast') ||
+                    combined.includes('earthfast') ||
+                    combined.includes('earth fast');
+  const isDynam   = combined.includes('ダイナム') || combined.includes('dynam');
+  const isSukiya  = combined.includes('すき家')   || combined.includes('sukiya');
+  return isArsfast && !isDynam && !isSukiya;
+}
+
+/**
+ * extractEmail — "名前 <email>" や "<email>" からメールアドレスだけを抽出
+ */
+function extractEmail(str) {
+  if (!str) return str;
+  var match = str.match(/<([^>]+@[^>]+)>/);
+  if (match) return match[1].trim();
+  return str.trim();
+}
+
+/**
+ * extractForwardedSender — 転送メール本文から元の送信者メールアドレスを抽出
+ * 自社・社長アドレスは除外し、arsfast.comを優先的に探す
+ */
+function extractForwardedSender(body) {
+  const EXCLUDE = ['mky7584gd', 'marukendenkou'];
+  const patterns = [
+    /^From:\s*.+?<([^>]+@[^>]+)>/gmi,
+    /^差出人:\s*.+?<([^>]+@[^>]+)>/gmi,
+    /^From:\s*([^\s<\n]+@[^\s>\n,]+)/gmi,
+    /^差出人:\s*([^\s<\n]+@[^\s>\n,]+)/gmi,
+  ];
+  for (var i = 0; i < patterns.length; i++) {
+    var match;
+    var re = patterns[i];
+    while ((match = re.exec(body)) !== null) {
+      var email = match[1].trim();
+      if (!EXCLUDE.some(function(ex) { return email.includes(ex); })) {
+        return email;
+      }
+    }
+  }
+  // フォールバック: 本文中の arsfast.com アドレスを探す
+  var arsfastMatch = body.match(/([a-zA-Z0-9._+\-]+@arsfast\.com)/);
+  if (arsfastMatch) return arsfastMatch[1];
+  return null;
+}
+
+/**
+ * s01_arsfastWriter — アースファスト案件の情報をSupabaseに登録
+ * Claudeでメール本文から構造化データを抽出してwork_reportsテーブルに挿入。
+ * reply_to_email・in_reply_to を保存することで報告書送付時に元メールへ返信できる。
+ */
+function s01_arsfastWriter(emailData, threadId) {
+  agentLog('S-01-ARSFAST', 'START', 'Supabase登録: ' + emailData.subject);
+
+  // 重複チェック（同じGmailスレッドIDがすでに登録されていればスキップ）
+  if (threadId) {
+    try {
+      var dupCheck = UrlFetchApp.fetch(
+        SUPABASE_URL + '/rest/v1/work_reports?in_reply_to=eq.' + encodeURIComponent(threadId) + '&client_format=eq.arsfast&select=id&limit=1',
+        { headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON }, muteHttpExceptions: true }
+      );
+      if (JSON.parse(dupCheck.getContentText()).length > 0) {
+        agentLog('S-01-ARSFAST', 'SKIP', 'スレッドID重複: ' + threadId);
+        return;
+      }
+    } catch(e) {}
+  }
+
+  // 社長Gmailからの転送メールの場合、本文から元の送信者を抽出
+  var replyTo = extractEmail(emailData.from);
+  var replyThreadId = threadId;
+  if (emailData.from && emailData.from.includes('mky7584gd@gmail.com')) {
+    var originalSender = extractForwardedSender(emailData.body);
+    if (originalSender) {
+      replyTo = extractEmail(originalSender);
+      agentLog('S-01-ARSFAST', 'INFO', '転送メール検出。返信先: ' + replyTo);
+    } else {
+      agentLog('S-01-ARSFAST', 'WARN', '転送元送信者の抽出失敗。このレコードはスキップ');
+      return; // 返信先が不明なレコードは登録しない
+    }
+    replyThreadId = null;
+  }
+
+  const extracted = callClaudeJSON(
+    'メール本文から案件情報を正確に抽出するAIです。',
+    `以下のメール本文からアースファストの案件情報を抽出してください。
+件名: ${emailData.subject}
+送信元: ${emailData.from}
+本文:
+${emailData.body.substring(0, 4000)}
+
+以下のJSON形式のみで返答（不明な場合はnull）:
+{
+  "site_no": "店舗No（数字のみ）",
+  "site_name": "店舗名・お客様名（住所ではなく必ず店舗・施設の名前。例：ダイナム岐阜各務原店）",
+  "site_address": "住所（site_nameに住所を入れないこと）",
+  "site_tel": "電話番号",
+  "requester": "依頼者名・担当者名",
+  "work_type": "依頼内容の種別。「工事」「修理」「見積調査」「点検」のいずれかに分類",
+  "request_detail": "依頼内容の詳細・具体的な作業内容"
+}`,
+    'claude-haiku-4-5'
+  );
+
+  if (!extracted) {
+    agentLog('S-01-ARSFAST', 'ERROR', '情報抽出失敗');
+    return;
+  }
+
+  try {
+    const res = UrlFetchApp.fetch(SUPABASE_URL + '/rest/v1/work_reports', {
+      method: 'post',
+      headers: {
+        'apikey':        SUPABASE_ANON,
+        'Authorization': 'Bearer ' + SUPABASE_ANON,
+        'Content-Type':  'application/json',
+        'Prefer':        'return=minimal',
+      },
+      payload: JSON.stringify({
+        site_no:          extracted.site_no        || null,
+        site_name:        extracted.site_name       || emailData.subject,
+        site_address:     extracted.site_address    || null,
+        site_tel:         extracted.site_tel        || null,
+        requester:        extracted.requester       || null,
+        work_type:        extracted.work_type       || null,
+        request_detail:   extracted.request_detail  || null,
+        work_date:        Utilities.formatDate(emailData.date ? new Date(emailData.date) : new Date(), 'Asia/Tokyo', 'yyyy-MM-dd'),
+        requested_at:     (emailData.date ? new Date(emailData.date) : new Date()).toISOString(),
+        reply_to_email:   replyTo,
+        reply_cc_emails:  emailData.cc ? emailData.cc.split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s; }) : [],
+        in_reply_to:      replyThreadId,
+        status:           'pending',
+        client_format:    'arsfast',
+      }),
+      muteHttpExceptions: true,
+    });
+
+    const code = res.getResponseCode();
+    if (code >= 400) {
+      agentLog('S-01-ARSFAST', 'ERROR', 'Supabase登録失敗(' + code + '): ' + res.getContentText().substring(0, 200));
+    } else {
+      agentLog('S-01-ARSFAST', 'OK', 'Supabase登録完了: ' + (extracted.site_name || emailData.subject));
+      // ダイナム案件は手書き報告書のためAFフラグを付けない
+      if (emailData.body && emailData.body.indexOf('ダイナム') !== -1) {
+        agentLog('S-01-ARSFAST', 'INFO', 'ダイナム案件のためAFフラグをスキップ: ' + (extracted.site_name || emailData.subject));
+      } else {
+        var ccList = emailData.cc
+          ? emailData.cc.split(',').map(function(s){ return extractEmail(s.trim()); }).filter(function(s){ return s && s.indexOf('@') !== -1; })
+          : [];
+        s01_arsfastSetGroup_(emailData.id, replyTo, ccList, replyThreadId, extracted.request_detail || '');
+      }
+    }
+  } catch(e) {
+    agentLog('S-01-ARSFAST', 'ERROR', e.toString());
+  }
+}
+
+// 一覧シートの備考列で emailId を探し、AF情報（N〜R列）を書き込む
+function s01_arsfastSetGroup_(msgId, replyTo, ccArr, threadId, requestDetail) {
+  if (!msgId) return;
+  try {
+    var ss    = SpreadsheetApp.openById(ARSFAST_SS_ID);
+    var sheet = getSheetByGid_(ss, ARSFAST_SHEET_GID);
+    if (!sheet) return;
+    var lastRow = sheet.getLastRow();
+    if (lastRow <= 1) return;
+    var notesCol = sheet.getRange(2, COL_S.NOTES, lastRow - 1).getValues();
+    for (var i = 0; i < notesCol.length; i++) {
+      var cur = String(notesCol[i][0]);
+      if (cur.indexOf('[ID:' + msgId + ']') !== -1) {
+        var rowNum = i + 2;
+        sheet.getRange(rowNum, 14).setValue('○');                              // N: AFフラグ
+        sheet.getRange(rowNum, 15).setValue(replyTo || '');                    // O: 返信先メール
+        sheet.getRange(rowNum, 16).setValue(ccArr ? ccArr.join(',') : '');     // P: CC
+        sheet.getRange(rowNum, 17).setValue(threadId || '');                   // Q: スレッドID
+        sheet.getRange(rowNum, 18).setValue(requestDetail || '');              // R: 依頼内容詳細
+        // M列から[AF*]タグを除去（[ID:...]は残す）
+        var cleaned = cur.replace(/\s*\[AF[^\]]*\]/g, '').trim();
+        sheet.getRange(rowNum, COL_S.NOTES).setValue(cleaned);
+        agentLog('S-01-ARSFAST', 'INFO', '一覧シート行' + rowNum + 'にAFデータをセット: TO=' + replyTo);
+        return;
+      }
+    }
+    agentLog('S-01-ARSFAST', 'WARN', '該当シート行なし: [ID:' + msgId + ']');
+  } catch(e) {
+    agentLog('S-01-ARSFAST', 'WARN', 'AFデータセット失敗: ' + e);
+  }
+}
+
+/**
+ * s01_junkyNotifier — 返信不要メールをLINEに通知してユーザーが対応を選択
+ * 削除 / 配信停止（アーカイブ） / 無視 のボタンを表示する。
+ */
+function s01_junkyNotifier(emailData, threadId) {
+  agentLog('S-01-JUNK', 'START', '返信不要通知: ' + emailData.subject);
+
+  const lines = [
+    '🗑 【返信不要メール】',
+    '件名: ' + emailData.subject,
+    '送信元: ' + emailData.from,
+    '─────────────────',
+    '対応を選択してください',
+  ].join('\n');
+
+  sendLineToManager(lines, [
+    lineQR('🗑 削除する',  'action=delete_mail&threadId='      + encodeURIComponent(threadId)),
+    lineQR('🚫 配信停止',  'action=unsubscribe_mail&threadId=' + encodeURIComponent(threadId)),
+    lineQR('👁 無視',      'action=ignore_mail&threadId='      + encodeURIComponent(threadId)),
+  ]);
+
+  agentLog('S-01-JUNK', 'OK', 'LINE通知完了');
+}
+
+/**
+ * runEmailBackfill — 過去メールの一括処理（手動実行用）
+ * トリガーが止まっていた期間のメールを遡って処理する。
+ * 「AI処理済み」ラベルのないメールをすべて対象にする。
+ * GASエディタから1回だけ手動実行すること。
+ */
+function runEmailBackfill() {
+  agentLog('S-01-BACKFILL', 'START', '=== 過去メール一括処理開始 ===');
+
+  const label = getOrCreateLabel('AI処理済み');
+
+  // 2026-05-09以降・ラベルなし・受信トレイのメールをすべて取得
+  const threads = GmailApp.search('in:inbox -label:AI処理済み after:2026/05/09');
+  agentLog('S-01-BACKFILL', 'INFO', '対象スレッド数: ' + threads.length);
+
+  if (threads.length === 0) {
+    agentLog('S-01-BACKFILL', 'END', '対象なし');
+    return;
+  }
+
+  let processed = 0;
+  let skipped   = 0;
+
+  threads.forEach(function(thread) {
+    try {
+      const msg     = thread.getMessages()[0];
+      const msgId   = msg.getId();
+      const subject = msg.getSubject();
+
+      const emailData = {
+        id:      msgId,
+        subject: subject,
+        from:    msg.getFrom(),
+        cc:      msg.getCc(),
+        body:    msg.getPlainBody().substring(0, 6000),
+        date:    msg.getDate().toString(),
+      };
+
+      // 分類（Grok）
+      const result = s01_classifier(emailData);
+
+      if (result.category === '不要') {
+        thread.moveToArchive();
+        thread.addLabel(label);
+        skipped++;
+        return;
+      }
+
+      // スプシ記録のみ（返信文生成・LINE通知はスキップ）
+      s01_crmWriter(emailData, result);
+
+      // アースファスト案件はSupabaseにも登録
+      if (result.category === '案件' && s01_isArsfastOrder(emailData)) {
+        s01_arsfastWriter(emailData, thread.getId());
+      }
+
+      thread.addLabel(label);
+      processed++;
+
+      // GASの6分制限対策: 処理件数が多い場合は途中で打ち切る
+      if (processed + skipped >= 50) {
+        agentLog('S-01-BACKFILL', 'WARN', '50件上限に達したため打ち切り。再度実行してください。');
+        return;
+      }
+
+    } catch(e) {
+      agentLog('S-01-BACKFILL', 'ERROR', e.toString());
+    }
+  });
+
+  agentLog('S-01-BACKFILL', 'END', 'バックフィル完了 | 処理: ' + processed + '件 / スキップ: ' + skipped + '件');
+}
+
+/**
+ * runArsfastResync — ラベル済みを含む過去メールからアースファスト案件をSupabaseに再登録
+ * runEmailBackfillで「AI処理済み」ラベルが付いたメールも対象にする1回限りの修復関数。
+ */
+function runArsfastResync() {
+  agentLog('S-01-ARSFAST-RESYNC', 'START', '=== アースファスト再同期開始 ===');
+
+  const threads = GmailApp.search('after:2026/05/09');
+  agentLog('S-01-ARSFAST-RESYNC', 'INFO', '対象スレッド数: ' + threads.length);
+
+  let registered = 0;
+  let skipped = 0;
+
+  threads.forEach(function(thread) {
+    try {
+      const msg = thread.getMessages()[0];
+      const emailData = {
+        id:      msg.getId(),
+        subject: msg.getSubject(),
+        from:    msg.getFrom(),
+        cc:      msg.getCc(),
+        body:    msg.getPlainBody().substring(0, 6000),
+        date:    msg.getDate().toString(),
+      };
+
+      if (!s01_isArsfastOrder(emailData)) {
+        skipped++;
+        return;
+      }
+
+      s01_arsfastWriter(emailData, thread.getId());
+      registered++;
+
+    } catch(e) {
+      agentLog('S-01-ARSFAST-RESYNC', 'ERROR', e.toString());
+    }
+  });
+
+  agentLog('S-01-ARSFAST-RESYNC', 'END', 'アースファスト再同期完了 | 登録: ' + registered + '件 / スキップ: ' + skipped + '件');
+}
 
 // ============================================================
 // S-02: HearingTeam — ヒアリング自動返信チーム
@@ -1031,12 +1357,7 @@ function runFollowUpTeam() {
     }
   });
 
-  // LINE通知（フォローアップ実行サマリ）
-  if (successCount > 0) {
-    sendLineToManager(
-      `📋【フォローアップバッチ完了】\n対象: ${targets.length}件\n下書き作成: ${successCount}件\nGmailをご確認ください`
-    );
-  }
+  agentLog('S-04', 'INFO', 'フォローアップ下書き作成: ' + successCount + '件');
 
   agentLog('S-04', 'END', '=== FollowUpTeam 完了 | 下書き作成: ' + successCount + '/' + targets.length + '件 ===');
 }
@@ -1361,7 +1682,7 @@ function generateTalkScriptAndNotify(companyName, industry, size) {
   const result = runTalkScriptTeam(companyName, industry, size);
 
   if (!result) {
-    sendLineToManager('❌ スクリプト生成失敗: 会社名を確認してください');
+    agentLog('S-05', 'ERROR', 'スクリプト生成失敗: ' + companyName);
     return;
   }
 
@@ -1378,15 +1699,11 @@ function generateTalkScriptAndNotify(companyName, industry, size) {
     result.script.substring(0, 300) + '…',
   ].join('\n');
 
-  sendLineToManager(summaryLines, [
-    lineQR('📋 全文をログで確認', 'action=view_script&company=' + encodeURIComponent(companyName)),
-  ]);
-
   // 全文はLoggerに出力
   Logger.log('=== ' + companyName + ' トークスクリプト全文 ===\n' + result.script);
   Logger.log('=== 断り文句対策 ===\n' + result.objections);
 
-  agentLog('S-05', 'END', 'LINE通知完了: ' + companyName);
+  agentLog('S-05', 'END', 'スクリプト生成完了: ' + companyName);
 }
 
 
@@ -1748,13 +2065,7 @@ function runEigyoActionProcessor() {
     }
   });
 
-  if (successCount > 0) {
-    sendLineToManager(
-      '✅【eigyo-auto 自動処理完了】\n' +
-      '成功: ' + successCount + '件 / 失敗: ' + failCount + '件\n' +
-      '（GmailとGoogleカレンダーをご確認ください）'
-    );
-  }
+  agentLog('S-06', 'INFO', 'eigyo-auto処理完了 | 成功: ' + successCount + ' / 失敗: ' + failCount);
 
   agentLog('S-06', 'END', '=== EigyoActionProcessor 完了 | 成功: ' + successCount + ' / 失敗: ' + failCount + ' ===');
 }
@@ -1802,19 +2113,12 @@ function runEigyoPipeline() {
       const discovered = data.data?.discovered ?? 0;
       const processed  = data.data?.processed  ?? 0;
       agentLog('S-07', 'OK', '発掘: ' + discovered + '社 / メール生成: ' + processed + '社');
-      sendLineToManager(
-        '🌅【eigyo-auto 朝イチ起動完了】\n' +
-        '新規発掘: ' + discovered + '社\n' +
-        'メール生成: ' + processed + '社\n' +
-        '（Gmail下書きを確認してください）'
-      );
+      agentLog('S-07', 'OK', '朝イチ起動完了 | 発掘: ' + discovered + '社 / メール生成: ' + processed + '社');
     } else {
       agentLog('S-07', 'ERROR', 'HTTP ' + code + ': ' + body.slice(0, 300));
-      sendLineToManager('⚠️【eigyo-auto パイプラインエラー】HTTP ' + code);
     }
   } catch (e) {
     agentLog('S-07', 'ERROR', e.toString());
-    sendLineToManager('⚠️【eigyo-auto パイプラインエラー】' + e.toString().slice(0, 100));
   }
 
   agentLog('S-07', 'END', '=== EigyoPipeline 完了 ===');

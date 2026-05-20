@@ -8,22 +8,9 @@
 
 ## 🔴 今週中（期限: 2026-05-29 JECA FAIR 展示会当日）
 
-- [ ] **J-01-TEST** JECA名刺登録フォームの実機テスト
-  - priority: urgent
-  - project: hyperauto
-  - detail: |
-      スマホでフォームURLを開いて名刺を撮影 → CRMシートに登録されるか確認 → LINE通知届くか確認
-      フォームURL: https://script.google.com/macros/s/AKfycbzIQOfWwv1Ty1FiBjIYicw2rsF8cK5ynyHzIgPCFivPulBloPCx7SVm2ghieqS-y-iHtA/exec
-      CRMシート: https://docs.google.com/spreadsheets/d/1I1owPZ8Bna5_SrVSXsYnAGyYRVImpqcudC4UikXR8kE/edit
-      GASエディタ: https://script.google.com/d/1w8MRAoaU5d5aDfkP8ypGOBGl--tpXWqes4kD3ErtnKZulFN1QrglvQkE/edit
-      確認項目: CLAUDE_API_KEY、JECA_SHEET_ID がスクリプトプロパティに設定されているか
-
-- [ ] **JECA-FLOW** 展示会当日フローの最終確認
-  - priority: urgent
-  - project: hyperauto
-  - detail: |
-      名刺持ち帰り → 翌日シートに手入力 → runThankYouBatch('draft') → Gmail下書き確認・送信 → runFollowUpCampaign()
-      展示会: 2026-05-29 東京ビッグサイト
+- [x] **J-01-TEST** JECA名刺登録フォームの実機テスト - 2026-05-17完了
+- [x] **JECA-FLOW** 展示会当日フローの最終確認 - 2026-05-17完了
+      バッチ登録・カテゴリ分類・御礼メール下書き生成まで動作確認済み
 
 ---
 
@@ -39,22 +26,9 @@
       完了後の出力先: /Users/lione/hyperauto/data/hiroshima_denki_emails.csv
       実行: cd /Users/lione/Desktop && python scrape_hiroshima_denki.py
 
-- [ ] **S-01-UNIVERSAL** S-01 メール判定エージェント全社汎用化
-  - priority: high
-  - project: hyperauto
-  - file: gas/Code_agent004.gs
-  - detail: |
-      「東京案件」フィルタを削除 → 地域/案件種別/緊急度の3軸判定に変更
-      全メール対象（愛知・東京問わず）
-      GAS: https://script.google.com/d/1_A0og40v-uNBy3h8lOnZPkJgKeBm7b8JkngD82z7j5nVdcfmy06a2j46/edit
+- [x] **S-01-UNIVERSAL** S-01 メール判定エージェント全社汎用化 - コード確認済み・実装済み（2026-05-17）
 
-- [ ] **TASKS-FEATURE** タスク管理機能の実装
-  - priority: medium
-  - project: eigyo-auto または genba-platform（要確認）
-  - detail: |
-      /Users/lione/Desktop/タスク管理_引き継ぎ.md に完全なコードあり
-      Supabaseにtasksテーブル作成 → API実装 → ページ追加 → ダッシュボードにリンク追加
-      どのプロジェクトに入れるか決定が必要
+- [x] **TASKS-FEATURE** タスク管理機能の実装 - 社長の総合プラットフォームに組み込み済み（2026-05-19）
 
 ---
 

@@ -17,7 +17,6 @@
       --sub:    #6b7280;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
     body {
       font-family: -apple-system, 'Hiragino Sans', sans-serif;
       background: var(--gray);
@@ -25,8 +24,6 @@
       font-size: 17px;
       line-height: 1.5;
     }
-
-    /* ─── ヘッダー ──────────────────────────── */
     header {
       background: var(--blue);
       color: #fff;
@@ -38,11 +35,9 @@
     header .title { font-size: 20px; font-weight: 700; }
     header .sub   { font-size: 13px; opacity: 0.75; margin-top: 2px; }
 
-    /* ─── メインコンテナ ──────────────────── */
     .screen { display: none; padding: 20px 16px 40px; max-width: 480px; margin: 0 auto; }
     .screen.active { display: block; }
 
-    /* ─── カード ──────────────────────────── */
     .card {
       background: #fff;
       border-radius: 16px;
@@ -57,197 +52,212 @@
       margin-bottom: 14px;
     }
 
-    /* ─── 撮影ボタン（大） ─────────────────── */
-    .shoot-btn {
+    /* カテゴリボタン */
+    .category-btn {
       width: 100%;
-      height: 220px;
+      padding: 18px 16px;
+      border: 2.5px solid var(--border);
+      border-radius: 16px;
+      background: #fff;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .category-btn:active { opacity: 0.8; }
+    .category-icon  { font-size: 32px; flex-shrink: 0; }
+    .category-label { font-size: 17px; font-weight: 700; }
+    .category-sub   { font-size: 13px; color: var(--sub); margin-top: 2px; }
+    .category-none  { border-style: dashed; }
+
+    .selected-badge {
+      background: var(--blue);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 20px;
+      padding: 5px 14px;
+      display: inline-block;
+      margin-bottom: 14px;
+    }
+
+    /* 写真追加エリア */
+    .add-btn-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .add-btn {
+      flex: 1;
+      padding: 18px 8px;
       background: var(--blue);
       color: #fff;
       border: none;
-      border-radius: 20px;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 12px;
-      cursor: pointer;
-      font-size: 18px;
-      font-weight: 700;
-      box-shadow: 0 4px 16px rgba(26,35,126,0.35);
-      transition: opacity 0.15s;
-      margin-bottom: 16px;
+      gap: 6px;
     }
-    .shoot-btn:active { opacity: 0.85; }
-    .shoot-icon { font-size: 56px; }
+    .add-btn:active { opacity: 0.85; }
+    .add-btn .btn-icon { font-size: 28px; }
 
-    /* ─── 撮影済みプレビュー ───────────────── */
-    #preview-wrap {
+    /* サムネイルキュー */
+    .queue-wrap {
       display: none;
       margin-bottom: 16px;
+    }
+    .queue-label {
+      font-size: 14px;
+      color: var(--sub);
+      margin-bottom: 8px;
+    }
+    .queue-label strong { color: var(--blue); font-size: 16px; }
+    .thumb-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .thumb-item {
       position: relative;
+      width: 80px;
+      height: 80px;
     }
-    #preview-img {
-      width: 100%;
-      border-radius: 12px;
-      display: block;
-      max-height: 280px;
+    .thumb-item img {
+      width: 80px;
+      height: 80px;
       object-fit: cover;
+      border-radius: 10px;
+      border: 2px solid var(--border);
     }
-    .retake-btn {
+    .thumb-del {
       position: absolute;
-      top: 10px;
-      right: 10px;
-      background: rgba(0,0,0,0.55);
+      top: -6px;
+      right: -6px;
+      width: 22px;
+      height: 22px;
+      background: #e53935;
       color: #fff;
       border: none;
-      border-radius: 20px;
-      padding: 7px 14px;
-      font-size: 14px;
+      border-radius: 50%;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+    .thumb-status {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.55);
+      color: #fff;
+      font-size: 10px;
+      text-align: center;
+      border-radius: 0 0 8px 8px;
+      padding: 2px 0;
+    }
+
+    /* 登録ボタン */
+    .submit-all-btn {
+      width: 100%;
+      padding: 20px;
+      background: #1b5e20;
+      color: #fff;
+      border: none;
+      border-radius: 16px;
+      font-size: 19px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 12px;
+    }
+    .submit-all-btn:disabled { background: #aaa; cursor: not-allowed; }
+    .submit-all-btn:active { opacity: 0.85; }
+
+    .back-cat-btn {
+      width: 100%;
+      padding: 14px;
+      background: transparent;
+      color: var(--sub);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      font-size: 15px;
       font-weight: 600;
       cursor: pointer;
     }
 
-    /* hidden file input */
-    #fileInput { display: none; }
-
-    /* ─── 解析ボタン ───────────────────────── */
-    .analyze-btn {
-      width: 100%;
-      padding: 18px;
-      background: var(--blue2);
-      color: #fff;
-      border: none;
-      border-radius: 14px;
+    /* プログレス */
+    .progress-wrap {
+      text-align: center;
+      padding: 30px 0 20px;
+    }
+    .progress-label {
       font-size: 18px;
       font-weight: 700;
-      cursor: pointer;
-      transition: opacity 0.15s;
-      display: none;
+      color: var(--blue);
+      margin-bottom: 10px;
     }
-    .analyze-btn:active  { opacity: 0.85; }
-    .analyze-btn.visible { display: block; }
-
-    /* ─── ローディング ─────────────────────── */
-    .loading {
-      display: none;
-      text-align: center;
-      padding: 40px 0;
+    .progress-sub { font-size: 14px; color: var(--sub); margin-bottom: 20px; }
+    .progress-bar-outer {
+      background: var(--border);
+      border-radius: 999px;
+      height: 10px;
+      overflow: hidden;
+      margin-bottom: 8px;
     }
-    .loading.show { display: block; }
+    .progress-bar-inner {
+      height: 10px;
+      background: var(--blue);
+      border-radius: 999px;
+      transition: width 0.4s;
+      width: 0%;
+    }
     .spinner {
-      width: 48px; height: 48px;
-      border: 5px solid #e0e4f0;
+      width: 44px; height: 44px;
+      border: 4px solid var(--border);
       border-top-color: var(--blue);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
       margin: 0 auto 16px;
     }
-    .loading-text { font-size: 16px; color: var(--sub); }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ─── 入力フォーム ─────────────────────── */
-    .field { margin-bottom: 16px; }
-    .field label {
-      display: block;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--sub);
-      margin-bottom: 6px;
-    }
-    .field input, .field textarea {
-      width: 100%;
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      padding: 13px 14px;
-      font-size: 17px;
-      font-family: inherit;
-      background: #fafbfc;
-      color: var(--text);
-      transition: border-color 0.2s;
-    }
-    .field input:focus, .field textarea:focus {
-      outline: none;
-      border-color: var(--blue);
-      background: #fff;
-    }
-    .field textarea { min-height: 90px; resize: vertical; }
-
-    /* 抽出済みフィールドの強調 */
-    .field input.filled { background: #eef0fb; border-color: #9fa8da; }
-
-    /* ─── 登録ボタン ───────────────────────── */
-    .submit-btn {
-      width: 100%;
-      padding: 20px;
-      background: var(--blue);
-      color: #fff;
-      border: none;
-      border-radius: 14px;
-      font-size: 19px;
-      font-weight: 700;
-      cursor: pointer;
-      letter-spacing: 0.5px;
-      transition: opacity 0.15s;
-      box-shadow: 0 4px 12px rgba(26,35,126,0.3);
-    }
-    .submit-btn:active   { opacity: 0.85; }
-    .submit-btn:disabled { background: #aaa; box-shadow: none; cursor: not-allowed; }
-
-    /* ─── 結果表示 ─────────────────────────── */
-    .result-card {
+    /* 完了画面 */
+    .done-card {
+      background: #e8f5e9;
+      border: 2px solid #43a047;
       border-radius: 16px;
       padding: 28px 20px;
       text-align: center;
       margin-bottom: 16px;
     }
-    .result-card.success { background: #e8f5e9; border: 2px solid #43a047; }
-    .result-card.error   { background: #ffebee; border: 2px solid #e53935; }
+    .done-icon  { font-size: 56px; margin-bottom: 10px; }
+    .done-count { font-size: 36px; font-weight: 800; color: #1b5e20; margin-bottom: 4px; }
+    .done-label { font-size: 16px; color: var(--sub); margin-bottom: 16px; }
+    .done-detail { font-size: 14px; color: #374151; line-height: 1.8; text-align: left; }
 
-    .rank-circle {
-      width: 80px; height: 80px;
-      border-radius: 50%;
-      line-height: 80px;
-      font-size: 38px;
-      font-weight: 800;
-      color: #fff;
-      margin: 0 auto 16px;
-    }
-    .rank-A { background: var(--red); }
-    .rank-B { background: var(--orange); }
-    .rank-C { background: var(--green); }
-
-    .result-company { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-    .result-name    { font-size: 17px; color: var(--sub); margin-bottom: 12px; }
-    .result-need    { font-size: 15px; color: #374151; margin-bottom: 6px; }
-    .result-score   { font-size: 14px; color: var(--sub); margin-bottom: 16px; }
-    .result-ok      { font-size: 15px; color: #2e7d32; font-weight: 600; }
-
-    .next-btn {
+    .next-cat-btn {
       width: 100%;
-      padding: 18px;
+      padding: 20px;
       background: var(--blue);
       color: #fff;
       border: none;
-      border-radius: 14px;
-      font-size: 17px;
+      border-radius: 16px;
+      font-size: 18px;
       font-weight: 700;
       cursor: pointer;
+      margin-bottom: 12px;
     }
 
-    .back-btn {
-      width: 100%;
-      padding: 15px;
-      background: transparent;
-      color: var(--sub);
-      border: 1.5px solid var(--border);
-      border-radius: 14px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 12px;
-    }
-
-    /* ─── エラー表示 ───────────────────────── */
     .error-msg {
       display: none;
       background: #ffebee;
@@ -259,7 +269,6 @@
     }
     .error-msg.show { display: block; }
 
-    /* ─── カウンター ───────────────────────── */
     .counter {
       text-align: center;
       font-size: 14px;
@@ -276,317 +285,317 @@
   <div class="sub">JECA FAIR 2026 — マルケン電工</div>
 </header>
 
-<!-- 撮影画面 -->
-<div id="screen-shoot" class="screen active">
+<!-- カテゴリ選択画面 -->
+<div id="screen-category" class="screen active">
   <div class="card">
-    <button class="shoot-btn" onclick="openCamera()">
-      <span class="shoot-icon">📷</span>
-      <span>名刺を撮影する</span>
+    <div class="card-title">この名刺の分類は？</div>
+
+    <button class="category-btn" onclick="selectCategory('元請け候補')">
+      <span class="category-icon">🔴</span>
+      <div>
+        <div class="category-label">元請け候補</div>
+        <div class="category-sub">建築会社・設計事務所・ゼネコンなど</div>
+      </div>
     </button>
-    <input type="file" id="fileInput" accept="image/*" capture="environment">
-
-    <div id="preview-wrap">
-      <img id="preview-img" src="" alt="名刺プレビュー">
-      <button class="retake-btn" onclick="retake()">撮り直す</button>
-    </div>
-
-    <button class="analyze-btn" id="analyze-btn" onclick="analyzeImage()">
-      AIで情報を読み取る
+    <button class="category-btn" onclick="selectCategory('下請け候補')">
+      <span class="category-icon">🔵</span>
+      <div>
+        <div class="category-label">下請け候補</div>
+        <div class="category-sub">電気工事会社・一人親方・職人さん</div>
+      </div>
+    </button>
+    <button class="category-btn" onclick="selectCategory('その他')">
+      <span class="category-icon">🟡</span>
+      <div>
+        <div class="category-label">その他・話してみたい</div>
+        <div class="category-sub">サービス・ツール・メーカーなど</div>
+      </div>
+    </button>
+    <button class="category-btn category-none" onclick="selectCategory('なし')">
+      <span class="category-icon">⬜</span>
+      <div>
+        <div class="category-label">なし（記録のみ）</div>
+        <div class="category-sub">メールは送らない</div>
+      </div>
     </button>
   </div>
 
-  <div class="loading" id="loading-analyze">
-    <div class="spinner"></div>
-    <div class="loading-text">名刺を読み取り中...</div>
-  </div>
-
-  <div class="counter" id="counter" style="display:none">
-    本日登録済み: <strong id="count-num">0</strong> 件
+  <div class="counter" id="counter-top" style="display:none">
+    本日登録済み: <strong id="count-top">0</strong> 件
   </div>
 </div>
 
-<!-- 確認・登録画面 -->
-<div id="screen-confirm" class="screen">
-  <div class="error-msg" id="error-msg"></div>
+<!-- 写真追加・キュー画面 -->
+<div id="screen-batch" class="screen">
+  <div id="batch-badge" style="margin-bottom:4px"></div>
 
   <div class="card">
-    <div class="card-title">抽出された情報を確認</div>
+    <div class="add-btn-row">
+      <button class="add-btn" onclick="openCamera()">
+        <span class="btn-icon">📷</span>
+        <span>カメラ</span>
+      </button>
+      <button class="add-btn" onclick="openGallery()">
+        <span class="btn-icon">🖼</span>
+        <span>アルバム<br>（複数可）</span>
+      </button>
+    </div>
+    <input type="file" id="cameraInput"  accept="image/*" capture="environment" style="display:none">
+    <input type="file" id="galleryInput" accept="image/*" multiple style="display:none">
 
-    <div class="field">
-      <label>会社名</label>
-      <input type="text" id="f-company" placeholder="株式会社〇〇">
+    <div class="queue-wrap" id="queue-wrap">
+      <div class="queue-label"><strong id="queue-count">0</strong> 枚 追加済み</div>
+      <div class="thumb-grid" id="thumb-grid"></div>
     </div>
-    <div class="field">
-      <label>氏名</label>
-      <input type="text" id="f-name" placeholder="山田 太郎">
-    </div>
-    <div class="field">
-      <label>役職</label>
-      <input type="text" id="f-title" placeholder="部長">
-    </div>
-    <div class="field">
-      <label>メール</label>
-      <input type="email" id="f-email" inputmode="email" placeholder="yamada@example.com">
-    </div>
-    <div class="field">
-      <label>電話</label>
-      <input type="tel" id="f-phone" inputmode="tel" placeholder="090-0000-0000">
-    </div>
+
+    <div class="error-msg" id="batch-error"></div>
   </div>
 
-  <div class="card">
-    <div class="card-title">会話メモ <span style="font-weight:400;color:var(--sub)">（任意）</span></div>
-    <div class="field" style="margin-bottom:0">
-      <textarea id="f-memo" placeholder="展示会での会話内容・ニーズ・印象など&#10;例: LED改修の相談あり。来月見積もり希望。"></textarea>
-    </div>
-  </div>
-
-  <button class="submit-btn" id="submit-btn" onclick="submitCard()">
-    CRMに登録する
+  <button class="submit-all-btn" id="submit-all-btn" onclick="submitAll()" disabled>
+    全部まとめて登録する
   </button>
-  <button class="back-btn" onclick="backToShoot()">← 撮り直す</button>
+  <button class="back-cat-btn" onclick="backToCategory()">← カテゴリを変える</button>
+</div>
 
-  <div class="loading" id="loading-submit" style="margin-top:16px">
-    <div class="spinner"></div>
-    <div class="loading-text">スコア計算・登録中...</div>
+<!-- 処理中画面 -->
+<div id="screen-progress" class="screen">
+  <div class="card">
+    <div class="progress-wrap">
+      <div class="spinner"></div>
+      <div class="progress-label" id="progress-label">処理中...</div>
+      <div class="progress-sub"  id="progress-sub">しばらくお待ちください</div>
+      <div class="progress-bar-outer">
+        <div class="progress-bar-inner" id="progress-bar"></div>
+      </div>
+    </div>
   </div>
 </div>
 
 <!-- 完了画面 -->
-<div id="screen-result" class="screen">
-  <div class="result-card success" id="result-card">
-    <div class="rank-circle rank-A" id="result-rank">A</div>
-    <div class="result-company" id="result-company"></div>
-    <div class="result-name"    id="result-name"></div>
-    <div class="result-need">主要ニーズ: <span id="result-need"></span></div>
-    <div class="result-score">スコア: <span id="result-score"></span> 点</div>
-    <div class="result-ok" id="result-ok">✅ CRMに登録完了</div>
+<div id="screen-done" class="screen">
+  <div class="done-card">
+    <div class="done-icon">✅</div>
+    <div class="done-count" id="done-count">0件</div>
+    <div class="done-label" id="done-label">登録完了</div>
+    <div class="done-detail" id="done-detail"></div>
   </div>
 
-  <button class="next-btn" onclick="nextCard()">次の名刺を登録する</button>
+  <button class="next-cat-btn" onclick="backToCategory()">次のカテゴリへ</button>
 
-  <div class="counter" style="margin-top:14px">
-    本日登録済み: <strong id="count-num2">0</strong> 件
+  <div class="counter">
+    本日合計: <strong id="count-total">0</strong> 件
   </div>
 </div>
 
 <script>
-var capturedBase64 = '';
-var capturedMime   = 'image/jpeg';
-var registeredCount = 0;
+var selectedCategory = 'その他';
+var totalRegistered  = 0;
 
-// ─── カメラ起動 ─────────────────────────────────
-function openCamera() {
-  document.getElementById('fileInput').click();
+// キュー: [{base64, mime, status}]
+var photoQueue = [];
+
+var CATEGORY_ICONS = {
+  '元請け候補': '🔴',
+  '下請け候補': '🔵',
+  'その他':    '🟡',
+  'なし':      '⬜',
+};
+
+// ── カテゴリ選択 ──────────────────────────────────
+function selectCategory(cat) {
+  selectedCategory = cat;
+  photoQueue = [];
+
+  var icon = CATEGORY_ICONS[cat] || '';
+  document.getElementById('batch-badge').innerHTML =
+    '<span class="selected-badge">' + icon + ' ' + cat + '</span>';
+
+  renderQueue();
+  updateSubmitBtn();
+  showScreen('screen-batch');
 }
 
-document.getElementById('fileInput').addEventListener('change', function(e) {
-  var file = e.target.files[0];
-  if (!file) return;
+function backToCategory() {
+  photoQueue = [];
+  renderQueue();
+  if (totalRegistered > 0) {
+    document.getElementById('counter-top').style.display = 'block';
+    document.getElementById('count-top').textContent = totalRegistered;
+  }
+  showScreen('screen-category');
+}
 
-  capturedMime = file.type || 'image/jpeg';
+// ── カメラ / アルバム ─────────────────────────────
+function openCamera() {
+  document.getElementById('cameraInput').value = '';
+  document.getElementById('cameraInput').click();
+}
+function openGallery() {
+  document.getElementById('galleryInput').value = '';
+  document.getElementById('galleryInput').click();
+}
 
-  var reader = new FileReader();
-  reader.onload = function(ev) {
-    var dataUrl  = ev.target.result;
-    // base64部分だけ取り出す（"data:image/jpeg;base64," を除去）
-    capturedBase64 = dataUrl.split(',')[1];
-
-    // プレビュー表示
-    document.getElementById('preview-img').src   = dataUrl;
-    document.getElementById('preview-wrap').style.display = 'block';
-    document.getElementById('analyze-btn').classList.add('visible');
-  };
-  reader.readAsDataURL(file);
+document.getElementById('cameraInput').addEventListener('change', function() {
+  handleFiles(this.files);
+});
+document.getElementById('galleryInput').addEventListener('change', function() {
+  handleFiles(this.files);
 });
 
-// ─── 撮り直す ───────────────────────────────────
-function retake() {
-  capturedBase64 = '';
-  document.getElementById('preview-wrap').style.display = 'none';
-  document.getElementById('analyze-btn').classList.remove('visible');
-  document.getElementById('fileInput').value = '';
-  openCamera();
-}
-
-// ─── AI解析 ─────────────────────────────────────
-function analyzeImage() {
-  if (!capturedBase64) { alert('先に名刺を撮影してください'); return; }
-
-  document.getElementById('analyze-btn').style.display = 'none';
-  document.getElementById('preview-wrap').style.display = 'none';
-  document.getElementById('loading-analyze').classList.add('show');
-
-  // iPhoneの写真は大きすぎるのでCanvasで縮小してから送る
-  resizeBase64(capturedBase64, capturedMime, 1200, function(resized) {
-    google.script.run
-      .withSuccessHandler(onExtracted)
-      .withFailureHandler(onExtractError)
-      .extractCardFromImage(resized, 'image/jpeg');
+function handleFiles(files) {
+  if (!files || files.length === 0) return;
+  Array.from(files).forEach(function(file) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var base64 = e.target.result.split(',')[1];
+      var mime   = file.type || 'image/jpeg';
+      // リサイズしてからキューに追加
+      resizeBase64(e.target.result, mime, 1200, function(resizedBase64) {
+        photoQueue.push({
+          base64: resizedBase64,
+          mime:   mime,
+          preview: e.target.result,  // サムネイル用（元サイズ）
+          status: '待機中',
+        });
+        renderQueue();
+        updateSubmitBtn();
+      });
+    };
+    reader.readAsDataURL(file);
   });
 }
 
-// 長辺をmaxPxに収めてJPEGで返す
-function resizeBase64(base64, mime, maxPx, callback) {
+// ── キュー表示 ────────────────────────────────────
+function renderQueue() {
+  var grid  = document.getElementById('thumb-grid');
+  var wrap  = document.getElementById('queue-wrap');
+  var count = document.getElementById('queue-count');
+
+  grid.innerHTML = '';
+  count.textContent = photoQueue.length;
+  wrap.style.display = photoQueue.length > 0 ? 'block' : 'none';
+
+  photoQueue.forEach(function(item, idx) {
+    var div = document.createElement('div');
+    div.className = 'thumb-item';
+    div.innerHTML =
+      '<img src="' + item.preview + '">' +
+      '<span class="thumb-status">' + item.status + '</span>' +
+      (item.status === '待機中'
+        ? '<button class="thumb-del" onclick="removePhoto(' + idx + ')">×</button>'
+        : '');
+    grid.appendChild(div);
+  });
+}
+
+function removePhoto(idx) {
+  photoQueue.splice(idx, 1);
+  renderQueue();
+  updateSubmitBtn();
+}
+
+function updateSubmitBtn() {
+  var btn = document.getElementById('submit-all-btn');
+  btn.disabled = photoQueue.length === 0;
+  btn.textContent = photoQueue.length > 0
+    ? photoQueue.length + '枚をまとめて登録する'
+    : '全部まとめて登録する';
+}
+
+// ── まとめて登録 ──────────────────────────────────
+function submitAll() {
+  if (photoQueue.length === 0) return;
+
+  var total   = photoQueue.length;
+  var success = 0;
+  var failed  = 0;
+  var details = [];
+
+  showScreen('screen-progress');
+
+  function processNext(idx) {
+    if (idx >= total) {
+      // 全件完了
+      totalRegistered += success;
+      showDone(success, failed, details);
+      return;
+    }
+
+    var item = photoQueue[idx];
+    var pct  = Math.round((idx / total) * 100);
+
+    document.getElementById('progress-label').textContent =
+      (idx + 1) + ' / ' + total + ' 枚目を処理中...';
+    document.getElementById('progress-sub').textContent =
+      item.status === '待機中' ? 'AI読み取り → 登録中' : item.status;
+    document.getElementById('progress-bar').style.width = pct + '%';
+
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result && result.success) {
+          success++;
+          details.push('✅ ' + (result.company || '不明') + ' / ' + (result.name || ''));
+        } else {
+          failed++;
+          details.push('❌ ' + (idx + 1) + '枚目: 登録失敗');
+        }
+        processNext(idx + 1);
+      })
+      .withFailureHandler(function(err) {
+        failed++;
+        details.push('❌ ' + (idx + 1) + '枚目: エラー');
+        processNext(idx + 1);
+      })
+      .runCardRegistration(
+        '__IMAGE__',        // rawCardText（GAS側でbase64を優先処理）
+        '',                 // memo
+        selectedCategory,
+        item.base64,
+        item.mime
+      );
+  }
+
+  processNext(0);
+}
+
+function showDone(success, failed, details) {
+  var icon = CATEGORY_ICONS[selectedCategory] || '';
+  document.getElementById('done-count').textContent  = success + '件';
+  document.getElementById('done-label').textContent  = icon + ' ' + selectedCategory + ' 登録完了';
+  document.getElementById('done-detail').innerHTML   =
+    details.map(function(d) { return '<div>' + d + '</div>'; }).join('') +
+    (failed > 0 ? '<div style="color:#c62828;margin-top:8px">失敗: ' + failed + '件</div>' : '');
+  document.getElementById('count-total').textContent = totalRegistered;
+  document.getElementById('progress-bar').style.width = '100%';
+  showScreen('screen-done');
+}
+
+// ── 画像リサイズ ──────────────────────────────────
+function resizeBase64(dataUrl, mime, maxPx, callback) {
   var img = new Image();
   img.onload = function() {
     var w = img.width, h = img.height;
     if (w > maxPx || h > maxPx) {
-      if (w > h) { h = Math.round(h * maxPx / w); w = maxPx; }
-      else       { w = Math.round(w * maxPx / h); h = maxPx; }
+      var ratio = Math.min(maxPx / w, maxPx / h);
+      w = Math.round(w * ratio);
+      h = Math.round(h * ratio);
     }
     var canvas = document.createElement('canvas');
     canvas.width = w; canvas.height = h;
     canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-    var resized = canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+    var resized = canvas.toDataURL(mime, 0.85).split(',')[1];
     callback(resized);
   };
-  img.src = 'data:' + mime + ';base64,' + base64;
+  img.src = dataUrl;
 }
 
-function onExtracted(info) {
-  document.getElementById('loading-analyze').classList.remove('show');
-
-  // 確認フォームに反映
-  setField('f-company', info.company);
-  setField('f-name',    info.name);
-  setField('f-title',   info.title);
-  setField('f-email',   info.email);
-  setField('f-phone',   info.phone);
-  document.getElementById('f-memo').value = '';
-
-  showScreen('screen-confirm');
-}
-
-function onExtractError(err) {
-  document.getElementById('loading-analyze').classList.remove('show');
-  document.getElementById('analyze-btn').classList.add('visible');
-  document.getElementById('analyze-btn').style.display = '';
-  document.getElementById('preview-wrap').style.display = 'block';
-  var msg = String(err);
-  // GASがnullを返した場合はAPIキー未設定の可能性を案内
-  if (msg === 'null' || msg === '' || msg.includes('null')) {
-    msg = 'CLAUDE_API_KEY が未設定の可能性があります。\nGASのスクリプトプロパティを確認してください。';
-  }
-  alert('読み取りに失敗しました:\n' + msg);
-}
-
-function setField(id, val) {
-  var el = document.getElementById(id);
-  el.value = val || '';
-  el.className = val ? 'filled' : '';
-}
-
-// ─── CRM登録 ─────────────────────────────────────
-function submitCard() {
-  var company = document.getElementById('f-company').value.trim();
-  if (!company) {
-    showError('会社名を入力してください');
-    return;
-  }
-
-  hideError();
-  document.getElementById('submit-btn').disabled = true;
-  document.getElementById('loading-submit').classList.add('show');
-
-  // 確認フォームの内容でrawCardTextを組み立ててrunCardRegistrationへ渡す
-  var rawText = [
-    document.getElementById('f-company').value,
-    document.getElementById('f-name').value,
-    document.getElementById('f-title').value,
-    document.getElementById('f-email').value,
-    document.getElementById('f-phone').value,
-  ].filter(Boolean).join('\n');
-
-  var memo = document.getElementById('f-memo').value.trim();
-
-  google.script.run
-    .withSuccessHandler(onRegistered)
-    .withFailureHandler(onRegisterError)
-    .runCardRegistration(rawText, memo);
-}
-
-function onRegistered(result) {
-  document.getElementById('loading-submit').classList.remove('show');
-  document.getElementById('submit-btn').disabled = false;
-
-  if (!result || !result.success) {
-    showError('登録に失敗しました: ' + (result && result.error ? result.error : '不明なエラー'));
-    return;
-  }
-
-  registeredCount++;
-  document.getElementById('count-num').textContent  = registeredCount;
-  document.getElementById('count-num2').textContent = registeredCount;
-
-  var rank = result.rank || 'C';
-  var rankEl = document.getElementById('result-rank');
-  rankEl.textContent  = rank;
-  rankEl.className    = 'rank-circle rank-' + rank;
-
-  document.getElementById('result-company').textContent = result.company   || '';
-  document.getElementById('result-name').textContent    = result.name      || '';
-  document.getElementById('result-need').textContent    = result.primaryNeed || '';
-  document.getElementById('result-score').textContent   = result.score     || 0;
-  document.getElementById('result-ok').textContent      = '✅ CRMに登録完了（本日' + registeredCount + '件目）';
-
-  showScreen('screen-result');
-}
-
-function onRegisterError(err) {
-  document.getElementById('loading-submit').classList.remove('show');
-  document.getElementById('submit-btn').disabled = false;
-  showError('エラーが発生しました: ' + String(err));
-}
-
-// ─── 確認画面から撮影画面へ戻る ─────────────────
-function backToShoot() {
-  capturedBase64 = '';
-  capturedMime   = 'image/jpeg';
-  document.getElementById('fileInput').value        = '';
-  document.getElementById('preview-img').src        = '';
-  document.getElementById('preview-wrap').style.display  = 'none';
-  document.getElementById('analyze-btn').classList.remove('visible');
-  document.getElementById('analyze-btn').style.display   = '';
-  hideError();
-  showScreen('screen-shoot');
-  openCamera();
-}
-
-// ─── 次の名刺へ ──────────────────────────────────
-function nextCard() {
-  capturedBase64 = '';
-  capturedMime   = 'image/jpeg';
-  document.getElementById('fileInput').value        = '';
-  document.getElementById('preview-img').src        = '';
-  document.getElementById('preview-wrap').style.display = 'none';
-  document.getElementById('analyze-btn').classList.remove('visible');
-  document.getElementById('analyze-btn').style.display = '';
-  document.getElementById('counter').style.display  = 'block';
-  document.getElementById('count-num').textContent  = registeredCount;
-  showScreen('screen-shoot');
-}
-
-// ─── 画面切り替え ────────────────────────────────
+// ── 画面切り替え ──────────────────────────────────
 function showScreen(id) {
-  ['screen-shoot','screen-confirm','screen-result'].forEach(function(s) {
+  ['screen-category','screen-batch','screen-progress','screen-done'].forEach(function(s) {
     document.getElementById(s).classList.remove('active');
   });
   document.getElementById(id).classList.add('active');
-  window.scrollTo(0, 0);
-}
-
-// ─── エラー表示 ──────────────────────────────────
-function showError(msg) {
-  var el = document.getElementById('error-msg');
-  el.textContent = msg;
-  el.classList.add('show');
-  window.scrollTo(0, 0);
-}
-function hideError() {
-  document.getElementById('error-msg').classList.remove('show');
 }
 </script>
-
 </body>
 </html>

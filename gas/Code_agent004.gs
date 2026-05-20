@@ -161,7 +161,7 @@ function analyzeWithGrok(emailData) {
     messages: [
       {
         role: 'system',
-        content: 'あなたはマルケン電工（愛知県の電気工事会社）のメール仕分けAIです。JSONのみで返答してください。余分なテキスト不要。'
+        content: 'あなたはマルケン電工（愛知・東京拠点の電気工事会社）のメール仕分けAIです。JSONのみで返答してください。余分なテキスト不要。'
       },
       {
         role: 'user',
@@ -180,12 +180,14 @@ ${emailData.body}
   ※送信元が @marukendenkou.com の場合は自社送信メールのため必ず「不要」にすること
   ※「了承しました」「承知しました」「よろしくお願いします」のみの内容は「返信必要」にすること（案件の新規登録は不要）
 - priority: high=緊急/大型 / medium=通常 / low=急がない
+- region: 現場の地域（東京都・神奈川・埼玉・千葉は「東京」、愛知・岐阜・三重・静岡は「愛知」、不明または他は「その他」）
 - jobs: メール内に複数の現場・工事が含まれる場合は全件を配列で列挙。1件の場合も必ず配列（1要素）で返すこと。
 
 JSON形式のみで返答:
 {
   "category": "案件"|"返信必要"|"不要",
   "priority": "high"|"medium"|"low",
+  "region": "東京"|"愛知"|"その他",
   "jobs": [
     {
       "customer": "顧客名または会社名",
@@ -394,8 +396,11 @@ function notifyLine(category, result, msgId, draftCreated) {
     : (users['manager'] ? [users['manager']] : []);
   if (targetIds.length === 0) return;
 
+  const regionTag = result.region === '東京' ? '東京' : result.region === '愛知' ? '愛知' : '';
   const badge  = category === '案件'
-    ? (result.priority === 'high' ? '🔴【案件】' : '🟡【案件】')
+    ? (result.priority === 'high'
+        ? '🔴【' + (regionTag || '案件') + (regionTag ? '・案件】' : '】')
+        : '🟡【' + (regionTag || '案件') + (regionTag ? '・案件】' : '】'))
     : '🔵【返信必要】';
   const amtStr = result.estAmount ? Number(result.estAmount).toLocaleString() + '円' : null;
 
@@ -545,7 +550,7 @@ function writeToExistingSheet(emailData, result, jobIndex) {
       '',                                              // J: 完了報告
       '新規',                                          // K: ステータス
       result.estAmount || '',                          // L: 金額
-      (result.notes || '') + ' ' + dedupeKey,          // M: 備考（重複チェックキー埋め込み）
+      (result.region ? '[' + result.region + '] ' : '') + (result.notes || '') + ' ' + dedupeKey,  // M: 備考（地域・重複チェックキー埋め込み）
     ]]);
 
     Logger.log('✅ 既存スプシ（一覧）に転写: row ' + newRow + ' | ' + dedupeKey);
@@ -657,11 +662,6 @@ function sendFollowUpEmail(to, customer) {
   GmailApp.sendEmail(to, `【工事完了後のご確認】株式会社マルケン電工`,
     `${customer} 御中\n\nいつもお世話になっております。\n株式会社マルケン電工でございます。\n\n先日の工事完了後、設備の状態はいかがでしょうか。\nご不明な点やお気づきの点がございましたら、お気軽にご連絡ください。\n\n今後ともよろしくお願いいたします。\n\n─────────────────────────\n株式会社マルケン電工\nTEL: 052-806-9481 / Mail: info@marukendenkou.com\n─────────────────────────`,
     { name: '株式会社マルケン電工' });
-}
-
-// ─── ユーティリティ ───────────────────────────────────────
-function getOrCreateLabel(name) {
-  return GmailApp.getUserLabelByName(name) || GmailApp.createLabel(name);
 }
 
 // ─── 初回セットアップ ─────────────────────────────────────
