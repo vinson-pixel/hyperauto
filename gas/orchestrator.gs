@@ -120,14 +120,19 @@ function trigger_night_23() {
   _runSafe(AGENT_ID, '自動リード発掘①', function() { autoDiscoverLeads(); });
   _runSafe(AGENT_ID, 'Web情報自動補完', function() { autoFillCompanyDetails(); });
   _runSafe(AGENT_ID, '成約フォローアラート', function() { checkWonFollowups(); });
+  _runSafe(AGENT_ID, 'バッチAIスコアリング', function() { autoScoreLeads(); });
+  _runSafe(AGENT_ID, '資本金自動補完', function() { enrichCapitals(50); });
+  _runSafe(AGENT_ID, '社名略称変換', function() { convertCompanyNameFormats(); });
+  _runSafe(AGENT_ID, 'リスト機会分析', function() { analyzeListOpportunities(); });
   agentLog(AGENT_ID, 'DONE', '夜間バッチ①完了');
 }
 
-/** trigger_night_1 — 毎日1時: リード発掘バッチ② */
+/** trigger_night_1 — 毎日1時: リード発掘バッチ② + 条件フィルタ */
 function trigger_night_1() {
   const AGENT_ID = 'TRIGGER-NIGHT-01';
   agentLog(AGENT_ID, 'START', nowStr());
   _runSafe(AGENT_ID, '自動リード発掘②', function() { autoDiscoverLeads(); });
+  _runSafe(AGENT_ID, 'リード条件フィルタ', function() { filterLeadsBatch(); });
   agentLog(AGENT_ID, 'DONE', '夜間バッチ②完了');
 }
 
@@ -256,13 +261,17 @@ function handleProspectingApi_(e) {
       else { result = { corpNum: lookupCorpNum_(p.name||'') }; }
     }
     else if (action === 'autoDiscover')  result = autoDiscoverLeads();
+    else if (action === 'filterLeads')   result = filterLeadsBatch();
     else if (action === 'analyzeFeedback')   result = analyzeFeedback();
     else if (action === 'fillDetails')       result = autoFillCompanyDetails();
     else if (action === 'bulkCleanup')       result = bulkCleanup();
     else if (action === 'getHumanTasks')     result = getHumanTasks();
     else if (action === 'getVisitList')      result = getVisitList(p.area, p.maxCount);
     else if (action === 'weeklyReport')      result = sendWeeklyStrategyReport();
-    else if (action === 'ping')              result = { ok: true };
+    else if (action === 'ping')                 result = { ok: true };
+    else if (action === 'getListOpportunities') result = getListOpportunities();
+    else if (action === 'getCustomers')         result = getCustomers();
+    else if (action === 'getSubcontractors') result = getSubcontractors();
     else result = { error: '不明なアクション: ' + action };
   } catch(err) {
     result = { error: err.toString() };
@@ -299,6 +308,21 @@ function doPost(e) {
       else if (a === 'analyzeCompany')            r = analyzeCompany(body.rowIndex);
       else if (a === 'analyzeCompanyDeep')        r = analyzeCompanyDeep(body.rowIndex);
       else if (a === 'generateCampaign')          r = generateCampaign(body.product, body.limit);
+      else if (a === 'addCustomer')               r = addCustomer(body.data);
+      else if (a === 'updateCustomerCell')        r = updateCustomerCell(body.rowIndex, body.col, body.value);
+      else if (a === 'deleteCustomer')            r = deleteCustomer(body.rowIndex);
+      else if (a === 'addSubcontractor')          r = addSubcontractor(body.data);
+      else if (a === 'updateSubcontractorCell')   r = updateSubcontractorCell(body.rowIndex, body.col, body.value);
+      else if (a === 'deleteSubcontractor')       r = deleteSubcontractor(body.rowIndex);
+      else if (a === 'syncAllCustomersToProspects')  r = syncAllCustomersToProspects();
+      else if (a === 'enrichCapitals')               r = enrichCapitals(body.maxRows || 30);
+      else if (a === 'enrichCapitalForRow')          r = enrichCapitalForRow(body.rowIndex);
+      else if (a === 'enrichRowIfEmpty')             r = enrichRowIfEmpty(body.rowIndex);
+      else if (a === 'convertCompanyNameFormats')    r = convertCompanyNameFormats();
+      else if (a === 'migrateAddressFromMemo')       r = migrateAddressFromMemo();
+      else if (a === 'deleteProspect')               r = deleteProspect(body.rowIndex);
+      else if (a === 'importAllHiroshimaQuick')     r = importAllHiroshimaQuick();
+      else if (a === 'analyzeListOpportunities')   r = analyzeListOpportunities();
       else r = { error: '不明なアクション' };
     } catch(err) { r = { error: err.toString() }; }
     return ContentService.createTextOutput(JSON.stringify(r))
@@ -787,7 +811,7 @@ function runFullSystemTest() {
     const res = callClaude(
       'テスト用AIです。',
       '「OK」とだけ返答してください。',
-      'claude-haiku-4-5',
+      'claude-haiku-4-5-20251001',
       10
     );
     if (!res) throw new Error('Claude応答なし');

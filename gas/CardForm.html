@@ -391,6 +391,17 @@
 var selectedCategory = 'その他';
 var totalRegistered  = 0;
 
+// URLパラメータ: ?event=イベント名 で汎用モードに切り替え
+// 例: ...?event=建設業展示会2026
+var urlParams    = new URLSearchParams(window.location.search);
+var eventSource  = urlParams.get('event') || 'JECA FAIR 2026';
+var isUniversal  = !!urlParams.get('event');
+
+// ヘッダーをイベント名で書き換え
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelector('header .sub').textContent = eventSource + ' — マルケン電工';
+});
+
 // キュー: [{base64, mime, status}]
 var photoQueue = [];
 
@@ -530,14 +541,14 @@ function submitAll() {
       item.status === '待機中' ? 'AI読み取り → 登録中' : item.status;
     document.getElementById('progress-bar').style.width = pct + '%';
 
-    google.script.run
+    var runner = google.script.run
       .withSuccessHandler(function(result) {
         if (result && result.success) {
           success++;
           details.push('✅ ' + (result.company || '不明') + ' / ' + (result.name || ''));
         } else {
           failed++;
-          details.push('❌ ' + (idx + 1) + '枚目: 登録失敗');
+          details.push('❌ ' + (idx + 1) + '枚目: ' + (result && result.message ? result.message : '登録失敗'));
         }
         processNext(idx + 1);
       })
@@ -545,14 +556,26 @@ function submitAll() {
         failed++;
         details.push('❌ ' + (idx + 1) + '枚目: エラー');
         processNext(idx + 1);
-      })
-      .runCardRegistration(
-        '__IMAGE__',        // rawCardText（GAS側でbase64を優先処理）
-        '',                 // memo
+      });
+
+    if (isUniversal) {
+      runner.registerCardToProspecting(
+        '__IMAGE__',
+        '',
+        eventSource,
         selectedCategory,
         item.base64,
         item.mime
       );
+    } else {
+      runner.runCardRegistration(
+        '__IMAGE__',
+        '',
+        selectedCategory,
+        item.base64,
+        item.mime
+      );
+    }
   }
 
   processNext(0);

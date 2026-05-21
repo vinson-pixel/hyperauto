@@ -71,7 +71,11 @@ function callClaude(systemPrompt, userPrompt, model, maxTokens) {
 
   try {
     const json = JSON.parse(res.getContentText());
-    if (json.error) { Logger.log('Claude error: ' + JSON.stringify(json.error)); return null; }
+    if (json.error) {
+      const msg = json.error.message || JSON.stringify(json.error);
+      Logger.log('Claude error: ' + msg);
+      return '__CLAUDE_ERR__:' + msg;
+    }
     return json.content[0].text;
   } catch(e) {
     Logger.log('Claude parse error: ' + e + ' | response: ' + res.getContentText().substring(0, 300));

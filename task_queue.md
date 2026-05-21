@@ -16,15 +16,8 @@
 
 ## 🟠 今月中（2026年5月）
 
-- [ ] **HIROSHIMA-SCRAPE** 広島電気スクレイピング完了
-  - priority: high
-  - project: Desktop
-  - detail: |
-      現在1350/1772社完了（76%）。残り422社。
-      スクリプト: /Users/lione/Desktop/scrape_hiroshima_denki.py
-      途中結果: /Users/lione/Desktop/partial_10.csv, partial_20.csv
-      完了後の出力先: /Users/lione/hyperauto/data/hiroshima_denki_emails.csv
-      実行: cd /Users/lione/Desktop && python scrape_hiroshima_denki.py
+- [x] **HIROSHIMA-SCRAPE** 広島電気1772社→prospectingに組み込み完了（2026-05-19）
+      Google Places APIで電話番号補完しながら60社ずつバッチインポート。営業リスト管理UIのリード発掘タブから実行可能。
 
 - [x] **S-01-UNIVERSAL** S-01 メール判定エージェント全社汎用化 - コード確認済み・実装済み（2026-05-17）
 
@@ -34,31 +27,30 @@
 
 ## 🟡 来月（2026年6月）
 
-- [ ] **S-03** 名刺管理・リードスコアリング（JECA後に汎用化）
-  - priority: normal
-  - project: hyperauto
-  - detail: JECA_CRMシートのリードに対してスコアリングを汎用CRMに発展させる
+- [x] **S-03** 名刺管理・リードスコアリング汎用化 - 完了（2026-05-19）
+      CardForm URLに ?event=イベント名 を付けると prospectingシートに直接登録。カテゴリ→listType・ランク→ステージ自動変換。
 
-- [ ] **F-01** 請求書自動生成エージェント
-  - priority: normal
-  - project: hyperauto
-  - detail: 案件シートの完了案件 → 請求書PDF自動生成 → Gmail添付送信
+- [x] **F-01** 請求書自動生成エージェント - 社長が作成済み（2026-05-20）
 
-- [ ] **S-04** フォローアップメール自動送信
-  - priority: normal
-  - project: hyperauto
+- [x] **S-04** フォローアップメール自動送信 - 完了（2026-05-19）
+      毎朝8時トリガー・Claude Haiku個別生成・下書きモード・30社/回上限。UIのメールタブから設定。
 
-- [ ] **EIGYO-REVIEW** eigyo-auto コードレビュー & 改善
-  - priority: normal
-  - project: eigyo-auto
-  - detail: |
-      CLAUDE.mdの毎セッションチェックリストを実行
-      maxDuration未設定API / any型 / console.log残留 / エラーハンドリング
+- [x] **EIGYO-REVIEW** eigyo-auto コードレビュー & 改善 - 問題なし（2026-05-20）
+      全チェック通過：maxDuration/any型/console.log/エラーハンドリング すべて問題なし
 
-- [ ] **GENBA-NEXT** genba-platform 次機能
+- [x] **GENBA-NEXT-3** 作業後報告システム（新規）- 完了（2026-05-20）
+      worker_completion_reports テーブル・/api/worker-report・/w/[token]/report・報告タブ実装済み
+      残: Supabase SQL Editor でマイグレーション実行が必要
+
+- [ ] **GENBA-NEXT-2** 手順書UI改善（素人向け）
   - priority: normal
   - project: genba-platform
-  - detail: 未定。社長ノウハウ追加候補が出たら記入する
+  - detail: |
+      ② WorkerView のUI改善
+      　- ステップカード大きく・シンプルに
+      　- 専門用語に補足
+      　- ⚠️危険・📸写真必須アイコン大きく
+      　- スマホ最適化
 
 - [ ] **BRO-STATUS** broccoli/Bro CEO 稼働状況確認
   - priority: normal

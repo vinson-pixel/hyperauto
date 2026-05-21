@@ -205,7 +205,7 @@ ${emailData.body.substring(0, 3000)}
 【AI分析結果】
 ${context}`;
 
-  const draft = callClaude(systemPrompt, userPrompt, 'claude-haiku-4-5', 1024);
+  const draft = callClaude(systemPrompt, userPrompt, 'claude-haiku-4-5-20251001', 1024);
 
   if (!draft) {
     agentLog('S-01-③', 'ERROR', 'Claude返信文生成失敗');
@@ -345,9 +345,7 @@ function runEmailIntakeTeam() {
       const result = s01_classifier(emailData);
 
       if (result.category === '不要') {
-        // LINEに通知して削除/配信停止/無視をユーザーが選択
-        s01_junkyNotifier(emailData, thread.getId());
-        agentLog('S-01', 'SKIP', '返信不要→LINE通知: ' + subject);
+        agentLog('S-01', 'SKIP', '返信不要→スキップ: ' + subject);
         skipped++;
 
       } else {
@@ -516,7 +514,7 @@ ${emailData.body.substring(0, 4000)}
   "work_type": "依頼内容の種別。「工事」「修理」「見積調査」「点検」のいずれかに分類",
   "request_detail": "依頼内容の詳細・具体的な作業内容"
 }`,
-    'claude-haiku-4-5'
+    'claude-haiku-4-5-20251001'
   );
 
   if (!extracted) {
@@ -847,7 +845,7 @@ ${emailData.body.substring(0, 2000)}
 【確認事項（以下をメールに含めてください）】
 ${questionsText}`;
 
-  const body = callClaude(systemPrompt, userPrompt, 'claude-haiku-4-5', 1024);
+  const body = callClaude(systemPrompt, userPrompt, 'claude-haiku-4-5-20251001', 1024);
 
   if (!body) {
     agentLog('S-02-③', 'ERROR', 'Claude生成失敗 → フォールバック');
@@ -941,7 +939,7 @@ JSON形式:
   "industry": "業種（推定）"
 }`;
 
-  const result = callClaudeJSON(systemPrompt, userPrompt, 'claude-haiku-4-5');
+  const result = callClaudeJSON(systemPrompt, userPrompt, 'claude-haiku-4-5-20251001');
 
   if (!result) {
     agentLog('S-03-①', 'ERROR', '名刺パース失敗');
@@ -979,7 +977,7 @@ JSONのみで返答。`;
   "notes": "アプローチ上の特記事項（1〜2文）"
 }`;
 
-  const result = callClaudeJSON(systemPrompt, userPrompt, 'claude-haiku-4-5');
+  const result = callClaudeJSON(systemPrompt, userPrompt, 'claude-haiku-4-5-20251001');
 
   if (!result) {
     agentLog('S-03-②', 'FALLBACK', '会社リサーチ失敗 → デフォルト');
@@ -1275,7 +1273,7 @@ ${context}
 施工場所: ${customer.location || '不明'}
 最終接触からの日数: ${daysSince}日（${tier}フォロー）`;
 
-  const body = callClaude(systemPrompt, userPrompt, 'claude-haiku-4-5', 800);
+  const body = callClaude(systemPrompt, userPrompt, 'claude-haiku-4-5-20251001', 800);
 
   if (!body) {
     agentLog('S-04-③', 'ERROR', 'フォローメール生成失敗 → フォールバック');
@@ -1447,7 +1445,7 @@ JSONのみで返答。`;
   "savingPotential": "コスト削減ポテンシャルの推定（例: 年間20〜30%削減可能）"
 }`;
 
-  const result = callClaudeJSON(systemPrompt, userPrompt, 'claude-haiku-4-5');
+  const result = callClaudeJSON(systemPrompt, userPrompt, 'claude-haiku-4-5-20251001');
 
   if (!result) {
     agentLog('S-05-②', 'FALLBACK', '課題分析失敗 → デフォルト');
@@ -1616,7 +1614,7 @@ ${MARUKEN_PROFILE}`;
 【切り返し】〇〇
 （1〜2文で簡潔に。押し付けがましくなく次に繋げる内容）`;
 
-  const objections = callClaude(systemPrompt, userPrompt, 'claude-haiku-4-5', 1200);
+  const objections = callClaude(systemPrompt, userPrompt, 'claude-haiku-4-5-20251001', 1200);
 
   if (!objections) {
     agentLog('S-05-⑤', 'ERROR', '断り文句生成失敗');

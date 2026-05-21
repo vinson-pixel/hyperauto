@@ -38,6 +38,8 @@ a{color:inherit;text-decoration:none}
 .nav-tab{padding:13px 16px;cursor:pointer;font-size:13px;font-weight:500;color:var(--c-muted);border-bottom:2px solid transparent;white-space:nowrap;transition:all .18s;display:flex;align-items:center;gap:5px}
 .nav-tab.on{color:var(--c-primary);border-bottom-color:var(--c-primary);font-weight:700}
 .nav-tab:hover:not(.on){color:#374151;background:#f9fafb}
+.more-item{padding:9px 16px;font-size:13px;cursor:pointer;color:#374151;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.more-item:hover{background:#f5f3ff;color:#5b21b6}
 
 /* コンテンツ */
 .content{max-width:980px;margin:0 auto;padding:20px 16px}
@@ -207,6 +209,29 @@ textarea.input{height:80px;resize:none;font-family:inherit}
 .dpf-row{display:flex;gap:4px;align-items:stretch}
 .dpf-copy{background:#f4f5f9;border:1.5px solid #e8eaf0;border-radius:7px;cursor:pointer;font-size:12px;padding:0 9px;flex-shrink:0;transition:background .1s}
 .dpf-copy:hover{background:#e8eaf0}
+.ct-row{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid #f3f4f6;font-size:12px}
+.ct-row:last-child{border-bottom:none}
+.ct-in{border:1.5px solid #e8eaf0;border-radius:7px;padding:5px 8px;font-size:12px;background:#f8f9fc;outline:none;color:var(--c-text);flex:1;min-width:40px}
+.ct-in:focus{border-color:var(--c-primary);background:#fff}
+.ct-del{background:#fee2e2;border:none;border-radius:6px;cursor:pointer;color:#dc2626;padding:4px 8px;font-size:12px;flex-shrink:0}
+.ct-call{color:#5b5fc7;text-decoration:none;font-weight:600;white-space:nowrap;flex-shrink:0}
+.ct-add-btn{margin-top:8px;font-size:12px;padding:6px 12px}
+.ct-main-row{display:flex;align-items:center;gap:6px;padding:6px 8px;background:#eef2ff;border-radius:7px;margin-bottom:4px;font-size:12px}
+.ct-main-badge{background:#5b5fc7;color:#fff;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700;flex-shrink:0;letter-spacing:.3px}
+.ct-val{flex:1;font-weight:600;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ct-role{color:#6b7280;font-size:11px;flex-shrink:0;white-space:nowrap}
+.ct-phone{color:#4338ca;font-size:11px;flex-shrink:0;white-space:nowrap}
+.memo-ai-hist{background:#f5f3ff;border:1px solid #ddd6fe;border-radius:7px;padding:8px 10px;margin-top:6px;font-size:11px;color:#5b21b6;line-height:1.6}
+.modal-box{background:#fff;border-radius:16px;padding:24px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.sc-badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600}
+.sc-avail{background:#dcfce7;color:#15803d}.sc-busy{background:#fee2e2;color:#dc2626}.sc-unknown{background:#f3f4f6;color:#6b7280}
+.cust-card{background:#fff;border:1.5px solid #e8eaf0;border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:border .15s}
+.cust-card:hover{border-color:#5b5fc7}
+.cust-card.overdue{border-left:4px solid #dc2626}
+.cust-card.soon{border-left:4px solid #f59e0b}
+.bill-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.bill-unpaid{background:#fef3c7;color:#b45309}.bill-billed{background:#dbeafe;color:#1d4ed8}.bill-paid{background:#dcfce7;color:#15803d}
+.star-filled{color:#f59e0b}.star-empty{color:#d1d5db}
 /* カレンダーピッカー */
 .cal-pop{position:fixed;z-index:9999;background:#fff;border:1px solid #d1d5db;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.14);padding:10px;width:232px;user-select:none}
 .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
@@ -336,6 +361,128 @@ textarea.input{height:80px;resize:none;font-family:inherit}
 .cq-mini-num{width:24px;height:24px;background:#f0f2ff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--c-primary);flex-shrink:0}
 .cq-mini-name{font-size:13px;font-weight:600;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cq-mini-meta{font-size:10px;color:#9ca3af;white-space:nowrap}
+
+/* ─── ビジネス機会カード ──────────────────────────── */
+.opp-item{background:rgba(255,255,255,.05);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:10px 12px;display:flex;gap:10px;align-items:flex-start}
+.opp-rank{width:22px;height:22px;border-radius:50%;background:#312e81;color:#a5b4fc;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.opp-rank.r1{background:#7c3aed;color:#fff}
+.opp-rank.r2{background:#4338ca;color:#e0e7ff}
+.opp-body{flex:1;min-width:0}
+.opp-title{font-size:13px;font-weight:700;color:#e0e7ff;margin-bottom:3px}
+.opp-evidence{font-size:11px;color:#93c5fd;margin-bottom:4px;line-height:1.4}
+.opp-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.opp-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px}
+.opp-badge.cat-web{background:rgba(16,185,129,.2);color:#6ee7b7}
+.opp-badge.cat-alliance{background:rgba(245,158,11,.2);color:#fcd34d}
+.opp-badge.cat-new{background:rgba(239,68,68,.2);color:#fca5a5}
+.opp-badge.cat-call{background:rgba(99,102,241,.3);color:#c7d2fe}
+.opp-badge.cat-list{background:rgba(139,92,246,.2);color:#c4b5fd}
+.opp-revenue{font-size:11px;color:#86efac;font-weight:600}
+.opp-diff{font-size:10px;padding:2px 6px;border-radius:8px;font-weight:700}
+.opp-diff.easy{background:rgba(16,185,129,.15);color:#6ee7b7}
+.opp-diff.mid{background:rgba(245,158,11,.15);color:#fcd34d}
+.opp-diff.hard{background:rgba(239,68,68,.15);color:#fca5a5}
+.opp-action{font-size:11px;color:#fbbf24;margin-top:4px}
+.opp-urgency{width:32px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding-top:2px}
+.opp-urgency-bar{width:4px;border-radius:2px;background:rgba(255,255,255,.1)}
+.opp-urgency-fill{border-radius:2px;transition:height .3s}
+
+/* ─── モバイル対応 ─────────────────────────────────── */
+@media (max-width:640px) {
+  /* ヘッダー */
+  .hdr{padding:0 12px;height:50px}
+  .hdr-badge{display:none}
+  .hdr-sub{display:none}
+  .hdr-icon{width:30px;height:30px;font-size:14px}
+  .hdr-title{font-size:14px}
+
+  /* タブ - コンパクト化（絵文字のみ表示） */
+  .nav{padding:0 4px}
+  .nav-tab{padding:10px 10px;font-size:16px;gap:0}
+  .nav-tab .tb{display:none}
+  .nav-tab .tab-cnt{font-size:9px;padding:1px 4px}
+
+  /* コンテンツ */
+  .content{padding:12px 10px}
+  .card{padding:14px;margin-bottom:10px}
+
+  /* 詳細パネル → フルスクリーン */
+  .detail-panel{width:100%;right:-100%;border-left:none;border-top:1px solid rgba(0,0,0,.08);border-radius:0}
+  .detail-panel.open{right:0}
+  .dp-hdr{padding:14px 16px}
+  .dp-hdr h3{font-size:14px}
+  .dp-body{padding:14px}
+  .dp-phone{font-size:20px}
+  .dp-fields{grid-template-columns:1fr}
+  .dpf.full{grid-column:1}
+  .dp-call-row{gap:6px}
+  .dp-call-row .call-btn{flex:1;text-align:center;justify-content:center;min-width:0;padding:8px 4px;font-size:11px}
+
+  /* モーダル → ボトムシート */
+  .modal{align-items:flex-end}
+  .modal-box{width:100%;max-width:100%;border-radius:20px 20px 0 0;padding:20px 16px 32px;max-height:88vh;overflow-y:auto}
+  .modal-title{font-size:14px}
+
+  /* リスト行 */
+  .prospect-row{padding:10px 12px;gap:8px}
+  .pr-avatar{width:32px;height:32px;font-size:12px;border-radius:8px}
+  .pr-name{font-size:13px}
+  .pr-sub{font-size:10px}
+  .pr-memo{font-size:11px}
+
+  /* 架電モードカード */
+  .cq-company{font-size:16px}
+  .cq-phone-btn{font-size:20px;padding:14px}
+  .cq-actions{grid-template-columns:repeat(3,1fr);gap:5px;padding:0 12px 12px}
+  .cqa-btn{padding:9px 4px;font-size:11px}
+  .call-session-bar{padding:10px 12px;gap:10px}
+  .csb-stat span{font-size:22px}
+
+  /* パイプライン */
+  .pipeline-wrap{overflow-x:auto}
+  .pipe-step{min-width:52px;padding:8px 2px}
+  .pipe-num{font-size:18px}
+  .pipe-lbl{font-size:9px}
+
+  /* 統計グリッド */
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .stat-num{font-size:26px}
+  .stat-card{padding:14px}
+
+  /* 検索フォーム */
+  .row .input{min-width:0}
+  .field{min-width:0}
+
+  /* ボタン */
+  .btn{min-height:42px}
+  .btn-sm{min-height:36px;padding:6px 12px}
+
+  /* カレンダーポップアップ */
+  .cal-pop{width:calc(100vw - 24px);max-width:320px}
+
+  /* 面談カード */
+  .meeting-info-row{gap:8px}
+  .meeting-card-hdr{padding:12px 14px 8px}
+  .meeting-card-body{padding:10px 14px}
+  .quick-mail-bar{gap:4px;padding:8px 12px}
+  .quick-mail-btn{padding:7px 10px}
+
+  /* 顧客管理カード */
+  .cust-card{padding:12px}
+
+  /* AI分析 */
+  .cp-grid{grid-template-columns:1fr}
+  .analysis-email-box{max-height:160px}
+
+  /* ソート・フィルタ行 */
+  .sel-bar{padding:6px 10px;font-size:12px}
+}
+
+@media (max-width:380px) {
+  .nav-tab{padding:9px 8px;font-size:11px}
+  .hdr-title{font-size:13px}
+  .cq-actions{grid-template-columns:repeat(2,1fr)}
+}
 </style>
 </head>
 <body>
@@ -352,23 +499,46 @@ textarea.input{height:80px;resize:none;font-family:inherit}
 </div>
 
 <div class="nav">
-  <div class="nav-tab on" onclick="switchTab('search')">🔍 リード発掘</div>
-  <div class="nav-tab" onclick="switchTab('list')">📋 リスト</div>
-  <div class="nav-tab" onclick="switchTab('meeting')">🤝 面談 <span id="cnt-meeting" class="tab-cnt tab-cnt-apo"></span></div>
-  <div class="nav-tab" onclick="switchTab('followup')">📌 追い中 <span id="cnt-followup" class="tab-cnt tab-cnt-win"></span></div>
-  <div class="nav-tab" onclick="switchTab('won')">🏆 成約 <span id="cnt-won" class="tab-cnt" style="background:#15803d;color:#fff"></span></div>
-  <div class="nav-tab" onclick="switchTab('email')">📧 メール</div>
-  <div class="nav-tab" onclick="switchTab('campaign')">🎯 キャンペーン</div>
-  <div class="nav-tab" onclick="switchTab('visit')">🚗 飛び込み</div>
-  <div class="nav-tab" onclick="switchTab('tasks')">✏️ 補完 <span id="cnt-tasks" class="tab-cnt" style="background:#f59e0b;color:#fff"></span></div>
-  <div class="nav-tab" onclick="switchTab('stats')">📊 統計</div>
-  <div class="nav-tab" onclick="switchTab('call')" style="color:#4338ca;font-weight:700">📞 架電 <span id="cnt-call" class="tab-cnt" style="background:#4338ca;color:#fff"></span></div>
+  <div class="nav-tab on" onclick="switchTab('search')">🔍<span class="tb"> 発掘</span></div>
+  <div class="nav-tab" onclick="switchTab('list')">📋<span class="tb"> リスト</span></div>
+  <div class="nav-tab" onclick="switchTab('meeting')">🤝<span class="tb"> 面談</span> <span id="cnt-meeting" class="tab-cnt tab-cnt-apo"></span></div>
+  <div class="nav-tab" onclick="switchTab('followup')">📌<span class="tb"> 追い中</span> <span id="cnt-followup" class="tab-cnt tab-cnt-win"></span></div>
+  <div class="nav-tab" onclick="switchTab('won')">🏆<span class="tb"> 成約</span> <span id="cnt-won" class="tab-cnt" style="background:#15803d;color:#fff"></span></div>
+  <div class="nav-tab" onclick="switchTab('call')" style="color:#4338ca;font-weight:700">📞<span class="tb"> 架電</span> <span id="cnt-call" class="tab-cnt" style="background:#4338ca;color:#fff"></span></div>
+  <div class="nav-tab" style="position:relative;margin-left:auto" id="moreNavTab" onclick="toggleMoreMenu(event)">≡<span class="tb"> もっと</span>
+    <div id="moreMenu" style="display:none;position:fixed;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);min-width:160px;z-index:300;overflow:hidden">
+      <div style="padding:4px 0">
+        <div class="more-item" onclick="switchTab('customers');closeMoreMenu()">🏢 顧客管理 <span id="cnt-customers" class="tab-cnt" style="background:#dc2626;color:#fff"></span></div>
+        <div class="more-item" onclick="switchTab('subcons');closeMoreMenu()">🔧 下請け管理</div>
+        <div style="border-top:1px solid #f1f5f9;margin:4px 0"></div>
+        <div class="more-item" onclick="switchTab('kpi');closeMoreMenu()">📈 KPI</div>
+        <div class="more-item" onclick="switchTab('email');closeMoreMenu()">📧 メール送信</div>
+        <div class="more-item" onclick="switchTab('campaign');closeMoreMenu()">🎯 キャンペーン</div>
+        <div class="more-item" onclick="switchTab('visit');closeMoreMenu()">🚗 飛込訪問</div>
+        <div style="border-top:1px solid #f1f5f9;margin:4px 0"></div>
+        <div class="more-item" onclick="switchTab('tasks');closeMoreMenu()">✏️ 補完 <span id="cnt-tasks" class="tab-cnt" style="background:#f59e0b;color:#fff"></span></div>
+        <div class="more-item" onclick="switchTab('stats');closeMoreMenu()">📊 統計</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ── リード発掘 ─────────────────────────────────────────── -->
 <div id="tab-search" class="panel on content">
   <div class="card">
     <div class="card-title">🔍 新規リード検索</div>
+    <!-- 商材プリセット -->
+    <div style="margin-bottom:12px">
+      <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.6px;text-transform:uppercase;margin-bottom:6px">商材から探す</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px" id="productPresets"></div>
+      <div id="selectedProductBadge" style="display:none;margin-top:6px;font-size:11px;color:#4338ca;background:#eef2ff;padding:3px 9px;border-radius:10px;display:inline-flex;align-items:center;gap:5px">
+        <span>🎯 商材:</span><span id="selectedProductName"></span>
+        <span style="cursor:pointer;color:#9ca3af;font-weight:700" onclick="clearProduct()">✕</span>
+      </div>
+    </div>
+    <div style="border-top:1px solid #f3f4f6;padding-top:10px;margin-bottom:8px">
+      <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.6px;text-transform:uppercase;margin-bottom:6px">または業種で直接検索</div>
+    </div>
     <div class="row" style="margin-bottom:8px">
       <div class="field">
         <label class="lbl">業種・キーワード</label>
@@ -378,12 +548,40 @@ textarea.input{height:80px;resize:none;font-family:inherit}
         <label class="lbl">エリア</label>
         <input class="input" id="area" placeholder="愛知県・名古屋市・全国">
       </div>
+      <div class="field">
+        <label class="lbl">保存先</label>
+        <select class="input" id="searchListType">
+          <option value="営業">📋 営業リスト</option>
+          <option value="協力会社">🤝 協力会社</option>
+        </select>
+      </div>
       <div style="padding-bottom:1px">
         <button class="btn btn-blue" id="searchBtn" onclick="doSearch()">🔍 検索</button>
       </div>
     </div>
     <div style="font-size:11px;color:#9ca3af">※ Googleマップから自動収集します</div>
     <div id="searchAlert"></div>
+  </div>
+
+
+  <!-- 協力会社メール一括送信 （メール管理タブに移動）-->
+  <div class="card" style="border-left:3px solid #16a34a;display:none">
+    <div class="card-title">📨 協力会社メール一括送信（飯野島案件）</div>
+    <div style="font-size:12px;color:#6b7280;margin-bottom:10px">
+      リスト種別「協力会社」かつメールアドレスあり・ステージ「未架電」の会社に一斉送信します。<br>
+      まず「件数確認」→「下書き作成」→Gmail確認→「送信」の順で進めてください。
+    </div>
+    <div style="background:#f0fdf4;border-radius:8px;padding:10px 12px;font-size:12px;color:#15803d;margin-bottom:12px;line-height:1.7">
+      件名：【協力業者募集】広島・飯野島 定期案件のご案内<br>
+      内容：貨物船照明交換工事・2ヶ月1回・3〜4日・20名規模・長期継続優先
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button class="btn btn-gray btn-sm" onclick="doPartnerCount()">📊 件数確認</button>
+      <button class="btn btn-outline btn-sm" id="partnerDraftBtn" onclick="doPartnerSend(true)">📝 下書き作成</button>
+      <button class="btn btn-green btn-sm" id="partnerSendBtn" onclick="doPartnerSend(false)">📨 送信</button>
+      <span id="partnerStatus" style="font-size:12px;color:#6b7280"></span>
+    </div>
+    <div id="partnerAlert" style="margin-top:8px"></div>
   </div>
 
   <!-- プログレスバー -->
@@ -419,23 +617,118 @@ textarea.input{height:80px;resize:none;font-family:inherit}
 
 <!-- ── リスト ─────────────────────────────────────────────── -->
 <div id="tab-list" class="panel content">
-  <div class="card" style="padding:8px 12px;display:flex;gap:8px;align-items:center">
-    <input class="input input-sm" id="filter" placeholder="会社名・業種・都道府県・メモで絞り込み" oninput="filterList()" style="flex:1">
-    <select class="input input-sm" id="filterStage" onchange="filterList()" style="width:140px">
-      <option value="">すべて</option>
-      <option value="hot">🔥 要フォロー</option>
-      <option value="new">未架電</option>
-      <option value="interest">興味あり</option>
-      <option value="active">商談中/見積</option>
-      <option value="apo">アポあり</option>
-      <option value="won">受注</option>
-      <option value="ng">NG</option>
-    </select>
-    <button class="btn btn-gray btn-sm" onclick="loadList()" title="再読み込み">🔄</button>
-    <button class="btn btn-sm" id="bulkAnalyzeBtn" style="background:#7c3aed;color:#fff;flex-shrink:0" onclick="doBulkAnalyze()" title="未分析を一括AI分析">🤖 AI分析</button>
+  <div class="card" style="padding:8px 12px;display:flex;flex-direction:column;gap:6px">
+    <!-- メインフィルター行 -->
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+      <input class="input input-sm" id="filter" placeholder="🔍 会社名・業種・発掘キーワードで絞り込み" oninput="filterList()" style="flex:1;min-width:180px">
+      <select class="input input-sm" id="filterStage" onchange="filterList()" style="width:130px">
+        <option value="">ステージ: 全て</option>
+        <option value="hot">🔥 要フォロー</option>
+        <option value="new">未架電</option>
+        <option value="called">架電済み</option>
+        <option value="interest">興味あり</option>
+        <option value="active">商談中/見積</option>
+        <option value="apo">アポあり</option>
+        <option value="won">受注</option>
+        <option value="ng">NG</option>
+      </select>
+      <select class="input input-sm" id="filterProduct" onchange="filterList()" style="width:140px">
+        <option value="">商材: 全て</option>
+        <option value="業務用エアコン">🌡️ 業務用エアコン</option>
+        <option value="キュービクル">🔌 キュービクル</option>
+        <option value="電気工事（店舗）">⚡ 電気工事（店舗）</option>
+        <option value="LED改修">💡 LED改修</option>
+        <option value="太陽光・省エネ">☀️ 太陽光・省エネ</option>
+        <option value="EV充電器">🚗 EV充電器</option>
+        <option value="設備保守">🔧 設備保守</option>
+        <option value="施工パートナー">🤝 施工パートナー</option>
+      </select>
+      <span id="filterCount" style="font-size:11px;color:#9ca3af;white-space:nowrap"></span>
+      <button class="btn btn-gray btn-sm" onclick="resetFilters()">✕</button>
+      <button class="btn btn-gray btn-sm" onclick="loadList()">🔄</button>
+      <button class="btn btn-sm" id="bulkAnalyzeBtn" style="background:#7c3aed;color:#fff;flex-shrink:0" onclick="doBulkAnalyze()">🤖</button>
+      <button class="btn btn-gray btn-sm" id="advFilterToggle" onclick="toggleAdvFilter()" style="font-size:11px">詳細 ▾</button>
+    </div>
+    <!-- 詳細フィルター（折りたたみ） -->
+    <div id="advFilterPanel" style="display:none;padding-top:6px;border-top:1px solid #f1f5f9">
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <select class="input input-sm" id="filterArea" onchange="filterList()" style="width:110px">
+          <option value="">エリア: 全て</option>
+          <option value="東海">東海</option><option value="関東">関東</option>
+          <option value="愛知">愛知</option><option value="静岡">静岡</option>
+          <option value="岐阜">岐阜</option><option value="三重">三重</option>
+          <option value="広島">広島</option><option value="東京">東京</option>
+        </select>
+        <select class="input input-sm" id="filterListType" onchange="filterList()" style="width:120px">
+          <option value="">種別: 全て</option>
+          <option value="営業" selected>📋 営業リスト</option>
+          <option value="協力会社">🤝 協力会社</option>
+        </select>
+        <select class="input input-sm" id="filterSource" onchange="filterList()" style="width:130px">
+          <option value="">発掘元: 全て</option>
+          <option value="maps">📍 Googleマップ</option>
+          <option value="hiroshima">🏢 広島電工組合</option>
+          <option value="customer">👤 顧客管理</option>
+          <option value="manual">✏️ 手動追加</option>
+        </select>
+        <select class="input input-sm" id="filterScore" onchange="filterList()" style="width:120px">
+          <option value="">AIスコア: 全て</option>
+          <option value="high">🔴 高 (8〜10)</option>
+          <option value="mid">🟡 中 (6〜7)</option>
+          <option value="low">🟣 低 (1〜5)</option>
+          <option value="none">⬜ 未分析</option>
+        </select>
+        <select class="input input-sm" id="filterHp" onchange="filterList()" style="width:110px">
+          <option value="">HP: 全て</option>
+          <option value="yes">✅ HP確認済み</option>
+          <option value="no">❌ HP未確認</option>
+        </select>
+        <select class="input input-sm" id="filterCond" onchange="filterList()" style="width:110px">
+          <option value="">条件: 全て</option>
+          <option value="ok">✅ 条件OK</option>
+          <option value="ng">❌ 条件NG</option>
+          <option value="none">❓ 未判定</option>
+        </select>
+        <select class="input input-sm" id="sortBy" onchange="filterList()" style="width:130px">
+          <option value="">並び順: 登録順</option>
+          <option value="score_desc">⭐ スコア高い順</option>
+          <option value="call_asc">📞 架電少ない順</option>
+          <option value="date_asc">📅 未連絡優先</option>
+        </select>
+      </div>
+    </div>
   </div>
   <div id="listAlert"></div>
+  <div id="addrMigrateBanner" style="display:none;background:#fffbeb;border:1px solid #fbbf24;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:12px;display:flex;align-items:center;gap:10px">
+    <span style="flex:1">📍 メモ欄に入っている住所を「住所」欄に移行できます（郵便番号は除去されます）</span>
+    <button class="btn btn-sm" style="background:#f59e0b;color:#fff" onclick="runAddrMigration()" id="addrMigrateBtn">今すぐ移行</button>
+    <button onclick="document.getElementById('addrMigrateBanner').style.display='none'" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:14px">✕</button>
+  </div>
   <div id="bulkAnalyzeProgress" style="display:none;padding:8px 12px;font-size:12px;color:#7c3aed;background:#faf5ff;border-radius:8px;margin-bottom:8px;border:1px solid #e9d5ff"></div>
+
+  <!-- 💡 ビジネス機会カード -->
+  <div id="oppCard" style="display:none;background:linear-gradient(135deg,#0f172a,#1e1b4b);border-radius:12px;padding:14px 16px;margin-bottom:12px;border:1px solid #312e81">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:16px">💡</span>
+        <span style="font-size:13px;font-weight:700;color:#e0e7ff">リストに眠るビジネス機会</span>
+        <span id="oppUpdatedAt" style="font-size:10px;color:#6366f1;background:rgba(99,102,241,.2);padding:2px 7px;border-radius:10px"></span>
+      </div>
+      <button onclick="document.getElementById('oppCard').style.display='none'" style="background:none;border:none;color:#6366f1;cursor:pointer;font-size:16px;line-height:1">✕</button>
+    </div>
+    <div id="oppAlert" style="font-size:12px;color:#fbbf24;background:rgba(251,191,36,.1);border-radius:8px;padding:8px 12px;margin-bottom:10px;line-height:1.5;display:none"></div>
+    <div id="oppList" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div id="oppBlindSpot" style="display:none;margin-top:10px;font-size:11px;color:#a5b4fc;border-top:1px solid rgba(99,102,241,.3);padding-top:8px"></div>
+  </div>
+
+  <!-- 今日攻めるTOP10 -->
+  <div id="top10Card" style="display:none;background:linear-gradient(135deg,#faf5ff,#f3e8ff);border:1px solid #e9d5ff;border-radius:12px;padding:14px;margin-bottom:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-size:13px;font-weight:700;color:#6d28d9">⭐ 今日攻めるべきTOP10（AIスコア順）</div>
+      <button onclick="document.getElementById('top10Card').style.display='none'" style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:14px">✕</button>
+    </div>
+    <div id="top10List" style="display:flex;flex-direction:column;gap:6px"></div>
+  </div>
   <div class="card" style="padding:0;overflow:hidden">
     <div style="overflow-y:auto;max-height:calc(100vh - 190px)">
       <div id="prospectList"><div class="loading">読み込み中…</div></div>
@@ -473,6 +766,144 @@ textarea.input{height:80px;resize:none;font-family:inherit}
   <div id="wonList"><div class="loading">読み込み中…</div></div>
 </div>
 
+<!-- ── 顧客管理 ──────────────────────────────────────────── -->
+<div id="tab-customers" class="panel content">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <div>
+      <div style="font-size:14px;font-weight:700;color:#374151">🏢 顧客管理</div>
+      <div style="font-size:12px;color:#6b7280">取引先の連絡先・定期フォロー管理</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-sm btn-outline" onclick="syncAllCustomers()" title="顧客管理の全レコードを営業リストに同期">🔄 リスト同期</button>
+      <button class="btn" style="background:#15803d;color:#fff" onclick="openCustomerForm()">＋ 追加</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+    <button class="btn btn-sm btn-outline" id="cf-all" onclick="filterCustomers('all')" style="font-weight:700">全て</button>
+    <button class="btn btn-sm btn-outline" id="cf-overdue" onclick="filterCustomers('overdue')">🔴 連絡期限切れ</button>
+    <button class="btn btn-sm btn-outline" id="cf-soon" onclick="filterCustomers('soon')">🟡 今週中</button>
+    <button class="btn btn-sm btn-outline" id="cf-ok" onclick="filterCustomers('ok')">🟢 問題なし</button>
+  </div>
+  <div id="customerAlert"></div>
+  <div id="customerList"><div class="loading">読み込み中…</div></div>
+</div>
+
+<!-- ── 下請け管理 ─────────────────────────────────────────── -->
+<div id="tab-subcons" class="panel content">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <div>
+      <div style="font-size:14px;font-weight:700;color:#374151">🔧 下請け管理</div>
+      <div style="font-size:12px;color:#6b7280">協力業者の稼働状況・単価・実績を管理</div>
+    </div>
+    <button class="btn" style="background:#7c3aed;color:#fff" onclick="openSubconForm()">＋ 業者追加</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+    <button class="btn btn-sm btn-outline" id="sf-all" onclick="filterSubcons('all')" style="font-weight:700">全て</button>
+    <button class="btn btn-sm btn-outline" id="sf-avail" onclick="filterSubcons('avail')">🟢 空き</button>
+    <button class="btn btn-sm btn-outline" id="sf-busy" onclick="filterSubcons('busy')">🔴 稼働中</button>
+  </div>
+  <div id="subconAlert"></div>
+  <div id="subconList"><div class="loading">読み込み中…</div></div>
+</div>
+
+<!-- ── 顧客追加モーダル ─────────────────────────────────── -->
+<div id="customerModal" class="modal" onclick="if(event.target===this)closeCustomerModal()">
+  <div class="modal-box" style="max-width:480px;width:92%">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-size:14px;font-weight:700" id="customerModalTitle">顧客追加</div>
+      <button class="dp-close" style="background:#f4f5f9;color:#374151" onclick="closeCustomerModal()">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field" style="grid-column:1/-1"><label class="lbl">会社名 *</label><input class="input" id="cf-company"></div>
+      <div class="field"><label class="lbl">受注日</label><input class="input" id="cf-wondate" type="date"></div>
+      <div class="field"><label class="lbl">担当者名</label><input class="input" id="cf-contact" placeholder="田中 部長"></div>
+      <div class="field"><label class="lbl">電話番号</label><input class="input" id="cf-phone" placeholder="052-000-0000"></div>
+      <div class="field"><label class="lbl">メールアドレス</label><input class="input" id="cf-email"></div>
+      <div class="field" style="grid-column:1/-1"><label class="lbl">最終連絡日</label><input class="input" id="cf-lastcontact" type="date"></div>
+      <div class="field" style="grid-column:1/-1"><label class="lbl">住所</label><input class="input" id="cf-address" placeholder="愛知県名古屋市〇〇区〇〇1-1-1"></div>
+      <div class="field" style="grid-column:1/-1"><label class="lbl">メモ（複数担当者・特記事項）</label><textarea class="input" id="cf-memo" rows="2" placeholder="副担当: 鈴木係長 090-0000-0000 / 年末が繋がりやすい など"></textarea></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn" style="background:#15803d;color:#fff;flex:1" onclick="submitCustomerForm()">保存</button>
+      <button class="btn btn-outline" onclick="closeCustomerModal()">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 下請け追加モーダル ──────────────────────────────── -->
+<div id="subconModal" class="modal" onclick="if(event.target===this)closeSubconModal()">
+  <div class="modal-box" style="max-width:540px;width:90%">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-size:14px;font-weight:700">下請け業者追加</div>
+      <button class="dp-close" style="background:#f4f5f9;color:#374151" onclick="closeSubconModal()">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field"><label class="lbl">会社名</label><input class="input" id="sc-company" placeholder="個人事業主は空白でもOK"></div>
+      <div class="field"><label class="lbl">担当者名</label><input class="input" id="sc-contact" placeholder="山田 太郎"></div>
+      <div class="field"><label class="lbl">電話番号</label><input class="input" id="sc-phone"></div>
+      <div class="field"><label class="lbl">メールアドレス</label><input class="input" id="sc-email"></div>
+      <div class="field"><label class="lbl">得意工種</label><input class="input" id="sc-specialty" placeholder="電気一般・弱電・太陽光…"></div>
+      <div class="field"><label class="lbl">対応エリア</label><input class="input" id="sc-area" placeholder="愛知・静岡・岐阜…"></div>
+      <div class="field"><label class="lbl">稼働状況</label>
+        <select class="input" id="sc-status">
+          <option>空き</option><option>稼働中</option><option>要確認</option>
+        </select>
+      </div>
+      <div class="field"><label class="lbl">夜勤</label>
+        <select class="input" id="sc-nightok">
+          <option value="">未確認</option>
+          <option value="OK">✅ 夜勤OK</option>
+          <option value="NG">❌ 夜勤NG</option>
+        </select>
+      </div>
+      <div class="field"><label class="lbl">昼単価（円/日）</label><input class="input" id="sc-rate" type="number" placeholder="25000"></div>
+      <div class="field"><label class="lbl">夜単価（円/日）</label><input class="input" id="sc-rate-night" type="number" placeholder="30000"></div>
+      <div class="field"><label class="lbl">支払サイト</label><input class="input" id="sc-payment" placeholder="翌月末払い"></div>
+      <div class="field"><label class="lbl">評価（1〜5）</label><input class="input" id="sc-rating" type="number" min="1" max="5" value="3"></div>
+    </div>
+    <div class="field" style="margin-top:10px"><label class="lbl">実績・メモ</label><textarea class="input" id="sc-memo" rows="2"></textarea></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn" style="background:#7c3aed;color:#fff;flex:1" onclick="submitSubconForm()">保存</button>
+      <button class="btn btn-outline" onclick="closeSubconModal()">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── KPI ───────────────────────────────────────────────── -->
+<div id="tab-kpi" class="panel content">
+  <div class="card" style="padding:10px 14px;margin-bottom:10px">
+    <div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:4px">📈 KPI ダッシュボード</div>
+    <div style="font-size:12px;color:#6b7280">リード獲得〜受注までの変換率とパフォーマンス分析</div>
+  </div>
+  <!-- KPI タブ内の機会分析（詳細版） -->
+  <div id="oppCardKpi" style="display:none;background:linear-gradient(135deg,#0f172a,#1e1b4b);border-radius:12px;padding:14px 16px;margin-bottom:14px;border:1px solid #312e81">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <span style="font-size:18px">💡</span>
+      <span style="font-size:14px;font-weight:700;color:#e0e7ff">リストに眠るビジネス機会</span>
+      <span id="oppUpdatedAtKpi" style="font-size:10px;color:#6366f1;background:rgba(99,102,241,.2);padding:2px 7px;border-radius:10px"></span>
+    </div>
+    <div id="oppAlertKpi" style="font-size:12px;color:#fbbf24;background:rgba(251,191,36,.1);border-radius:8px;padding:8px 12px;margin-bottom:10px;line-height:1.5;display:none"></div>
+    <div id="oppListKpi" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div id="oppBlindSpotKpi" style="display:none;margin-top:10px;font-size:11px;color:#a5b4fc;border-top:1px solid rgba(99,102,241,.3);padding-top:8px"></div>
+    <div style="margin-top:12px;display:flex;justify-content:flex-end">
+      <button class="btn btn-sm btn-outline" style="border-color:#4338ca;color:#a5b4fc;font-size:11px" onclick="refreshOpportunities()">🔄 今すぐ再分析（約10秒）</button>
+    </div>
+  </div>
+  <div class="stats-grid" id="kpiCards"></div>
+  <div class="card" id="kpiFunnelCard" style="margin-bottom:14px">
+    <div class="card-title">🔽 ファネル変換率</div>
+    <div id="kpiFunnel"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">🗓 今月の活動</div>
+    <div id="kpiMonthly"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">🎯 商材別アタック成績</div>
+    <div id="kpiProducts"><div class="loading">集計中…</div></div>
+  </div>
+</div>
+
 <!-- ── メール送信 ────────────────────────────────────────── -->
 <div id="tab-email" class="panel content">
   <div class="card">
@@ -506,6 +937,34 @@ textarea.input{height:80px;resize:none;font-family:inherit}
       <button class="btn btn-blue" onclick="doAiEmail()">✨ AIで個別化して生成</button>
     </div>
     <div id="emailAlert" style="margin-top:10px"></div>
+  </div>
+
+  <!-- 自動フォローアップ -->
+  <div class="card" style="border-left:3px solid #6366f1">
+    <div class="card-title">🤖 自動フォローアップ（S-04）</div>
+    <div style="font-size:12px;color:#6b7280;margin-bottom:10px">
+      未架電・アプローチ中・アポ確定リードに対してClaudeが個別メールを自動生成します。<br>
+      デフォルトはGmail下書き作成（確認後に手動送信）。
+    </div>
+    <div style="background:#eef0ff;border-radius:8px;padding:10px 12px;font-size:12px;margin-bottom:12px;line-height:1.8">
+      <b>ルール</b><br>
+      📩 未架電 × メールあり → 初回メール<br>
+      🔄 アプローチ中 × 7日以上放置 → フォロー<br>
+      📅 アポ確定 → 日程確認メール<br>
+      ※ 7日以内に送信済みの会社はスキップ
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+      <button class="btn btn-gray btn-sm" onclick="doFollowUpCount()">📊 対象件数確認</button>
+      <button class="btn btn-outline btn-sm" id="followUpDraftBtn" onclick="doFollowUpRun(true)">📝 下書き作成（推奨）</button>
+      <button class="btn btn-green btn-sm" id="followUpSendBtn" onclick="doFollowUpRun(false)">📨 今すぐ送信</button>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-blue btn-sm" id="triggerSetBtn" onclick="doSetTrigger()">⏰ 毎朝8時 自動ON</button>
+      <button class="btn btn-gray btn-sm" onclick="doDeleteTrigger()" style="color:#dc2626">⏸ 自動OFF</button>
+      <span id="triggerStatus" style="font-size:12px;color:#6b7280"></span>
+    </div>
+    <div id="followUpStatus" style="font-size:12px;color:#6b7280;margin-top:8px"></div>
+    <div id="followUpAlert" style="margin-top:6px"></div>
   </div>
 
   <div id="previewCard" class="card" style="display:none">
@@ -546,6 +1005,8 @@ textarea.input{height:80px;resize:none;font-family:inherit}
           <option value="inspection">🔧 電気設備無料点検 — 法定点検切り口</option>
           <option value="solar">☀️ 太陽光発電（初期費用ゼロ）— 工場・倉庫向け</option>
           <option value="ev">🚗 EV充電設備（補助金活用）— 駐車場あり施設向け</option>
+          <option value="aircon">❄️ 業務用エアコン入替・新設 — 飲食・工場・倉庫向け</option>
+          <option value="cubicle">⚡ キュービクル更新・点検 — 大型施設・工場向け</option>
         </select>
       </div>
       <div class="field" style="max-width:120px">
@@ -702,12 +1163,13 @@ textarea.input{height:80px;resize:none;font-family:inherit}
     <div style="flex:1;min-width:0">
       <input id="dp-company" class="dp-company-in" placeholder="会社名" data-col="1" onblur="dpSave(this)">
       <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
-        <input id="dp-industry-val" class="dp-sub-in" placeholder="業種" data-col="6" onblur="dpSave(this)">
+        <input id="dp-industry-val" class="dp-sub-in" placeholder="業種" data-col="2" onblur="dpSave(this)">
         <span style="color:#4a5568;font-size:11px">·</span>
-        <input id="dp-pref-val" class="dp-sub-in" placeholder="所在地" data-col="7" onblur="dpSave(this)">
+        <span id="dp-pref-disp" style="font-size:11px;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px"></span>
       </div>
     </div>
     <button class="dp-close" onclick="closeDetail()">✕</button>
+    <button class="dp-close" onclick="deleteProspectRow()" title="この会社をリストから削除" style="background:rgba(220,38,38,.15);color:#fca5a5;margin-right:4px">🗑</button>
   </div>
 
   <div class="dp-body">
@@ -721,63 +1183,106 @@ textarea.input{height:80px;resize:none;font-family:inherit}
 
     <!-- フィールド2カラムグリッド -->
     <div class="dp-fields">
+      <div class="dpf full">
+        <div class="dp-flbl">📍 住所</div>
+        <input id="dp-address-val" class="dpf-in" data-col="3" placeholder="愛知県名古屋市中区〇〇1-1-1" onblur="dpSaveAddress(this)">
+        <div style="font-size:10px;color:#9ca3af;margin-top:2px">フル住所を入れるとエリアフィルターにも使われます</div>
+      </div>
       <div class="dpf">
-        <div class="dp-flbl">📞 電話番号</div>
+        <div class="dp-flbl">📞 電話番号（代表）</div>
         <div class="dpf-row">
-          <input id="dp-phone-val" class="dpf-in" data-col="3" placeholder="000-0000-0000" onblur="dpSave(this)">
+          <input id="dp-phone-val" class="dpf-in" data-col="10" placeholder="000-0000-0000" onblur="dpSave(this)">
+          <a id="dp-phone-link" href="#" class="dpf-copy" title="発信" style="display:flex;align-items:center;text-decoration:none">📞</a>
           <button class="dpf-copy" onclick="copyPhone()" title="コピー">📋</button>
         </div>
       </div>
       <div class="dpf">
-        <div class="dp-flbl">👤 担当者名</div>
-        <input id="dp-contact-val" class="dpf-in" data-col="2" placeholder="田中 部長" onblur="dpSave(this)">
+        <div class="dp-flbl">👤 主担当者</div>
+        <div style="display:flex;gap:4px">
+          <input id="dp-contact-val" class="dpf-in" data-col="7" placeholder="田中" onblur="dpSave(this)" style="flex:2">
+          <input id="dp-role-val" class="dpf-in" data-col="8" placeholder="役職" onblur="dpSave(this)" style="flex:1;min-width:60px">
+        </div>
       </div>
       <div class="dpf">
         <div class="dp-flbl">📧 メールアドレス</div>
-        <input id="dp-email-val" class="dpf-in" data-col="4" placeholder="example@co.jp" onblur="dpSave(this)">
+        <input id="dp-email-val" class="dpf-in" data-col="11" placeholder="example@co.jp" onblur="dpSave(this)">
       </div>
       <div class="dpf">
         <div class="dp-flbl">🌐 URL</div>
         <div class="dpf-row">
-          <input id="dp-url-val" class="dpf-in" data-col="5" placeholder="https://..." onblur="dpSave(this)">
+          <input id="dp-url-val" class="dpf-in" data-col="12" placeholder="https://..." onblur="dpSave(this)">
           <button class="dpf-copy" onclick="openUrl()" title="サイトを開く">🔗</button>
         </div>
       </div>
       <div class="dpf">
         <div class="dp-flbl">🎯 ステージ</div>
         <select id="dp-stage-sel" class="dpf-in" style="cursor:pointer" onchange="dpSaveStage(this)">
-          <option>未架電</option><option>興味あり</option><option>アプローチ中</option><option>アポ確定</option><option>商談中</option><option>見積提出</option><option>追い中</option><option>受注</option><option>保留</option><option>失注</option>
+          <option>未架電</option><option>再架電待ち</option><option>興味あり</option><option>アプローチ中</option><option>アポ確定</option><option>商談中</option><option>見積提出</option><option>追い中</option><option>受注</option><option>保留</option><option>失注</option>
         </select>
       </div>
       <div class="dpf">
         <div class="dp-flbl">📊 架電回数</div>
-        <input id="dp-callcount-val" class="dpf-in" type="number" data-col="10" onblur="dpSave(this)">
+        <input id="dp-callcount-val" class="dpf-in" type="number" data-col="13" onblur="dpSave(this)">
       </div>
       <div class="dpf">
         <div class="dp-flbl">📅 最終架電日</div>
         <div class="dpf-row">
-          <input id="dp-calldate-val" class="dpf-in" data-col="11" placeholder="日付を選択" readonly onclick="showCal('dp-calldate-val',false,this)">
+          <input id="dp-calldate-val" class="dpf-in" data-col="14" placeholder="日付を選択" readonly onclick="showCal('dp-calldate-val',false,this)">
           <button class="dpf-copy" onclick="showCal('dp-calldate-val',false,this)" title="カレンダー">📅</button>
         </div>
       </div>
       <div class="dpf">
         <div class="dp-flbl">🗓 アポ日時</div>
         <div class="dpf-row">
-          <input id="dp-apo-val" class="dpf-in" data-col="12" placeholder="日時を選択" readonly onclick="showCal('dp-apo-val',true,this)">
+          <input id="dp-apo-val" class="dpf-in" data-col="15" placeholder="日時を選択" readonly onclick="showCal('dp-apo-val',true,this)">
           <button class="dpf-copy" onclick="showCal('dp-apo-val',true,this)" title="カレンダー">🗓</button>
         </div>
       </div>
       <div class="dpf full">
-        <div class="dp-flbl">📝 メモ</div>
-        <textarea id="dp-memo-val" class="dpf-in" rows="4" style="resize:vertical;line-height:1.6" data-col="13" placeholder="架電記録・メモ…" onblur="dpSave(this)"></textarea>
+        <div class="dp-flbl">📝 メモ <span style="font-size:10px;color:#9ca3af;font-weight:400">（人間メモのみ・AI分析は下に分離）</span></div>
+        <textarea id="dp-memo-val" class="dpf-in" rows="4" style="resize:vertical;line-height:1.6" data-col="16" placeholder="架電記録・メモ…" onblur="dpSave(this)"></textarea>
+        <div id="dp-ai-hist" style="display:none"></div>
+      </div>
+      <div class="dpf">
+        <div class="dp-flbl">📱 主担当者直電</div>
+        <div class="dpf-row">
+          <input id="dp-direct-val" class="dpf-in" data-col="9" placeholder="080-0000-0000" onblur="dpSave(this)">
+          <a id="dp-direct-link" href="#" class="dpf-copy" title="発信" style="display:flex;align-items:center;text-decoration:none">📞</a>
+          <button class="dpf-copy" onclick="copyDirect()" title="コピー">📋</button>
+        </div>
+      </div>
+      <div class="dpf full">
+        <div class="dp-flbl" style="display:flex;align-items:center;justify-content:space-between">
+          <span>👥 担当者リスト</span>
+          <button class="btn btn-sm ct-add-btn" style="padding:3px 10px;font-size:11px" onclick="showAddContactForm()">+ 追加</button>
+        </div>
+        <div id="dp-contacts-list" style="margin-top:4px"></div>
+        <div id="dp-contacts-form" style="display:none;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px;margin-top:8px">
+          <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:8px">担当者を追加</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+            <input class="ct-in" id="ct-new-name" placeholder="名前（必須）">
+            <input class="ct-in" id="ct-new-role" placeholder="役職・部署">
+            <input class="ct-in" id="ct-new-phone" placeholder="電話番号">
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-sm" style="background:#5b5fc7;color:#fff;flex:1" onclick="commitAddContact()">追加</button>
+            <button class="btn btn-outline btn-sm" onclick="hideAddContactForm()">キャンセル</button>
+          </div>
+        </div>
       </div>
       <div class="dpf full">
         <div class="dp-flbl">🏛 法人番号（T番号）</div>
         <div class="dpf-row">
-          <input id="dp-corpnum-val" class="dpf-in" data-col="14" placeholder="T0-0000-0000-0000" onblur="dpSave(this)" style="font-family:monospace;letter-spacing:.5px">
+          <input id="dp-corpnum-val" class="dpf-in" data-col="19" placeholder="T0-0000-0000-0000" onblur="dpSave(this)" style="font-family:monospace;letter-spacing:.5px">
           <button class="dpf-copy" onclick="lookupCorpNumFromPanel()" title="国税庁から自動検索" id="dp-corpnum-btn">🔍</button>
         </div>
         <div id="dp-corpnum-info" style="font-size:10px;color:#9ca3af;margin-top:2px"></div>
+      </div>
+      <div class="dpf half">
+        <div class="dp-flbl">💴 資本金</div>
+        <div class="dpf-row">
+          <input id="dp-capital-val" class="dpf-in" data-col="21" placeholder="自動取得中…" onblur="dpSave(this)">
+        </div>
       </div>
     </div>
 
@@ -837,6 +1342,63 @@ var _pendingResult = null;
 var _emailPreview  = null;
 var _SCRIPT_URL = '<?= scriptUrl ?>'; // GASから正確なexec URLを受け取る
 
+// ─── 商材定義 ────────────────────────────────────────────────────
+var PRODUCT_PRESETS = [
+  { label:'🌡️ 業務用エアコン', kw:'飲食店',                            product:'業務用エアコン' },
+  { label:'⚡ 電気工事（店舗）', kw:'内装工事会社',                     product:'電気工事（店舗）' },
+  { label:'💡 LED改修',        kw:'工場',                              product:'LED改修' },
+  { label:'☀️ 太陽光・省エネ', kw:'物流会社',                          product:'太陽光・省エネ' },
+  { label:'🚗 EV充電器',       kw:'マンション管理会社',                 product:'EV充電器' },
+  { label:'🔧 設備保守',       kw:'ビル管理会社',                       product:'設備保守' },
+  { label:'🤝 施工パートナー', kw:'設計事務所',                         product:'施工パートナー' },
+  { label:'🔌 キュービクル',   kw:'工場 製造業',                        product:'キュービクル' },
+];
+var PRODUCT_FILTER_MAP = {
+  '業務用エアコン':  ['飲食','食品','ビル','工場','空調','旅館','ホテル','介護','倉庫','スーパー'],
+  '電気工事（店舗）':['内装','テナント','設計','工務店','リフォーム','建設','建築'],
+  'LED改修':         ['工場','倉庫','病院','介護','照明','商業','スーパー','ホール'],
+  '太陽光・省エネ':  ['工場','倉庫','物流','農業','太陽光','省エネ','製造'],
+  'EV充電器':        ['駐車場','マンション','ショッピング','ホテル','公共'],
+  '設備保守':        ['管理会社','ビル管','設備管理','マンション','病院','老人'],
+  '施工パートナー':  ['設計事務所','工務店','建設','ゼネコン','建築','リフォーム'],
+  'キュービクル':    ['工場','製造','大型','病院','学校','テナント','商業','物流','倉庫'],
+};
+var _selectedProduct = ''; // 現在選択中の商材
+
+function initProductPresets() {
+  var el = document.getElementById('productPresets');
+  if (!el) return;
+  el.innerHTML = PRODUCT_PRESETS.map(function(p, i) {
+    return '<button class="btn btn-gray btn-sm" id="preset-'+i+'" onclick="selectProduct('+i+')" style="font-size:12px;border-radius:20px">'+p.label+'</button>';
+  }).join('');
+}
+function selectProduct(idx) {
+  var p = PRODUCT_PRESETS[idx];
+  _selectedProduct = p.product;
+  document.getElementById('kw').value = p.kw;
+  var badge = document.getElementById('selectedProductBadge');
+  var name  = document.getElementById('selectedProductName');
+  if (badge) { badge.style.display = 'inline-flex'; }
+  if (name)  { name.textContent = p.label; }
+  // プリセットボタンの選択状態を更新
+  PRODUCT_PRESETS.forEach(function(_, i) {
+    var b = document.getElementById('preset-'+i);
+    if (b) b.style.background = (i === idx) ? '#4338ca' : '';
+    if (b) b.style.color = (i === idx) ? '#fff' : '';
+  });
+  doSearch();
+}
+function clearProduct() {
+  _selectedProduct = '';
+  var badge = document.getElementById('selectedProductBadge');
+  if (badge) badge.style.display = 'none';
+  PRODUCT_PRESETS.forEach(function(_, i) {
+    var b = document.getElementById('preset-'+i);
+    if (b) { b.style.background = ''; b.style.color = ''; }
+  });
+  document.getElementById('kw').value = '';
+}
+
 // ─── fetch ベース API 呼び出し ────────────────────────────────────
 function apiGet(params, cb) {
   var url = _SCRIPT_URL + '?page=prospecting';
@@ -859,18 +1421,44 @@ function apiPost(data, cb) {
 }
 
 // ─── タブ ────────────────────────────────────────────────────────
+function toggleMoreMenu(e){
+  if(e) e.stopPropagation();
+  var m=document.getElementById('moreMenu');
+  if(m.style.display==='none'||!m.style.display){
+    var r=document.getElementById('moreNavTab').getBoundingClientRect();
+    m.style.top=(r.bottom+2)+'px';
+    m.style.right=(window.innerWidth-r.right)+'px';
+    m.style.left='auto';
+    m.style.display='block';
+  }else{
+    m.style.display='none';
+  }
+}
+function closeMoreMenu(){ var m=document.getElementById('moreMenu'); if(m) m.style.display='none'; }
+document.addEventListener('click',function(e){
+  var t=document.getElementById('moreNavTab');
+  if(t&&!t.contains(e.target)) closeMoreMenu();
+});
+var _MAIN_TABS=['search','list','meeting','followup','won','call'];
 function switchTab(name) {
-  var tabs=['search','list','meeting','followup','won','email','campaign','visit','tasks','stats','call'];
-  document.querySelectorAll('.nav-tab').forEach(function(t,i){
-    t.classList.remove('on');
-    if(tabs[i]===name) t.classList.add('on');
-  });
+  closeMoreMenu();
+  // メインタブのon状態を更新（もっとメニューのタブは全解除）
+  var mainNavTabs=document.querySelectorAll('.nav-tab:not(#moreNavTab)');
+  mainNavTabs.forEach(function(t){ t.classList.remove('on'); });
+  document.getElementById('moreNavTab').classList.remove('on');
+  // 対応するメインタブがあればon、なければもっとメニューをon
+  var mainIdx=_MAIN_TABS.indexOf(name);
+  if(mainIdx>=0) mainNavTabs[mainIdx].classList.add('on');
+  else document.getElementById('moreNavTab').classList.add('on');
   document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('on'); });
   document.getElementById('tab-'+name).classList.add('on');
-  if(name==='list')     loadList();
+  if(name==='list')     { loadList(); loadOpportunities(); }
   if(name==='meeting')  loadPhase('meeting');
   if(name==='followup') loadPhase('followup');
   if(name==='won')      loadPhase('won');
+  if(name==='customers') loadCustomers();
+  if(name==='subcons')   loadSubcons();
+  if(name==='kpi')       { loadKpi(); loadOpportunitiesKpi(); }
   if(name==='tasks')    loadHumanTasks();
   if(name==='stats')    loadStats();
   if(name==='call')     startCallMode();
@@ -891,6 +1479,13 @@ function hideProgress() {
 function doSearch(){
   var kw=v('kw'),area=v('area');
   if(!kw){ alert2('searchAlert','キーワードを入力してください','err'); return; }
+  var lt=v('searchListType')||'営業';
+  var srcLabel=(_selectedProduct?_selectedProduct+'で発掘: ':'リード発掘: ')+kw+(area?' '+area:'');
+  function tagResults(arr){ arr.forEach(function(x){
+    x.source=x.source||srcLabel;
+    x.listType=lt;
+    if(_selectedProduct&&!x.topProduct) x.topProduct=_selectedProduct;
+  }); }
   setBtn('searchBtn','検索中…',true);
   alert2('searchAlert','','');
   document.getElementById('searchResultsWrap').style.display='none';
@@ -900,26 +1495,40 @@ function doSearch(){
   apiGet({action:'searchLeads',keyword:kw,area:area,quick:'1'},function(r){
     if(r.error){ setBtn('searchBtn','🔍 検索',false); hideProgress(); alert2('searchAlert',r.error,'err'); return; }
     _results=r.results||[];
+    tagResults(_results);
     renderResults(_results);
     document.getElementById('searchResultsWrap').style.display='block';
-    document.getElementById('resultCount').textContent=_results.length+'件';
+    document.getElementById('resultCount').textContent=_results.length+'件 (保存中…)';
+    // クイック分を即保存（ページを離れても消えない）
+    apiPost({ prospectAction: 'addProspects', places: _results }, function(rq) {
+      var qAdded=(rq&&rq.added)||0;
+      document.getElementById('resultCount').textContent=_results.length+'件 (+'+qAdded+'件保存済み・深掘り中…)';
+      if(qAdded>0) loadList();
+    });
     setProgress('🤖 AI深掘り発掘中…', _results.length, 30, 'AIが業種バリエーション生成＋エリア分割で全件取得中（15〜30秒）');
     // 2nd pass: deep（全件取得・追加分をマージ）
     apiGet({action:'searchLeads',keyword:kw,area:area},function(r2){
       setBtn('searchBtn','🔍 検索',false);
       if(r2.error){ hideProgress(); alert2('searchAlert','深掘り完了（一部エラー: '+r2.error+')','info'); return; }
       var extra=r2.results||[];
+      tagResults(extra);
       var known={};
       _results.forEach(function(x){ known[x.name]=true; });
-      var added=0;
+      var newOnes=[];
       extra.forEach(function(x){
-        if(!known[x.name]){ _results.push(x); known[x.name]=true; added++; }
+        if(!known[x.name]){ _results.push(x); known[x.name]=true; newOnes.push(x); }
       });
       renderResults(_results);
       document.getElementById('resultCount').textContent=_results.length+'件';
-      setProgress('✅ 発掘完了！', _results.length, 100, '深掘りで+'+added+'件追加（合計'+_results.length+'件）');
-      setTimeout(hideProgress, 3000);
-      alert2('searchAlert','✅ 合計 '+_results.length+'件 発掘完了','ok');
+      if(newOnes.length===0){ hideProgress(); alert2('searchAlert','✅ 深掘り完了（追加なし）','ok'); return; }
+      setProgress('💾 追加分を保存中…', _results.length, 90, '深掘り分 '+newOnes.length+'件を追加保存中…');
+      // 深掘り追加分のみ保存（クイック分は既に保存済み）
+      apiPost({ prospectAction: 'addProspects', places: newOnes }, function(ra) {
+        hideProgress();
+        var addedCount=(ra&&ra.added)||0;
+        alert2('searchAlert', '✅ 合計 '+_results.length+'件 発掘 → 計'+addedCount+'件リストに追加', 'ok');
+        if(addedCount>0) loadList();
+      });
     });
   });
 }
@@ -971,16 +1580,29 @@ function addSelected(){
 }
 
 // ─── 定数 ────────────────────────────────────────────────────────
-var COL_TO_KEY={1:'company',2:'contact',3:'phone',4:'email',5:'url',6:'industry',7:'pref',8:'source',9:'stage',10:'callCount',11:'callDate',12:'apo',13:'memo',14:'corpNum'};
+var COL_TO_KEY={1:'company',2:'industry',3:'pref',4:'stage',5:'aiScore',6:'topProduct',7:'contact',8:'role',9:'directPhone',10:'phone',11:'email',12:'url',13:'callCount',14:'callDate',15:'apo',16:'memo',17:'source',18:'listType',19:'corpNum',20:'contacts',21:'capital'};
 
 // ─── リスト ──────────────────────────────────────────────────────
 function loadList(){
   document.getElementById('prospectList').innerHTML='<div class="loading">読み込み中…</div>';
-  apiGet({action:'getProspects',limit:200},function(d){
-    if(d.error){ document.getElementById('prospectList').innerHTML='<div class="empty" style="color:#dc2626">'+esc(d.error)+'</div>'; return; }
-    _prospects=Array.isArray(d)?d:[];
+  apiGet({action:'getProspects',limit:3000},function(d){
+    if(!d){ document.getElementById('prospectList').innerHTML='<div class="empty" style="color:#dc2626">接続エラー（GASが応答しませんでした）</div>'; return; }
+    if(d.error){ document.getElementById('prospectList').innerHTML='<div class="empty" style="color:#dc2626">エラー: '+esc(d.error)+'</div>'; return; }
+    _prospects=Array.isArray(d)?d:(d.items||d.data||[]);
+    var cnt=document.getElementById('filterCount');
+    if(cnt) cnt.textContent=_prospects.length+'件';
+    if(!_prospects.length){
+      document.getElementById('prospectList').innerHTML='<div class="empty">リストがまだ空です。「🔍 発掘」タブで検索して会社を追加してください。</div>';
+      return;
+    }
     renderList(applyFilter(_prospects));
     updateTabCounts();
+    // メモに住所があれば移行バナーを表示（1回のみ）
+    if(!sessionStorage.getItem('addrMigrateDone')){
+      var prefRe=/^(〒?\d{3}-?\d{4}|北海道|青森県|岩手県|宮城県|秋田県|山形県|福島県|茨城県|栃木県|群馬県|埼玉県|千葉県|東京都|神奈川県|新潟県|富山県|石川県|福井県|山梨県|長野県|岐阜県|静岡県|愛知県|三重県|滋賀県|京都府|大阪府|兵庫県|奈良県|和歌山県|鳥取県|島根県|岡山県|広島県|山口県|徳島県|香川県|愛媛県|高知県|福岡県|佐賀県|長崎県|熊本県|大分県|宮崎県|鹿児島県|沖縄県)/;
+      var hasMemoAddr=_prospects.some(function(p){ return (!p.pref||p.pref.length<=6)&&prefRe.test(String(p.memo||'')); });
+      if(hasMemoAddr) document.getElementById('addrMigrateBanner').style.display='flex';
+    }
   });
 }
 
@@ -1019,26 +1641,136 @@ function isHot(p){
 }
 
 function applyFilter(list){
-  var q=(v('filter')||'').toLowerCase();
+  var q=(v('filter')||'').toLowerCase().trim();
   var st=v('filterStage')||'';
+  var area=v('filterArea')||'';
+  var cond=v('filterCond')||'';
+  var prod=v('filterProduct')||'';
+  var score=v('filterScore')||'';
+  var hp=v('filterHp')||'';
+  var listType=v('filterListType')||'';
+  var srcF=v('filterSource')||'';
+  var tokai=['愛知','静岡','岐阜','三重'];
+  var kanto=['東京','神奈川','埼玉','千葉'];
   return list.filter(function(p){
-    var matchQ=!q||(p.company||'').toLowerCase().includes(q)||(p.industry||'').toLowerCase().includes(q)||(p.pref||'').includes(q)||(p.memo||'').toLowerCase().includes(q);
+    var co=String(p.company||'').toLowerCase();
+    var ind=String(p.industry||'').toLowerCase();
+    var pref=String(p.pref||'');
+    var memo=String(p.memo||'').toLowerCase();
+    var ct=String(p.contact||'').toLowerCase();
+    var ph=String(p.phone||'').toLowerCase();
+    var tp=String(p.topProduct||'').toLowerCase();
+    var src=String(p.source||'').toLowerCase();
+
+    // テキスト検索（source/発掘キーワードも対象）
+    var matchQ=!q||co.includes(q)||ind.includes(q)||pref.toLowerCase().includes(q)||memo.includes(q)||ct.includes(q)||ph.includes(q)||tp.includes(q)||src.includes(q);
+
+    // ステージ
     var matchS=!st||stageMatch(p,st);
-    return matchQ&&matchS;
+
+    // エリア
+    var matchA=!area||
+      (area==='東海'&&tokai.some(function(a){return pref.includes(a);}))   ||
+      (area==='関東'&&kanto.some(function(a){return pref.includes(a);}))   ||
+      pref.includes(area);
+
+    // 条件フィルタ
+    var memoRaw=String(p.memo||'');
+    var matchC=!cond||
+      (cond==='ok'  && memoRaw.includes('[条件OK]'))  ||
+      (cond==='ng'  && memoRaw.includes('[条件NG]'))  ||
+      (cond==='none'&&!memoRaw.includes('[条件OK]')&&!memoRaw.includes('[条件NG]'));
+
+    // 商材フィルタ（topProduct完全一致 or 業種/source/会社名キーワード）
+    var matchP=!prod||(function(){
+      if (tp.includes(prod.toLowerCase())) return true;
+      var keys=PRODUCT_FILTER_MAP[prod]||[];
+      var target=(ind+memoRaw+src+co).toLowerCase();
+      return keys.some(function(k){ return target.includes(k); });
+    })();
+
+    // AIスコアフィルタ
+    var sc=parseInt(p.aiScore)||0;
+    var matchScore=!score||
+      (score==='high'&&sc>=8)||
+      (score==='mid'&&sc>=6&&sc<8)||
+      (score==='low'&&sc>=1&&sc<6)||
+      (score==='none'&&sc===0);
+
+    // HP有無フィルタ
+    var matchHp=!hp||
+      (hp==='yes'&&!!p.url)||
+      (hp==='no'&&!p.url);
+
+    // リスト種別フィルタ
+    var lt=String(p.listType||'営業');
+    var matchLt=!listType||lt===listType;
+
+    // 発掘元フィルタ
+    var matchSrc=!srcF||
+      (srcF==='maps'&&(src.includes('マップ')||src.includes('maps')||src.includes('google')||src.includes('リード発掘')||src===''||!p.source))||
+      (srcF==='hiroshima'&&src.includes('広島'))||
+      (srcF==='customer'&&src.includes('顧客管理'))||
+      (srcF==='manual'&&!src&&!p.source);
+
+    return matchQ&&matchS&&matchA&&matchC&&matchP&&matchScore&&matchHp&&matchLt&&matchSrc;
+  });
+}
+function runAddrMigration(){
+  var btn=document.getElementById('addrMigrateBtn');
+  btn.textContent='移行中…'; btn.disabled=true;
+  apiPost({prospectAction:'migrateAddressFromMemo'},function(r){
+    btn.textContent='完了'; btn.disabled=false;
+    if(r&&r.ok){
+      sessionStorage.setItem('addrMigrateDone','1');
+      document.getElementById('addrMigrateBanner').style.display='none';
+      alert2('listAlert','✅ 住所移行完了: '+r.updated+'件の住所をメモ欄から住所欄に移動しました','ok');
+      loadList();
+    } else {
+      alert2('listAlert','⚠️ 移行エラー: '+(r&&r.error||'不明'),'err');
+    }
+  });
+}
+function resetFilters(){
+  ['filter','filterStage','filterArea','filterCond','filterProduct','filterScore','filterHp','filterSource','sortBy'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.value='';
+  });
+  // 種別は「営業」をデフォルトに戻す
+  var ltEl=document.getElementById('filterListType');
+  if(ltEl) ltEl.value='営業';
+  filterList();
+}
+function updateFilterHighlights(){
+  var defaults={filterListType:'営業',filterStage:'',filterArea:'',filterProduct:'',filterScore:'',filterHp:'',filterSource:'',filterCond:'',sortBy:''};
+  Object.keys(defaults).forEach(function(id){
+    var el=document.getElementById(id); if(!el) return;
+    var active=el.value!==defaults[id];
+    el.style.borderColor=active?'#7c3aed':'';
+    el.style.background=active?'#f5f3ff':'';
+    el.style.color=active?'#5b21b6':'';
   });
 }
 function stageMatch(p,st){
-  if(st==='new')      return !p.callCount||+p.callCount===0;
-  if(st==='interest') return p.stage==='興味あり';
+  var stage=String(p.stage||'').trim();
+  var cc=+p.callCount||0;
+  if(st==='new')      return cc===0;
+  if(st==='interest') return stage==='興味あり';
   if(st==='hot')      return isHot(p);
-  if(st==='active')   return p.stage==='商談中'||p.stage==='見積提出';
-  if(st==='apo')      return p.stage==='アポ確定';
-  if(st==='won')      return p.stage==='受注';
-  if(st==='ng')       return p.stage==='失注';
-  if(st==='called')   return +p.callCount>0&&p.stage!=='アポ確定'&&p.stage!=='失注'&&p.stage!=='受注';
+  if(st==='active')   return stage==='商談中'||stage==='見積提出'||stage==='追い中';
+  if(st==='apo')      return stage==='アポ確定';
+  if(st==='won')      return stage==='受注';
+  if(st==='ng')       return stage==='失注';
+  if(st==='called')   return cc>0&&stage!=='アポ確定'&&stage!=='失注'&&stage!=='受注';
   return true;
 }
-function filterList(){ renderList(applyFilter(_prospects)); }
+function filterList(){
+  updateFilterHighlights();
+  var filtered=applyFilter(_prospects);
+  var cnt=document.getElementById('filterCount');
+  if(cnt) cnt.textContent=filtered.length+'/'+ _prospects.length+'件';
+  renderList(filtered);
+}
 
 function badge(p){
   if(p.stage==='受注')    return{c:'b-win',  l:'受注'};
@@ -1054,19 +1786,34 @@ function badge(p){
 
 function buildRow(p){
   var b=badge(p);
-  var ind=(p.industry||'').slice(0,20);
+  var ind=(p.industry||'').slice(0,25);
   var subStr=[ind,p.pref].filter(Boolean).join(' · ');
   if(+p.callCount>0) subStr+=(subStr?' · ':'')+p.callCount+'回'+(p.callDate?' ('+p.callDate.slice(5)+')':'');
   var memoLine=p.memo?String(p.memo).split('\n')[0].slice(0,50):'';
   var hot=isHot(p);
   var days=hot?daysSince(p.callDate):null;
   var hotBadge=hot&&days!==null&&days>=2?'<span class="badge b-hot" style="margin-right:4px">🔥 '+days+'日</span>':'';
-  // AI分析済みバッジ（メモの【AI分析: ★N】を検出）
-  var memoStr=String(p.memo||'');
-  var aiM=memoStr.match(/【AI分析:.*?(★\d)/);
-  var aiBadge=aiM?'<span class="ai-badge">AI '+aiM[1]+'</span>':'';
+  // AI分析済みバッジ — 永続スコア(S列)優先、なければメモから★を取得
+  var scoreNum = p.aiScore || 0;
+  var aiBadge = '';
+  if (scoreNum > 0) {
+    var scoreColor = scoreNum >= 8 ? '#dc2626' : scoreNum >= 6 ? '#d97706' : '#7c3aed';
+    aiBadge = '<span class="ai-badge" style="background:'+(scoreNum>=8?'#fee2e2':scoreNum>=6?'#fef3c7':'#f3e8ff')+';color:'+scoreColor+'">'+scoreNum+'点'+(p.topProduct?'·'+p.topProduct.slice(0,6):'')+'</span>';
+  } else {
+    var memoStr=String(p.memo||'');
+    var aiM=memoStr.match(/【AI分析:.*?(★\d)/);
+    if(aiM) aiBadge='<span class="ai-badge">AI '+aiM[1]+'</span>';
+  }
   // HPなしバッジ（URLが空 = Web未確認 = HP提案角度）
   var noWebBadge=!p.url?'<span style="font-size:9px;background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:6px;font-weight:700">HP未確認</span>':'';
+  // 資本金バッジ
+  var capitalBadge=p.capital?'<span style="font-size:9px;background:#ecfdf5;color:#065f46;padding:1px 5px;border-radius:6px;font-weight:600">¥'+esc(p.capital)+'</span>':'';
+  // 推奨商材バッジ（topProduct）
+  var prodBadge=p.topProduct?'<span style="font-size:9px;background:#ede9fe;color:#5b21b6;padding:1px 5px;border-radius:6px;font-weight:600">'+esc(p.topProduct.slice(0,10))+'</span>':'';
+  // 発掘元タグ（source）— 長すぎる場合は省略
+  var srcRaw=String(p.source||'');
+  var srcShort=srcRaw?srcRaw.slice(0,16):'';
+  var srcBadge=srcShort?'<span style="font-size:9px;background:#f1f5f9;color:#475569;padding:1px 5px;border-radius:6px;border:1px solid #e2e8f0">📍'+esc(srcShort)+'</span>':'';
   // 会社名の頭文字アバター
   var name=p.company||'?';
   var initials=name.replace(/^(株式会社|有限会社|\(株\)|\(有\)|株|合同会社)/,'').trim().slice(0,2)||name.slice(0,2);
@@ -1080,6 +1827,9 @@ function buildRow(p){
     +'<div class="pr-right">'
     +hotBadge
     +noWebBadge
+    +capitalBadge
+    +prodBadge
+    +srcBadge
     +aiBadge
     +'<span class="badge '+b.c+'">'+b.l+'</span>'
     +'<button class="pr-call" onclick="xlCallMenu(event,'+p.rowIndex+')" title="架電記録">📞</button>'
@@ -1089,17 +1839,77 @@ function buildRow(p){
 
 function renderList(list){
   var el=document.getElementById('prospectList');
-  if(!list.length){ el.innerHTML='<div class="empty">データがありません</div>'; return; }
+  if(!list.length){
+    var activeFilters=[];
+    if(v('filter')) activeFilters.push('検索「'+v('filter')+'」');
+    if(v('filterStage')) activeFilters.push('ステージ');
+    if(v('filterArea')) activeFilters.push('エリア');
+    if(v('filterProduct')) activeFilters.push('商材');
+    if(v('filterScore')) activeFilters.push('AIスコア');
+    if(v('filterHp')) activeFilters.push('HP有無');
+    if(v('filterListType')) activeFilters.push('種別「'+v('filterListType')+'」');
+    if(v('filterSource')) activeFilters.push('発掘元');
+    if(v('filterCond')) activeFilters.push('条件');
+    var msg=activeFilters.length
+      ?'フィルター（'+activeFilters.join(' / ')+'）に該当する会社がありません。<br><button class="btn btn-sm btn-gray" style="margin-top:8px" onclick="resetFilters()">✕ フィルターを全解除</button>'
+      :'データがありません';
+    el.innerHTML='<div class="empty">'+msg+'</div>'; return;
+  }
+  // ソート
+  var sort = v('sortBy') || '';
+  if (sort === 'score_desc') {
+    list = list.slice().sort(function(a,b){ return (b.aiScore||0)-(a.aiScore||0); });
+  } else if (sort === 'call_asc') {
+    list = list.slice().sort(function(a,b){ return (+a.callCount||0)-(+b.callCount||0); });
+  } else if (sort === 'date_asc') {
+    list = list.slice().sort(function(a,b){
+      var da = a.callDate ? new Date(String(a.callDate).replace(/\//g,'-')) : new Date(0);
+      var db = b.callDate ? new Date(String(b.callDate).replace(/\//g,'-')) : new Date(0);
+      return da - db;
+    });
+  }
+  // TOP10カード更新（スコア順のみ）
+  renderTop10(list);
   var hot=list.filter(isHot);
   var rest=list.filter(function(p){return !isHot(p);});
   var h='';
-  if(hot.length){
+  if(hot.length && !sort){
     h+='<div class="hot-header">🔥 要フォロー — 放置中のホットリード（'+hot.length+'件）</div>';
     hot.forEach(function(p){h+=buildRow(p);});
     h+='<div class="hot-divider"></div>';
+    rest.forEach(function(p){h+=buildRow(p);});
+  } else {
+    list.forEach(function(p){h+=buildRow(p);});
   }
-  rest.forEach(function(p){h+=buildRow(p);});
   el.innerHTML=h;
+}
+
+function renderTop10(list) {
+  var card = document.getElementById('top10Card');
+  var listEl = document.getElementById('top10List');
+  if (!card || !listEl) return;
+  var candidates = list.filter(function(p){
+    return p.stage!=='受注' && p.stage!=='失注' && p.aiScore > 0;
+  }).slice();
+  candidates.sort(function(a,b){ return (b.aiScore||0)-(a.aiScore||0); });
+  var top = candidates.slice(0, 10);
+  if (!top.length) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  listEl.innerHTML = top.map(function(p, i) {
+    var scoreColor = p.aiScore >= 8 ? '#dc2626' : p.aiScore >= 6 ? '#f59e0b' : '#6366f1';
+    var initials = (p.company||'?').replace(/^(株式会社|有限会社|\(株\)|\(有\)|株|合同会社)/,'').trim().slice(0,2)||'??';
+    return '<div onclick="openDetail('+p.rowIndex+')" style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:#fff;border-radius:8px;cursor:pointer;border:1px solid #e9d5ff">'
+      + '<span style="font-size:11px;font-weight:800;color:#9ca3af;min-width:16px">'+(i+1)+'</span>'
+      + '<div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">'+esc(initials)+'</div>'
+      + '<div style="flex:1;min-width:0">'
+      + '<div style="font-size:12px;font-weight:700;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(p.company)+'</div>'
+      + (p.topProduct ? '<div style="font-size:10px;color:#7c3aed">'+esc(p.topProduct)+'</div>' : '')
+      + '</div>'
+      + '<div style="text-align:right;flex-shrink:0">'
+      + '<div style="font-size:14px;font-weight:800;color:'+scoreColor+'">'+p.aiScore+'</div>'
+      + '<div style="font-size:9px;color:#9ca3af">スコア</div>'
+      + '</div></div>';
+  }).join('');
 }
 
 // ─── 架電コンテキストメニュー ────────────────────────────────────
@@ -1198,18 +2008,79 @@ function openDetail(rowIndex){
   var row=document.querySelector('.prospect-row[data-row="'+rowIndex+'"]');
   if(row) row.classList.add('sel');
 
-  dpSet('dp-company',      p.company,   1);
-  dpSet('dp-industry-val', p.industry,  6);
-  dpSet('dp-pref-val',     p.pref,      7);
-  dpSet('dp-phone-val',    p.phone,     3);
-  dpSet('dp-contact-val',  p.contact,   2);
-  dpSet('dp-email-val',    p.email,     4);
-  dpSet('dp-url-val',      p.url,       5);
-  dpSet('dp-callcount-val',p.callCount, 10);
-  dpSet('dp-calldate-val', p.callDate,  11);
-  dpSet('dp-apo-val',      p.apo,       12);
-  dpSet('dp-memo-val',     p.memo,      13);
-  dpSet('dp-corpnum-val',  p.corpNum||'', 14);
+  dpSet('dp-company',      p.company,        1);
+  dpSet('dp-industry-val', p.industry,       2);
+  dpSet('dp-address-val',  p.pref,           3);
+  var prefDisp = document.getElementById('dp-pref-disp');
+  if (prefDisp) prefDisp.textContent = (p.pref||'').slice(0, 25);
+  dpSet('dp-contact-val',  p.contact,        7);
+  dpSet('dp-role-val',     p.role||'',       8);
+  dpSet('dp-direct-val',   p.directPhone||'',9);
+  dpSet('dp-phone-val',    p.phone,          10);
+  dpSet('dp-email-val',    p.email,          11);
+  dpSet('dp-url-val',      p.url,            12);
+  dpSet('dp-callcount-val',p.callCount,      13);
+  dpSet('dp-calldate-val', p.callDate,       14);
+  dpSet('dp-apo-val',      fmtDateJST(p.apo),15);
+  // メモ：AI分析スタンプを除いた人間メモのみ表示
+  (function(){
+    var memoEl=document.getElementById('dp-memo-val');
+    if(!memoEl) return;
+    var rawMemo=String(p.memo||'');
+    var stamps=extractAiStamps(rawMemo);
+    var clean=cleanMemo(rawMemo);
+    memoEl.value=clean; memoEl.dataset.orig=clean; memoEl.dataset.col='16'; memoEl.dataset.aiStamps=stamps;
+    var histEl=document.getElementById('dp-ai-hist');
+    if(histEl){
+      if(stamps){
+        var stampLines = stamps.split('\n').filter(Boolean);
+        var recent = stampLines.slice(-3); // 最新3件のみ表示
+        var older  = stampLines.slice(0, -3);
+        var olderHtml = older.length
+          ? '<details style="margin-top:4px"><summary style="font-size:10px;color:#9ca3af;cursor:pointer">過去'+older.length+'件</summary>'
+            + older.map(function(l){return '<div style="font-size:10px;color:#a78bfa">'+esc(l)+'</div>';}).join('')
+            + '</details>'
+          : '';
+        histEl.innerHTML='<div class="memo-ai-hist">🤖 AI分析履歴（最新3件）<br>'
+          + recent.map(function(l){return esc(l);}).join('<br>')
+          + olderHtml
+          + '</div>';
+        histEl.style.display='block';
+      } else { histEl.style.display='none'; }
+    }
+  })();
+  dpSet('dp-corpnum-val',  p.corpNum||'',    19);
+  dpSet('dp-capital-val',  p.capital||'',    21);
+  // 空フィールドを自動補完（バックグラウンド: URL・電話・資本金など）
+  var needsEnrich = !p.capital || (!p.url && !p.phone);
+  if (needsEnrich) {
+    var capEl = document.getElementById('dp-capital-val');
+    if (capEl && !p.capital) capEl.placeholder = '自動取得中…';
+    apiPost({ prospectAction: 'enrichRowIfEmpty', rowIndex: p.rowIndex }, function(r) {
+      if (!r || r.error) return;
+      var ch = r.changes || {};
+      var cached = _prospects.find(function(x){ return x.rowIndex === p.rowIndex; });
+      if (ch.capital) {
+        if (capEl) { capEl.value = ch.capital; capEl.placeholder = '1,000万円'; }
+        if (cached) cached.capital = ch.capital;
+      } else if (capEl && !p.capital) { capEl.placeholder = '不明（手動入力可）'; }
+      if (ch.url && cached) {
+        cached.url = ch.url;
+        var urlEl = document.getElementById('dp-url-val'); if (urlEl && !urlEl.value) urlEl.value = ch.url;
+      }
+      if (ch.phone && cached) {
+        cached.phone = ch.phone;
+        var phEl = document.getElementById('dp-phone-val'); if (phEl && !phEl.value) phEl.value = ch.phone;
+      }
+    });
+  }
+  // tel: リンクを更新
+  var phoneLink = document.getElementById('dp-phone-link');
+  if (phoneLink) phoneLink.href = p.phone ? 'tel:'+p.phone : '#';
+  var directLink = document.getElementById('dp-direct-link');
+  if (directLink) directLink.href = p.directPhone ? 'tel:'+p.directPhone : '#';
+  // 担当者リスト
+  renderContacts(rowIndex);
   var info=document.getElementById('dp-corpnum-info');
   if(info) info.textContent=p.corpNum?'✓ 登録済み':'未登録 — 🔍ボタンで国税庁から自動検索';
 
@@ -1270,6 +2141,141 @@ function closeDetail(){
   document.getElementById('overlay').classList.remove('on');
   document.querySelectorAll('.prospect-row').forEach(function(r){r.classList.remove('sel');});
 }
+function deleteProspectRow(){
+  if(!_detailRow) return;
+  var p=_prospects.find(function(x){return x.rowIndex===_detailRow;});
+  var name=p?p.company:'この会社';
+  if(!confirm('「'+name+'」をリストから削除しますか？\nこの操作は取り消せません。')) return;
+  apiPost({prospectAction:'deleteProspect',rowIndex:_detailRow},function(r){
+    if(r&&r.ok){
+      _prospects=_prospects.filter(function(x){return x.rowIndex!==_detailRow;});
+      closeDetail();
+      filterList();
+      alert2('listAlert','✅ 削除しました','ok');
+    } else {
+      alert2('listAlert','削除失敗: '+(r&&r.error||'不明'),'err');
+    }
+  });
+}
+
+// ─── 担当者リスト ─────────────────────────────────────────────────
+function parseContacts(contactsJson) {
+  if (!contactsJson) return [];
+  try { return JSON.parse(contactsJson) || []; } catch(e) { return []; }
+}
+function renderContacts(rowIndex) {
+  var el = document.getElementById('dp-contacts-list');
+  if (!el) return;
+  var p = _prospects.find(function(x){ return x.rowIndex === rowIndex; });
+  var contacts = p ? parseContacts(p.contacts) : [];
+  var html = '';
+
+  // 主担当者（col B=名前、col Q=役職、col C=直電）を先頭に固定表示
+  var mainName  = p ? String(p.contact||'').trim() : '';
+  var mainRole  = p ? String(p.role||'').trim()    : '';
+  var mainPhone = p ? String(p.directPhone||'').trim() : '';
+  if (mainName || mainPhone) {
+    html += '<div class="ct-main-row">';
+    html += mainPhone
+      ? '<a class="ct-call" href="tel:'+esc(mainPhone)+'" title="発信">📞</a>'
+      : '<span style="color:#d1d5db;font-size:12px;width:16px;display:inline-block">📞</span>';
+    html += '<span class="ct-main-badge">主担当</span>';
+    html += '<span class="ct-val">'+esc(mainName||'（未設定）')+'</span>';
+    if (mainRole)  html += '<span class="ct-role">'+esc(mainRole)+'</span>';
+    if (mainPhone) html += '<span class="ct-phone">'+esc(mainPhone)+'</span>';
+    html += '</div>';
+  }
+
+  // サブ担当者（col P JSON）
+  contacts.forEach(function(c, i) {
+    html += '<div class="ct-row">'
+      + (c.phone ? '<a class="ct-call" href="tel:'+esc(c.phone)+'" title="発信">📞</a>' : '<span style="color:#d1d5db;font-size:12px">📞</span>')
+      + '<input class="ct-in" value="'+esc(c.name||'')+'" placeholder="名前" onblur="updateContact('+rowIndex+','+i+',\'name\',this.value)">'
+      + '<input class="ct-in" value="'+esc(c.role||'')+'" placeholder="役職" onblur="updateContact('+rowIndex+','+i+',\'role\',this.value)">'
+      + '<input class="ct-in" value="'+esc(c.phone||'')+'" placeholder="電話" onblur="updateContact('+rowIndex+','+i+',\'phone\',this.value)">'
+      + '<button class="ct-del" onclick="deleteContact('+rowIndex+','+i+')">✕</button>'
+      + '</div>';
+  });
+
+  if (!mainName && !mainPhone && !contacts.length) {
+    html = '<div style="font-size:11px;color:#9ca3af;padding:6px 0">担当者名を入力するか「+ 追加」でサブ担当者を登録できます</div>';
+  }
+  el.innerHTML = html;
+}
+function showAddContactForm() {
+  document.getElementById('dp-contacts-form').style.display = 'block';
+  document.getElementById('ct-new-name').focus();
+}
+function hideAddContactForm() {
+  document.getElementById('dp-contacts-form').style.display = 'none';
+  ['ct-new-name','ct-new-role','ct-new-phone'].forEach(function(id){ document.getElementById(id).value=''; });
+}
+function commitAddContact() {
+  var name  = document.getElementById('ct-new-name').value.trim();
+  var role  = document.getElementById('ct-new-role').value.trim();
+  var phone = document.getElementById('ct-new-phone').value.trim();
+  if (!name) { document.getElementById('ct-new-name').focus(); return; }
+  var p = _prospects.find(function(x){ return x.rowIndex === _detailRow; });
+  if (!p) return;
+  var contacts = parseContacts(p.contacts);
+  contacts.push({ name: name, role: role, phone: phone });
+  _writeContacts(_detailRow, contacts);
+  hideAddContactForm();
+}
+function deleteContact(rowIndex, idx) {
+  var p = _prospects.find(function(x){ return x.rowIndex === rowIndex; });
+  if (!p) return;
+  var contacts = parseContacts(p.contacts);
+  contacts.splice(idx, 1);
+  _writeContacts(rowIndex, contacts);
+}
+function updateContact(rowIndex, idx, field, val) {
+  var p = _prospects.find(function(x){ return x.rowIndex === rowIndex; });
+  if (!p) return;
+  var contacts = parseContacts(p.contacts);
+  if (!contacts[idx]) return;
+  contacts[idx][field] = val.trim();
+  _writeContacts(rowIndex, contacts);
+}
+function _writeContacts(rowIndex, contacts) {
+  var p = _prospects.find(function(x){ return x.rowIndex === rowIndex; });
+  if (!p) return;
+  var json = contacts.length ? JSON.stringify(contacts) : '';
+  p.contacts = json;
+  apiPost({ prospectAction:'updateCell', rowIndex:rowIndex, col:20, value:json }, function(r){
+    if (r.error) { alert('保存失敗: '+r.error); return; }
+    renderContacts(rowIndex);
+  });
+}
+
+// AIスタンプ（【AI分析:...】を含む行）を抽出
+// ISO日時文字列 → JST表示形式に変換
+function fmtDateJST(val) {
+  if (!val) return '';
+  var s = String(val);
+  var m = s.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/);
+  if (!m) return s; // already formatted or plain string
+  try {
+    var d = new Date(s);
+    if (isNaN(d)) return s;
+    var jst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+    var ymd = jst.getFullYear() + '/' + String(jst.getMonth()+1).padStart(2,'0') + '/' + String(jst.getDate()).padStart(2,'0');
+    var hm  = String(jst.getHours()).padStart(2,'0') + ':' + String(jst.getMinutes()).padStart(2,'0');
+    return hm === '00:00' ? ymd : ymd + ' ' + hm;
+  } catch(e) { return s; }
+}
+
+function extractAiStamps(memo){
+  if(!memo) return '';
+  var lines=String(memo).split('\n');
+  return lines.filter(function(l){return l.indexOf('【AI分析:')!==-1;}).join('\n');
+}
+// AI分析スタンプを除いた人間メモだけ返す
+function cleanMemo(memo){
+  if(!memo) return '';
+  var lines=String(memo).split('\n');
+  return lines.filter(function(l){return l.indexOf('【AI分析:')===-1;}).join('\n').trim();
+}
 
 function dpSet(id,val,col){
   var el=document.getElementById(id); if(!el) return;
@@ -1281,17 +2287,38 @@ function dpSave(input){
   if(!_detailRow||!col||val===input.dataset.orig) return;
   input.dataset.orig=val;
   var p=_prospects.find(function(x){return x.rowIndex===_detailRow;});
-  if(p&&COL_TO_KEY[col]) p[COL_TO_KEY[col]]=val;
-  input.classList.add('dp-ok');
-  // リスト行の会社名・メモも同期
-  var row=document.querySelector('.prospect-row[data-row="'+_detailRow+'"]');
-  if(row&&p){
-    if(col===1){ var nm=row.querySelector('.pr-name'); if(nm) nm.textContent=val; }
-    if(col===13){ var mm=row.querySelector('.pr-memo'); if(mm) mm.textContent=val.replace(/\n/g,' '); }
+  var saveVal=val;
+  if(col===16){
+    // メモ保存: AIスタンプを再付加してシートに保存（表示は分離したまま）
+    var stamps=input.dataset.aiStamps||'';
+    saveVal=stamps?(val.trimEnd()+'\n'+stamps):val;
+    if(p) p.memo=saveVal;
+  } else {
+    if(p&&COL_TO_KEY[col]) p[COL_TO_KEY[col]]=val;
   }
-  apiPost({prospectAction:'updateCell',rowIndex:_detailRow,col:col,value:val},function(r){
+  input.classList.add('dp-ok');
+  // リスト行の会社名を同期
+  var row=document.querySelector('.prospect-row[data-row="'+_detailRow+'"]');
+  if(row&&p&&col===1){ var nm=row.querySelector('.pr-name'); if(nm) nm.textContent=val; }
+  apiPost({prospectAction:'updateCell',rowIndex:_detailRow,col:col,value:saveVal},function(r){
     setTimeout(function(){input.classList.remove('dp-ok','dp-err');},700);
     if(r.error){input.classList.add('dp-err');alert2('listAlert','保存失敗: '+r.error,'err');}
+  });
+}
+function dpSaveAddress(input){
+  // 住所保存 + ヘッダー表示を更新 + _prospects.pref を同期
+  var val = input.value;
+  if (!_detailRow || val === input.dataset.orig) return;
+  input.dataset.orig = val;
+  var p = _prospects.find(function(x){ return x.rowIndex === _detailRow; });
+  if (p) p.pref = val;
+  // ヘッダーの都道府県表示を更新
+  var disp = document.getElementById('dp-pref-disp');
+  if (disp) disp.textContent = val.slice(0, 25);
+  input.classList.add('dp-ok');
+  apiPost({ prospectAction:'updateCell', rowIndex:_detailRow, col:3, value:val }, function(r){
+    setTimeout(function(){ input.classList.remove('dp-ok','dp-err'); }, 700);
+    if (r.error) { input.classList.add('dp-err'); alert2('listAlert','住所保存失敗: '+r.error,'err'); }
   });
 }
 function dpSaveStage(sel){
@@ -1301,8 +2328,16 @@ function dpSaveStage(sel){
   if(p) p.stage=val;
   var row=document.querySelector('.prospect-row[data-row="'+_detailRow+'"]');
   if(row&&p){var b=badge(p);var bd=row.querySelector('.badge');if(bd){bd.className='badge '+b.c;bd.textContent=b.l;}}
-  apiPost({prospectAction:'updateCell',rowIndex:_detailRow,col:9,value:val},function(r){
+  apiPost({prospectAction:'updateCell',rowIndex:_detailRow,col:4,value:val},function(r){
     if(r.error) alert('保存失敗: '+r.error);
+  });
+}
+function copyDirect(){
+  var el=document.getElementById('dp-direct-val');
+  if(!el||!el.value) return;
+  navigator.clipboard.writeText(el.value).then(function(){
+    var btn=el.nextElementSibling;
+    if(btn){btn.textContent='✅';setTimeout(function(){btn.textContent='📋';},1500);}
   });
 }
 function copyPhone(){
@@ -1519,7 +2554,7 @@ function openTaskInput(rowIndex, type) {
   var m = task.missing.find(function(x){ return x.type === type; });
   if (!m) return;
   var el = document.getElementById('htask-input-' + rowIndex);
-  var colMap = { phone: 3, url: 5, email: 4, contact: 2 };
+  var colMap = { phone: 4, url: 6, email: 5, contact: 2 };
   var col = colMap[type];
   var openLink = (m.url || m.searchQ) ? '<a href="' + (m.url ? esc(m.url) : 'https://www.google.com/search?q=' + encodeURIComponent(m.searchQ || '')) + '" target="_blank" class="btn btn-outline btn-sm" style="text-decoration:none">🔗 開く</a>' : '';
   el.innerHTML = '<div style="background:#f8fafc;border-radius:8px;padding:12px;border:1px solid #e2e8f0">'
@@ -1549,6 +2584,607 @@ function saveTaskInput(rowIndex, col, type) {
     var p = _prospects.find(function(x){ return x.rowIndex === rowIndex; });
     if (p) { var flds = {phone:'phone',url:'url',email:'email',contact:'contact'}; if(flds[type]) p[flds[type]] = val; }
   });
+}
+
+// ─── 顧客管理 ─────────────────────────────────────────────────────
+var _customers = [];
+var _customerFilter = 'all';
+var _customerCycleDays = 30; // GASから取得した連絡サイクル日数
+
+
+// ─── ビジネス機会分析 ─────────────────────────────────────────────
+
+var _oppData = null;
+var _oppFetched = false; // セッション中に1回だけGASへ問い合わせ
+
+function loadOpportunities() {
+  if (_oppData) { renderOpportunities(_oppData, false); return; }
+  if (_oppFetched) return; // 既に問い合わせ済みでデータなし → 再問い合わせしない
+  _oppFetched = true;
+  apiGet({ action: 'getListOpportunities' }, function(r) {
+    if (!r || !r.ok) {
+      // キャッシュなし → 初回のみ自動分析トリガー（localStorage でセッション跨ぎ防止）
+      if (!localStorage.getItem('opp_analysis_triggered')) {
+        localStorage.setItem('opp_analysis_triggered', '1');
+        apiPost({ prospectAction: 'analyzeListOpportunities' }, function(r2) {
+          if (r2 && r2.ok) { _oppData = r2; renderOpportunities(r2, false); renderOpportunities(r2, true); }
+        });
+      }
+      return;
+    }
+    _oppData = r;
+    renderOpportunities(r, false);
+  });
+}
+
+function loadOpportunitiesKpi() {
+  if (_oppData) { renderOpportunities(_oppData, true); return; }
+  if (!_oppFetched) { loadOpportunities(); return; } // 未フェッチなら loadOpportunities に委任
+  // フェッチ済みだがデータなし → 何もしない
+}
+
+
+function refreshOpportunities() {
+  var btn = event.target;
+  btn.textContent = '分析中…'; btn.disabled = true;
+  localStorage.removeItem('opp_analysis_triggered');
+  apiPost({ prospectAction: 'analyzeListOpportunities' }, function(r) {
+    btn.textContent = '🔄 今すぐ再分析（約10秒）'; btn.disabled = false;
+    if (r && r.ok) { _oppData = r; renderOpportunities(r, false); renderOpportunities(r, true); }
+  });
+}
+
+function renderOpportunities(r, isKpi) {
+  var suffix = isKpi ? 'Kpi' : '';
+  var card = document.getElementById('oppCard' + suffix);
+  if (!card || !r) return;
+
+  // Claudeが返す構造: r.opportunities = { opportunities:[], topAlert:"", blindSpot:"" }
+  // または r.opportunities が直接配列の場合も防御的に対応
+  var inner = r.opportunities || {};
+  var opps = Array.isArray(inner) ? inner : (Array.isArray(inner.opportunities) ? inner.opportunities : []);
+  if (!opps.length) return;
+
+  card.style.display = 'block';
+
+  var at = document.getElementById('oppUpdatedAt' + suffix);
+  if (at) at.textContent = r.analyzedAt ? r.analyzedAt + ' 更新' : '';
+
+  var alertEl = document.getElementById('oppAlert' + suffix);
+  var topAlert = !Array.isArray(inner) && inner.topAlert;
+  if (topAlert && alertEl) { alertEl.style.display='block'; alertEl.textContent = '⚡ ' + topAlert; }
+
+  var catMap = { 'web紹介':'cat-web web紹介', 'alliance':'cat-alliance アライアンス', '新商材':'cat-new 新商材', '架電優先':'cat-call 架電優先', 'リスト活用':'cat-list リスト活用' };
+  var diffMap = { '易':'easy 易', '中':'mid 中', '難':'hard 難' };
+  var urgColors = ['#ef4444','#f59e0b','#10b981','#6366f1','#8b5cf6'];
+
+  var h = '';
+  opps.slice(0, 5).forEach(function(o, i) {
+    var rankCls = i === 0 ? 'r1' : i === 1 ? 'r2' : '';
+    var catParts = (catMap[o.category] || ('cat-call ' + (o.category||''))).split(' ');
+    var diffParts = (diffMap[o.difficulty] || 'mid 中').split(' ');
+    var urgency = Math.min(10, Math.max(1, o.urgency || 5));
+    var urgColor = urgColors[Math.min(i, urgColors.length-1)];
+    h += '<div class="opp-item">'
+      + '<div class="opp-rank ' + rankCls + '">' + (i+1) + '</div>'
+      + '<div class="opp-body">'
+      +   '<div class="opp-title">' + esc(o.title||'') + '</div>'
+      +   '<div class="opp-evidence">' + esc(o.evidence||'') + '</div>'
+      +   '<div class="opp-meta">'
+      +     '<span class="opp-badge ' + catParts[0] + '">' + catParts[1] + '</span>'
+      +     '<span class="opp-diff ' + diffParts[0] + '">' + diffParts[1] + '</span>'
+      +     (o.potentialRevenue ? '<span class="opp-revenue">💰 ' + esc(o.potentialRevenue) + '</span>' : '')
+      +   '</div>'
+      +   (o.nextAction ? '<div class="opp-action">→ ' + esc(o.nextAction) + '</div>' : '')
+      + '</div>'
+      + '<div class="opp-urgency">'
+      +   '<div style="font-size:9px;color:#6366f1;font-weight:700">' + urgency + '</div>'
+      +   '<div class="opp-urgency-bar" style="height:40px;position:relative">'
+      +     '<div class="opp-urgency-fill" style="position:absolute;bottom:0;left:0;width:4px;height:' + (urgency*10) + '%;background:' + urgColor + '"></div>'
+      +   '</div>'
+      + '</div>'
+      + '</div>';
+  });
+  document.getElementById('oppList' + suffix).innerHTML = h;
+
+  var bs = !Array.isArray(inner) && inner.blindSpot;
+  var bsEl = document.getElementById('oppBlindSpot' + suffix);
+  if (bs && bsEl) { bsEl.style.display='block'; bsEl.innerHTML = '👁 見落としがちなチャンス: ' + esc(bs); }
+}
+
+function syncAllCustomers() {
+  if (!confirm('顧客管理の全レコードを営業リストに同期します。\n（リストに存在しない会社は新規追加されます）')) return;
+  var btn = event.target;
+  btn.textContent = '同期中…'; btn.disabled = true;
+  apiPost({ prospectAction: 'syncAllCustomersToProspects' }, function(r) {
+    btn.textContent = '🔄 リスト同期'; btn.disabled = false;
+    if (r.error) { alert('エラー: ' + r.error); return; }
+    alert('同期完了：更新 ' + (r.synced||0) + '件 / 新規追加 ' + (r.added||0) + '件');
+    loadCustomers();
+  });
+}
+
+function loadCustomers() {
+  document.getElementById('customerList').innerHTML = '<div class="loading">読み込み中…</div>';
+  apiGet({ action: 'getCustomers' }, function(d) {
+    // GASが { items:[], cycleDays:30 } を返す
+    var items = [];
+    if (d && d.items) { items = d.items; _customerCycleDays = d.cycleDays || 30; }
+    else if (Array.isArray(d)) { items = d; }
+    _customers = items;
+    var overdue = _customers.filter(function(c){ return c.daysSince !== null && c.daysSince > _customerCycleDays; }).length;
+    var cntEl = document.getElementById('cnt-customers');
+    if (cntEl) { cntEl.textContent = overdue || ''; cntEl.style.display = overdue ? '' : 'none'; }
+    renderCustomers();
+  });
+}
+
+function filterCustomers(f) {
+  _customerFilter = f;
+  ['cf-all','cf-overdue','cf-soon','cf-ok'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.style.fontWeight = id === 'cf-'+f ? '700' : '400';
+  });
+  renderCustomers();
+}
+
+function renderCustomers() {
+  var el = document.getElementById('customerList');
+  if (!el) return;
+  var cycle = _customerCycleDays;
+  var list = _customers.filter(function(c) {
+    var ds = c.daysSince;
+    if (_customerFilter === 'overdue') return ds === null || ds > cycle;
+    if (_customerFilter === 'soon')    return ds !== null && ds > cycle - 7 && ds <= cycle;
+    if (_customerFilter === 'ok')      return ds !== null && ds <= cycle - 7;
+    return true;
+  });
+  if (!list.length) { el.innerHTML = '<div class="empty">該当なし</div>'; return; }
+  var html = '';
+  list.forEach(function(c) {
+    var ds = c.daysSince;
+    var isOverdue = (ds === null || ds > cycle);
+    var isSoon    = (ds !== null && ds > cycle - 7 && ds <= cycle);
+    var cls = isOverdue ? 'overdue' : isSoon ? 'soon' : '';
+    // 最終連絡ラベル
+    var lcLabel, lcColor;
+    if (ds === null) {
+      lcLabel = '未連絡'; lcColor = '#dc2626';
+    } else if (isOverdue) {
+      lcLabel = '⚠️ ' + ds + '日前（' + (ds - cycle) + '日超過）'; lcColor = '#dc2626';
+    } else if (isSoon) {
+      lcLabel = ds + '日前（あと' + (cycle - ds) + '日）'; lcColor = '#b45309';
+    } else {
+      lcLabel = ds + '日前（' + c.lastContact + '）'; lcColor = '#16a34a';
+    }
+    html += '<div class="cust-card '+cls+'" onclick="openCustomerEdit('+c.rowIndex+')">'
+      + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
+      + '<div style="font-size:14px;font-weight:700;color:#1e40af;min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(c.company)+'</div>'
+      + '<span style="font-size:11px;color:'+lcColor+';white-space:nowrap;font-weight:600">'+lcLabel+'</span>'
+      + '<button onclick="event.stopPropagation();deleteCustomerConfirm('+c.rowIndex+',\''+esc(c.company)+'\')" style="background:none;border:none;cursor:pointer;font-size:15px;color:#d1d5db;padding:2px 4px;border-radius:5px;line-height:1;flex-shrink:0" title="削除" onmouseover="this.style.color=\'#dc2626\'" onmouseout="this.style.color=\'#d1d5db\'">🗑</button>'
+      + '</div>'
+      + '<div style="display:flex;gap:12px;font-size:12px;flex-wrap:wrap;align-items:center">'
+      + (c.contact ? '<span style="color:#374151">👤 '+esc(c.contact)+'</span>' : '')
+      + (c.phone ? '<a href="tel:'+esc(c.phone)+'" onclick="event.stopPropagation()" style="color:#5b5fc7;font-weight:600;text-decoration:none">📞 '+esc(c.phone)+'</a>' : '')
+      + (c.email ? '<a href="mailto:'+esc(c.email)+'" onclick="event.stopPropagation()" style="color:#5b5fc7;text-decoration:none">✉️ '+esc(c.email)+'</a>' : '')
+      + '</div>'
+      + (c.address ? '<div style="font-size:11px;color:#6b7280;margin-top:5px">📍 '+esc(c.address.slice(0,60))+'</div>' : '')
+      + (c.memo ? '<div style="font-size:11px;color:#9ca3af;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📝 '+esc(c.memo.slice(0,60))+'</div>' : '')
+      + '</div>';
+  });
+  el.innerHTML = html;
+}
+
+function openCustomerForm() {
+  ['cf-company','cf-wondate','cf-contact','cf-phone','cf-email','cf-lastcontact','cf-address','cf-memo'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.value='';
+  });
+  // 保存ボタンを追加モードに戻す
+  var btn = document.querySelector('#customerModal .btn[onclick^="updateCustomer"]');
+  if (btn) { btn.setAttribute('onclick','submitCustomerForm()'); btn.textContent='保存'; }
+  document.getElementById('customerModalTitle').textContent = '顧客追加';
+  document.getElementById('customerModal').style.display = 'flex';
+}
+
+function closeCustomerModal() { document.getElementById('customerModal').style.display = 'none'; }
+
+function submitCustomerForm() {
+  var company = (document.getElementById('cf-company').value||'').trim();
+  if (!company) { document.getElementById('cf-company').focus(); return; }
+  var data = {
+    company:     company,
+    wonDate:     document.getElementById('cf-wondate').value,
+    contact:     document.getElementById('cf-contact').value,
+    phone:       document.getElementById('cf-phone').value,
+    email:       document.getElementById('cf-email').value,
+    lastContact: document.getElementById('cf-lastcontact').value,
+    address:     document.getElementById('cf-address').value,
+    memo:        document.getElementById('cf-memo').value,
+  };
+  apiPost({ prospectAction: 'addCustomer', data: data }, function(r) {
+    if (r.error) { alert('保存失敗: '+r.error); return; }
+    closeCustomerModal();
+    loadCustomers();
+  });
+}
+
+function openCustomerEdit(rowIndex) {
+  var c = _customers.find(function(x){ return x.rowIndex === rowIndex; });
+  if (!c) return;
+  var flds = {
+    'cf-company': c.company, 'cf-wondate': c.wonDate,
+    'cf-contact': c.contact, 'cf-phone': c.phone,
+    'cf-email': c.email, 'cf-lastcontact': c.lastContact,
+    'cf-address': c.address, 'cf-memo': c.memo,
+  };
+  Object.keys(flds).forEach(function(id){ var el=document.getElementById(id); if(el) el.value=flds[id]||''; });
+  document.getElementById('customerModalTitle').textContent = esc(c.company)+' を編集';
+  var btn = document.querySelector('#customerModal .btn[onclick="submitCustomerForm()"]');
+  if (btn) { btn.setAttribute('onclick','updateCustomer('+rowIndex+')'); btn.textContent='更新'; }
+  document.getElementById('customerModal').style.display = 'flex';
+}
+
+function updateCustomer(rowIndex) {
+  // CC列番号: COMPANY=1, WON_DATE=2, CONTACT=3, PHONE=4, EMAIL=5, LAST_CONTACT=6, MEMO=7
+  var colMap = {
+    'cf-company':1,'cf-wondate':2,'cf-contact':3,'cf-phone':4,
+    'cf-email':5,'cf-lastcontact':6,'cf-address':8,'cf-memo':7
+  };
+  var tasks = Object.keys(colMap).map(function(id){
+    var el = document.getElementById(id);
+    return { col: colMap[id], value: el ? el.value : '' };
+  });
+  var done = 0;
+  tasks.forEach(function(t) {
+    apiPost({ prospectAction:'updateCustomerCell', rowIndex:rowIndex, col:t.col, value:t.value }, function(r){
+      done++;
+      if (done === tasks.length) { closeCustomerModal(); loadCustomers(); }
+    });
+  });
+}
+
+// ─── 下請け管理 ────────────────────────────────────────────────────
+var _subcons = [];
+var _subconFilter = 'all';
+
+function loadSubcons() {
+  document.getElementById('subconList').innerHTML = '<div class="loading">読み込み中…</div>';
+  apiGet({ action: 'getSubcontractors' }, function(d) {
+    _subcons = Array.isArray(d) ? d : [];
+    renderSubcons();
+  });
+}
+
+function filterSubcons(f) {
+  _subconFilter = f;
+  renderSubcons();
+}
+
+function renderSubcons() {
+  var el = document.getElementById('subconList');
+  if (!el) return;
+  var list = _subcons.filter(function(s) {
+    if (_subconFilter === 'avail') return s.status === '空き';
+    if (_subconFilter === 'busy')  return s.status === '稼働中';
+    return true;
+  });
+  if (!list.length) { el.innerHTML = '<div class="empty">該当なし</div>'; return; }
+  var html = '<div style="display:grid;gap:10px">';
+  list.forEach(function(s) {
+    var stCls = s.status==='空き'?'sc-avail':s.status==='稼働中'?'sc-busy':'sc-unknown';
+    var stars = '';
+    for(var i=1;i<=5;i++) stars += '<span class="'+(i<=s.rating?'star-filled':'star-empty')+'">★</span>';
+    // 会社名なし → 担当者名を大きく表示
+    var displayName = s.company
+      ? esc(s.company)
+      : '<span style="font-size:15px;font-weight:700;color:#5b21b6">👤 '+esc(s.contact)+'</span>';
+    var subName = s.company && s.contact ? '<span style="font-size:11px;color:#6b7280;margin-left:4px">（'+esc(s.contact)+'）</span>' : '';
+    // 削除時の表示名
+    var delName = s.company || s.contact;
+    // 夜勤バッジ
+    var nightBadge = s.nightOk==='OK'
+      ? '<span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:2px 6px;border-radius:8px;font-weight:600">🌙 夜勤OK</span>'
+      : s.nightOk==='NG'
+        ? '<span style="font-size:10px;background:#fee2e2;color:#991b1b;padding:2px 6px;border-radius:8px;font-weight:600">🌙 夜勤NG</span>'
+        : '';
+    // 単価表示
+    var rateHtml = '';
+    if (s.rate && s.rateNight) {
+      rateHtml = '<span>☀️ '+Number(s.rate).toLocaleString()+'円</span><span>🌙 '+Number(s.rateNight).toLocaleString()+'円</span>';
+    } else if (s.rate) {
+      rateHtml = '<span>💴 '+Number(s.rate).toLocaleString()+'円/日</span>';
+    } else if (s.rateNight) {
+      rateHtml = '<span>🌙 夜: '+Number(s.rateNight).toLocaleString()+'円/日</span>';
+    }
+    html += '<div style="background:#fff;border:1.5px solid #e8eaf0;border-radius:12px;padding:14px;cursor:pointer;transition:border .15s" onclick="openSubconEdit('+s.rowIndex+')" onmouseover="this.style.borderColor=\'#7c3aed\'" onmouseout="this.style.borderColor=\'#e8eaf0\'">'
+      + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+      + '<div style="font-size:13px;font-weight:700;color:#374151;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+displayName+subName+'</div>'
+      + nightBadge
+      + '<span class="sc-badge '+stCls+'">'+esc(s.status)+'</span>'
+      + '<button onclick="event.stopPropagation();deleteSubconConfirm('+s.rowIndex+',\''+esc(delName)+'\')" style="background:none;border:none;cursor:pointer;font-size:15px;color:#d1d5db;padding:2px 4px;border-radius:5px;line-height:1;flex-shrink:0" title="削除" onmouseover="this.style.color=\'#dc2626\'" onmouseout="this.style.color=\'#d1d5db\'">🗑</button>'
+      + '</div>'
+      + '<div style="display:flex;gap:12px;font-size:11px;flex-wrap:wrap;color:#6b7280">'
+      + (s.company && s.phone ? '<a href="tel:'+esc(s.phone)+'" onclick="event.stopPropagation()" style="color:#5b5fc7;text-decoration:none">📞 '+esc(s.phone)+'</a>' : s.phone ? '<a href="tel:'+esc(s.phone)+'" onclick="event.stopPropagation()" style="color:#5b5fc7;text-decoration:none">📞 '+esc(s.phone)+'</a>' : '')
+      + (s.specialty ? '<span>🔧 '+esc(s.specialty)+'</span>' : '')
+      + (s.area ? '<span>📍 '+esc(s.area)+'</span>' : '')
+      + rateHtml
+      + '</div>'
+      + '<div style="margin-top:6px;display:flex;align-items:center;gap:8px">'
+      + '<span style="font-size:13px">'+stars+'</span>'
+      + (s.memo ? '<span style="font-size:11px;color:#9ca3af;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px">'+esc(s.memo.slice(0,60))+'</span>' : '')
+      + '</div>'
+      + '</div>';
+  });
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function openSubconForm() {
+  ['sc-company','sc-contact','sc-phone','sc-email','sc-specialty','sc-area','sc-rate','sc-rate-night','sc-payment','sc-memo'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.value='';
+  });
+  var st = document.getElementById('sc-status'); if(st) st.value='空き';
+  var rt = document.getElementById('sc-rating'); if(rt) rt.value='3';
+  var no = document.getElementById('sc-nightok'); if(no) no.value='';
+  var btn = document.querySelector('#subconModal .btn[onclick^="updateSubcon"]');
+  if(btn){ btn.setAttribute('onclick','submitSubconForm()'); btn.textContent='保存'; }
+  document.getElementById('subconModal').style.display = 'flex';
+}
+
+function closeSubconModal() { document.getElementById('subconModal').style.display = 'none'; }
+
+function submitSubconForm() {
+  var company = (document.getElementById('sc-company').value||'').trim();
+  var contact = (document.getElementById('sc-contact').value||'').trim();
+  if (!company && !contact) { alert('会社名か担当者名のどちらかを入力してください'); return; }
+  var data = {
+    company:   company,
+    contact:   contact,
+    phone:     document.getElementById('sc-phone').value,
+    email:     document.getElementById('sc-email').value,
+    specialty: document.getElementById('sc-specialty').value,
+    area:      document.getElementById('sc-area').value,
+    status:    document.getElementById('sc-status').value,
+    rate:      document.getElementById('sc-rate').value,
+    payment:   document.getElementById('sc-payment').value,
+    rating:    document.getElementById('sc-rating').value,
+    memo:      document.getElementById('sc-memo').value,
+    rateNight: document.getElementById('sc-rate-night').value,
+    nightOk:   document.getElementById('sc-nightok').value,
+  };
+  apiPost({ prospectAction: 'addSubcontractor', data: data }, function(r) {
+    if (r.error) { alert('保存失敗: '+r.error); return; }
+    closeSubconModal();
+    loadSubcons();
+  });
+}
+
+function openSubconEdit(rowIndex) {
+  var s = _subcons.find(function(x){ return x.rowIndex === rowIndex; });
+  if (!s) return;
+  var flds = {
+    'sc-company':s.company,'sc-contact':s.contact,'sc-phone':s.phone,'sc-email':s.email,
+    'sc-specialty':s.specialty,'sc-area':s.area,'sc-rate':s.rate,'sc-payment':s.payment,
+    'sc-rating':s.rating,'sc-memo':s.memo,'sc-rate-night':s.rateNight
+  };
+  Object.keys(flds).forEach(function(id){ var el=document.getElementById(id); if(el) el.value=flds[id]||''; });
+  var st = document.getElementById('sc-status'); if(st) st.value = s.status||'空き';
+  var no = document.getElementById('sc-nightok'); if(no) no.value = s.nightOk||'';
+  var btn = document.querySelector('#subconModal .btn[onclick="submitSubconForm()"]');
+  if (btn) { btn.setAttribute('onclick','updateSubcon('+rowIndex+')'); btn.textContent='更新'; }
+  document.getElementById('subconModal').style.display = 'flex';
+}
+
+function updateSubcon(rowIndex) {
+  var colMap = {
+    'sc-company':1,'sc-contact':2,'sc-phone':3,'sc-email':4,'sc-specialty':5,
+    'sc-area':6,'sc-status':7,'sc-rate':8,'sc-payment':9,'sc-rating':10,'sc-memo':11,
+    'sc-rate-night':12,'sc-nightok':13
+  };
+  var done = 0, total = Object.keys(colMap).length;
+  Object.keys(colMap).forEach(function(id) {
+    var el = document.getElementById(id);
+    apiPost({ prospectAction:'updateSubcontractorCell', rowIndex:rowIndex, col:colMap[id], value:el?el.value:'' }, function(){
+      done++; if(done===total){ closeSubconModal(); loadSubcons(); }
+    });
+  });
+}
+
+function deleteCustomerConfirm(rowIndex, companyName) {
+  if (!confirm('「' + companyName + '」を顧客管理から削除しますか？\nこの操作は元に戻せません。')) return;
+  apiPost({ prospectAction: 'deleteCustomer', rowIndex: rowIndex }, function(r) {
+    if (r.error) { alert('削除失敗: ' + r.error); return; }
+    _customers = _customers.filter(function(c){ return c.rowIndex !== rowIndex; });
+    renderCustomers();
+  });
+}
+
+function deleteSubconConfirm(rowIndex, companyName) {
+  if (!confirm('「' + companyName + '」を下請け管理から削除しますか？\nこの操作は元に戻せません。')) return;
+  apiPost({ prospectAction: 'deleteSubcontractor', rowIndex: rowIndex }, function(r) {
+    if (r.error) { alert('削除失敗: ' + r.error); return; }
+    _subcons = _subcons.filter(function(s){ return s.rowIndex !== rowIndex; });
+    renderSubcons();
+  });
+}
+
+// ─── アポ管理 ──────────────────────────────────────────────────────
+function loadApoTable() {
+  var tbody = document.getElementById('apoTableBody');
+  if (!tbody) return;
+  if (!_prospects.length) {
+    apiGet({action:'getProspects',limit:3000}, function(d) {
+      _prospects = Array.isArray(d) ? d : [];
+      renderApoTable();
+    });
+  } else {
+    renderApoTable();
+  }
+}
+
+function renderApoTable() {
+  var tbody = document.getElementById('apoTableBody');
+  if (!tbody) return;
+  var stages = ['アポ確定','商談中','追い中','見積提出'];
+  var stageOrder = {'アポ確定':0,'商談中':1,'追い中':2,'見積提出':3};
+  var stageStyle = {
+    'アポ確定':  'background:#dbeafe;color:#1d4ed8',
+    '商談中':    'background:#fef3c7;color:#b45309',
+    '追い中':    'background:#ede9fe;color:#6d28d9',
+    '見積提出':  'background:#dcfce7;color:#15803d'
+  };
+  var list = _prospects.filter(function(p){ return stages.indexOf(p.stage) !== -1; });
+  list.sort(function(a,b){ return (stageOrder[a.stage]||9)-(stageOrder[b.stage]||9); });
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="padding:20px;text-align:center;color:#9ca3af">商談中の案件がありません</td></tr>';
+    return;
+  }
+  var html = '';
+  list.forEach(function(p) {
+    var memo = String(p.memo||'');
+    var memoShort = memo.length>50 ? memo.slice(0,50)+'…' : memo;
+    var phone = p.directPhone || p.phone || '';
+    var ss = stageStyle[p.stage] || '';
+    html += '<tr style="border-bottom:1px solid #f3f4f6;cursor:pointer" onclick="openDetail('+p.rowIndex+')">'
+      + '<td style="padding:8px 10px;white-space:nowrap"><span class="badge" style="'+ss+'">'+esc(p.stage)+'</span></td>'
+      + '<td style="padding:8px 10px;font-weight:600;color:#1e40af">'+esc(p.company)+'</td>'
+      + '<td style="padding:8px 10px;color:#374151">'+esc(p.contact||'')+'</td>'
+      + '<td style="padding:8px 10px;white-space:nowrap"><a href="tel:'+esc(phone)+'" onclick="event.stopPropagation()" style="color:#5b5fc7;text-decoration:none">'+esc(phone)+'</a></td>'
+      + '<td style="padding:8px 10px;white-space:nowrap;color:#374151">'+esc(p.apo||'')+'</td>'
+      + '<td style="padding:8px 10px;white-space:nowrap;color:#6b7280">'+esc(p.callDate||'')+'</td>'
+      + '<td style="padding:8px 10px;color:#6b7280;font-size:11px">'+esc(memoShort)+'</td>'
+      + '<td style="padding:8px 10px;text-align:center;white-space:nowrap">'
+      + '<button class="btn btn-sm" style="font-size:11px;padding:3px 7px" onclick="event.stopPropagation();quickSendEmail('+p.rowIndex+',\'thanks\')">🙏 御礼</button>'
+      + '</td>'
+      + '</tr>';
+  });
+  tbody.innerHTML = html;
+}
+
+// ─── KPI ─────────────────────────────────────────────────────────
+function loadKpi() {
+  document.getElementById('kpiCards').innerHTML = '<div class="loading">集計中…</div>';
+  if (!_prospects.length) {
+    apiGet({action:'getProspects',limit:3000}, function(d) {
+      _prospects = Array.isArray(d) ? d : [];
+      renderKpi();
+    });
+  } else {
+    renderKpi();
+  }
+}
+
+function renderKpi() {
+  var ps = _prospects;
+  var total   = ps.length;
+  var called  = ps.filter(function(p){ return p.callCount > 0; }).length;
+  var interest= ps.filter(function(p){ return p.stage==='興味あり'; }).length;
+  var apo     = ps.filter(function(p){ return p.stage==='アポ確定'||p.stage==='商談中'; }).length;
+  var followup= ps.filter(function(p){ return p.stage==='追い中'||p.stage==='見積提出'; }).length;
+  var won     = ps.filter(function(p){ return p.stage==='受注'; }).length;
+  var lost    = ps.filter(function(p){ return p.stage==='失注'; }).length;
+  var pipeline= apo + followup;
+
+  // サマリーカード
+  document.getElementById('kpiCards').innerHTML =
+    statCard(total,'リスト総数','')+
+    statCard(called,'架電済み',total?Math.round(called/total*100)+'%':'')+
+    statCard(apo+followup,'商談中','')+
+    statCard(won,'受注','')+
+    statCard(lost,'失注','')+
+    statCard(called?Math.round(apo/called*100):0,'アポ率(%)','架電→アポ');
+
+  // ファネル
+  var funnelSteps = [
+    {lbl:'リスト総数', n:total, color:'#6366f1'},
+    {lbl:'架電済み',   n:called, color:'#8b5cf6'},
+    {lbl:'興味あり',   n:interest, color:'#f59e0b'},
+    {lbl:'商談中',     n:pipeline, color:'#3b82f6'},
+    {lbl:'追い中',     n:followup, color:'#7c3aed'},
+    {lbl:'受注',       n:won, color:'#16a34a'},
+  ];
+  var maxN = total || 1;
+  var fHtml = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">';
+  funnelSteps.forEach(function(s, i) {
+    var pct = Math.round(s.n / maxN * 100);
+    var convPct = i>0 && funnelSteps[i-1].n>0 ? Math.round(s.n/funnelSteps[i-1].n*100)+'%' : '';
+    fHtml += '<tr style="border-bottom:1px solid #f3f4f6">'
+      + '<td style="padding:7px 10px;white-space:nowrap;font-weight:600;min-width:80px">'+esc(s.lbl)+'</td>'
+      + '<td style="padding:7px 10px;min-width:200px"><div style="display:flex;align-items:center;gap:8px">'
+      + '<div style="flex:1;background:#f3f4f6;border-radius:4px;height:8px"><div style="width:'+pct+'%;background:'+s.color+';height:8px;border-radius:4px;min-width:4px"></div></div>'
+      + '<span style="min-width:36px;font-weight:700;color:'+s.color+'">'+s.n+'社</span>'
+      + '</div></td>'
+      + '<td style="padding:7px 10px;text-align:right;font-size:11px;color:#9ca3af">'
+      + (convPct ? '前段比 <span style="font-weight:700;color:#374151">'+convPct+'</span>' : '') + '</td>'
+      + '</tr>';
+  });
+  fHtml += '</table></div>';
+  document.getElementById('kpiFunnel').innerHTML = fHtml;
+
+  // 今月の活動（架電日が今月のもの）
+  var now = new Date();
+  var thisMonth = now.getFullYear() + '/' + String(now.getMonth()+1).padStart(2,'0');
+  var monthCalled = ps.filter(function(p){
+    return p.callDate && String(p.callDate).startsWith(thisMonth);
+  }).length;
+  var monthApo = ps.filter(function(p){
+    return p.apo && String(p.apo).startsWith(thisMonth);
+  }).length;
+  var monthWon = ps.filter(function(p){
+    return p.stage==='受注' && p.callDate && String(p.callDate).startsWith(thisMonth);
+  }).length;
+  document.getElementById('kpiMonthly').innerHTML =
+    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">'
+    + '<div style="text-align:center;padding:16px;background:#f8fafc;border-radius:10px">'
+    + '<div style="font-size:28px;font-weight:800;color:#5b5fc7">'+monthCalled+'</div>'
+    + '<div style="font-size:12px;color:#6b7280;margin-top:4px">今月の架電数</div></div>'
+    + '<div style="text-align:center;padding:16px;background:#f8fafc;border-radius:10px">'
+    + '<div style="font-size:28px;font-weight:800;color:#f59e0b">'+monthApo+'</div>'
+    + '<div style="font-size:12px;color:#6b7280;margin-top:4px">今月のアポ数</div></div>'
+    + '<div style="text-align:center;padding:16px;background:#f8fafc;border-radius:10px">'
+    + '<div style="font-size:28px;font-weight:800;color:#16a34a">'+monthWon+'</div>'
+    + '<div style="font-size:12px;color:#6b7280;margin-top:4px">今月の受注数</div></div>'
+    + '</div>';
+  renderProductKpi(ps);
+}
+
+function renderProductKpi(ps) {
+  var el = document.getElementById('kpiProducts');
+  if (!el) return;
+  var rows = PRODUCT_PRESETS.map(function(preset) {
+    var keys = PRODUCT_FILTER_MAP[preset.product] || [];
+    var matched = ps.filter(function(p) {
+      var target = ((p.industry||'')+(p.memo||'')+(p.source||'')+(p.company||'')).toLowerCase();
+      return keys.some(function(k){ return target.includes(k); });
+    });
+    var won    = matched.filter(function(p){ return p.stage==='受注'; }).length;
+    var apo    = matched.filter(function(p){ return p.stage==='アポ確定'||p.stage==='商談中'||p.stage==='見積提出'; }).length;
+    var active = matched.filter(function(p){ return p.stage==='興味あり'||p.stage==='追い中'; }).length;
+    var rate   = matched.length ? Math.round(won / matched.length * 100) : 0;
+    var pct    = matched.length ? Math.min(100, Math.round((won + apo * 0.5) / matched.length * 100)) : 0;
+    return { label: preset.label, total: matched.length, won: won, apo: apo, active: active, rate: rate, pct: pct };
+  });
+  rows.sort(function(a, b){ return b.won - a.won || b.pct - a.pct; });
+  var h = '<div style="display:flex;flex-direction:column;gap:10px">';
+  rows.forEach(function(r) {
+    var barColor = r.won >= 3 ? '#16a34a' : r.won >= 1 ? '#f59e0b' : '#6366f1';
+    h += '<div style="background:#f9fafb;border-radius:9px;padding:10px 12px">'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
+      + '<span style="font-size:13px;font-weight:700;color:#374151">'+esc(r.label)+'</span>'
+      + '<span style="font-size:11px;color:#6b7280">'+r.total+'社マッチ</span>'
+      + '</div>'
+      + '<div style="height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden;margin-bottom:6px">'
+      + '<div style="height:100%;width:'+r.pct+'%;background:'+barColor+';border-radius:3px;transition:width .4s"></div>'
+      + '</div>'
+      + '<div style="display:flex;gap:12px;font-size:11px">'
+      + '<span style="color:#16a34a;font-weight:700">受注 '+r.won+'件</span>'
+      + '<span style="color:#f59e0b">商談中/アポ '+r.apo+'件</span>'
+      + '<span style="color:#7c3aed">興味あり '+r.active+'件</span>'
+      + (r.rate > 0 ? '<span style="color:#374151;margin-left:auto;font-weight:600">転換率 '+r.rate+'%</span>' : '')
+      + '</div></div>';
+  });
+  h += '</div>';
+  el.innerHTML = h;
 }
 
 // ─── 統計 ────────────────────────────────────────────────────────
@@ -1634,6 +3270,100 @@ function v(id){ return document.getElementById(id).value; }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function shorten(s,n){ s=String(s||''); return s.length>n?s.substring(0,n)+'…':s; }
 function setBtn(id,txt,dis){ var b=document.getElementById(id); b.textContent=txt; b.disabled=dis; }
+
+// 広島1,772社の自動インポート（localStorage フラグで1回だけ実行）
+function autoImportHiroshimaOnce() {
+  var KEY = 'hiroshima_imported_v1';
+  if (localStorage.getItem(KEY)) return; // 実行済み
+  apiPost({ prospectAction: 'importAllHiroshimaQuick' }, function(r) {
+    if (r && r.ok) {
+      localStorage.setItem(KEY, '1');
+      if ((r.added || 0) > 0) loadList();
+    }
+  });
+}
+
+// ── S-04 自動フォローアップ ────────────────────────
+function doFollowUpCount(){
+  google.script.run
+    .withSuccessHandler(function(r){ document.getElementById('followUpStatus').textContent = r.message; })
+    .getFollowUpTargetCount();
+}
+
+function doFollowUpRun(asDraft){
+  var label = asDraft ? '下書き作成' : '送信';
+  var btnId  = asDraft ? 'followUpDraftBtn' : 'followUpSendBtn';
+  if (!asDraft && !confirm('実際にメールを送信します。よろしいですか？')) return;
+  var btn = document.getElementById(btnId);
+  btn.textContent = '処理中…'; btn.disabled = true;
+  document.getElementById('followUpAlert').innerHTML = '';
+  google.script.run
+    .withSuccessHandler(function(r){
+      btn.textContent = asDraft ? '📝 下書き作成（推奨）' : '📨 今すぐ送信';
+      btn.disabled = false;
+      if (r.error){ document.getElementById('followUpAlert').innerHTML='<div style="color:#dc2626;font-size:12px">❌ '+r.error+'</div>'; return; }
+      document.getElementById('followUpStatus').textContent = r.message;
+      if (r.remaining > 0) document.getElementById('followUpAlert').innerHTML='<div style="color:#f59e0b;font-size:12px">⚠️ まだ'+r.remaining+'社残っています。再度実行してください。</div>';
+    })
+    .withFailureHandler(function(e){ btn.textContent = asDraft ? '📝 下書き作成（推奨）' : '📨 今すぐ送信'; btn.disabled = false; document.getElementById('followUpAlert').innerHTML='<div style="color:#dc2626;font-size:12px">❌ '+e.message+'</div>'; })
+    .autoFollowUpBatch(asDraft);
+}
+
+function doSetTrigger(){
+  document.getElementById('triggerSetBtn').textContent = '設定中…';
+  google.script.run
+    .withSuccessHandler(function(r){
+      document.getElementById('triggerSetBtn').textContent = '⏰ 毎朝8時 自動ON';
+      document.getElementById('triggerStatus').textContent = r.message;
+    })
+    .setupFollowUpTrigger();
+}
+
+function doDeleteTrigger(){
+  if (!confirm('自動フォローアップを停止しますか？')) return;
+  google.script.run
+    .withSuccessHandler(function(r){ document.getElementById('triggerStatus').textContent = r.message; })
+    .deleteFollowUpTrigger();
+}
+
+// トリガー状態をページ読み込み時に確認
+function loadTriggerStatus(){
+  google.script.run
+    .withSuccessHandler(function(r){ document.getElementById('triggerStatus').textContent = r.message; })
+    .getFollowUpTriggerStatus();
+}
+
+function doPartnerCount(){
+  google.script.run
+    .withSuccessHandler(function(r){
+      document.getElementById('partnerStatus').textContent = r.message;
+    })
+    .getPartnerSearchCount();
+}
+
+function doPartnerSend(asDraft){
+  var label = asDraft ? '下書き作成' : '送信';
+  var btnId  = asDraft ? 'partnerDraftBtn' : 'partnerSendBtn';
+  if (!asDraft && !confirm('実際にメールを送信します。よろしいですか？')) return;
+  var btn = document.getElementById(btnId);
+  btn.textContent = '処理中…'; btn.disabled = true;
+  document.getElementById('partnerAlert').innerHTML = '';
+  google.script.run
+    .withSuccessHandler(function(r){
+      btn.textContent = asDraft ? '📝 下書き作成' : '📨 送信';
+      btn.disabled = false;
+      if (r.error){ document.getElementById('partnerAlert').innerHTML='<div style="color:#dc2626;font-size:12px">❌ '+r.error+'</div>'; return; }
+      document.getElementById('partnerStatus').textContent = r.message;
+      if (r.errors && r.errors.length) document.getElementById('partnerAlert').innerHTML='<div style="color:#f59e0b;font-size:11px">⚠️ '+r.errors.join('<br>')+'</div>';
+    })
+    .withFailureHandler(function(e){
+      btn.textContent = asDraft ? '📝 下書き作成' : '📨 送信';
+      btn.disabled = false;
+      document.getElementById('partnerAlert').innerHTML='<div style="color:#dc2626;font-size:12px">❌ '+e.message+'</div>';
+    })
+    .sendPartnerSearchBatch(asDraft);
+}
+
 function alert2(id,msg,type){
   if(!msg){ document.getElementById(id).innerHTML=''; return; }
   var c=type==='ok'?'a-ok':type==='err'?'a-err':'a-info';
@@ -1716,7 +3446,7 @@ function loadPhase(phase) {
   var el = document.getElementById(listId);
   if (el) el.innerHTML = '<div class="loading">読み込み中…</div>';
   if (!_prospects.length) {
-    apiGet({action:'getProspects',limit:200}, function(d) {
+    apiGet({action:'getProspects',limit:3000}, function(d) {
       _prospects = Array.isArray(d) ? d : [];
       updateTabCounts();
       renderPhaseList(phase);
@@ -1848,7 +3578,7 @@ function logWonContact(rowIndex) {
   if (!confirm(name + ' への連絡を今日の日付で記録しますか？')) return;
   var today = new Date();
   var dateStr = today.getFullYear() + '/' + String(today.getMonth()+1).padStart(2,'0') + '/' + String(today.getDate()).padStart(2,'0');
-  apiPost({ prospectAction:'updateCell', rowIndex:rowIndex, col:11, value:dateStr }, function(r) {
+  apiPost({ prospectAction:'updateCell', rowIndex:rowIndex, col:14, value:dateStr }, function(r) {
     if (r.error) { alert('記録失敗: ' + r.error); return; }
     // ローカルも更新
     if (p) p.callDate = dateStr;
@@ -1899,7 +3629,8 @@ function _runAnalysis(action, btnId, resetLabel) {
   apiPost({prospectAction:action,rowIndex:_detailRow},function(r){
     if(btn){btn.disabled=false;btn.innerHTML=resetLabel;}
     if(r.error){
-      document.getElementById('dp-analysis').innerHTML='<div class="alert a-err">分析失敗: '+esc(r.error)+'<br><small>もう一度ボタンを押してください</small></div>';
+      var retryFn = action==='analyzeCompany' ? 'loadAnalysis()' : 'loadAnalysisDeep()';
+      document.getElementById('dp-analysis').innerHTML='<div class="alert a-err" style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span>分析失敗: '+esc(r.error)+'</span><button class="btn btn-sm" style="background:#dc2626;color:#fff;white-space:nowrap;flex-shrink:0" onclick="'+retryFn+'">🔄 再試行</button></div>';
       return;
     }
     _analysisCache[_detailRow]=r.analysis;
@@ -1945,6 +3676,7 @@ function lookupCorpNumFromPanel(){
     info.textContent='✓ '+r.corpNum+' を登録しました';
   });
 }
+
 
 function renderAnalysis(a) {
   if (!a) { document.getElementById('dp-analysis').innerHTML='<div class="alert a-err">分析データが空です</div>'; return; }
@@ -2202,7 +3934,7 @@ function moveToFollowup(rowIndex) {
   var p = _prospects.find(function(x){ return x.rowIndex === rowIndex; });
   var name = p ? p.company : '会社';
   if (!confirm(name + ' を「追い中」フェーズに移しますか？')) return;
-  apiPost({ prospectAction:'updateCell', rowIndex:rowIndex, col:9, value:'追い中' }, function(r) {
+  apiPost({ prospectAction:'updateCell', rowIndex:rowIndex, col:4, value:'追い中' }, function(r) {
     if (r.error) { alert('更新失敗: ' + r.error); return; }
     if (p) p.stage = '追い中';
     updateTabCounts();
@@ -2216,11 +3948,22 @@ function moveToWon(rowIndex) {
   if (!confirm('🏆 ' + name + ' を「受注」に移しますか？\n受注日として今日の日付を記録します。')) return;
   var today = new Date();
   var todayStr = today.getFullYear() + '/' + String(today.getMonth()+1).padStart(2,'0') + '/' + String(today.getDate()).padStart(2,'0');
-  apiPost({ prospectAction:'updateCell', rowIndex:rowIndex, col:9, value:'受注' }, function(r) {
+  apiPost({ prospectAction:'updateCell', rowIndex:rowIndex, col:4, value:'受注' }, function(r) {
     if (r.error) { alert('更新失敗: ' + r.error); return; }
-    // アポ日フィールドに受注日を記録
-    apiPost({ prospectAction:'updateCell', rowIndex:rowIndex, col:12, value:todayStr }, function(){});
+    apiPost({ prospectAction:'updateCell', rowIndex:rowIndex, col:15, value:todayStr }, function(){});
     if (p) { p.stage = '受注'; p.apo = todayStr; }
+    // 顧客管理シートに自動転記
+    if (p) {
+      apiPost({ prospectAction:'addCustomer', data:{
+        company:     p.company,
+        wonDate:     todayStr,
+        contact:     p.contact,
+        phone:       p.phone || p.directPhone,
+        email:       p.email,
+        lastContact: todayStr,
+        memo:        '【営業リストより自動転記】' + (p.memo ? '\n' + String(p.memo).replace(/【AI分析[^】]*】/g,'').trim() : ''),
+      }}, function(){});
+    }
     updateTabCounts();
     switchTab('won');
   });
@@ -2232,13 +3975,13 @@ function moveToLost(rowIndex) {
   var reason = prompt(name + ' を「失注」にします。\n理由（任意）:');
   if (reason === null) return;
   var note = reason ? '【失注理由】' + reason : '';
-  apiPost({ prospectAction:'updateCell', rowIndex:rowIndex, col:9, value:'失注' }, function(r) {
+  apiPost({ prospectAction:'updateCell', rowIndex:rowIndex, col:4, value:'失注' }, function(r) {
     if (r.error) { alert('更新失敗: ' + r.error); return; }
     if (note) {
       var curMemo = p ? String(p.memo || '') : '';
       var today = new Date();
       var todayStr = today.getFullYear() + '/' + String(today.getMonth()+1).padStart(2,'0') + '/' + String(today.getDate()).padStart(2,'0');
-      apiPost({ prospectAction:'updateCell', rowIndex:rowIndex, col:13, value:(curMemo ? curMemo + '\n' : '') + todayStr + note }, function(){});
+      apiPost({ prospectAction:'updateCell', rowIndex:rowIndex, col:16, value:(curMemo ? curMemo + '\n' : '') + todayStr + note }, function(){});
     }
     if (p) p.stage = '失注';
     updateTabCounts();
@@ -2426,8 +4169,8 @@ function _renderCqCard() {
     h += '<div style="margin:0 18px 12px;font-size:12px;color:#6b7280;background:#f8fafc;border-radius:8px;padding:8px 10px;border-left:3px solid #e0e7ff;line-height:1.5">' + esc(memoLine.slice(0, 90)) + '</div>';
   }
   if (p.phone) {
-    h += '<button class="cq-phone-btn" onclick="cqMarkCalled()">📞 ' + esc(p.phone) + '</button>'
-       + '<div class="cq-phone-tip">クリックで架電回数+1</div>';
+    h += '<a class="cq-phone-btn" href="tel:' + esc(p.phone) + '" onclick="cqMarkCalled()">📞 ' + esc(p.phone) + '</a>'
+       + '<div class="cq-phone-tip">タップで発信 + 架電回数+1</div>';
   } else {
     h += '<div class="cq-phone-nope">⚠️ 電話番号未登録<br><span style="font-weight:400;font-size:11px">詳細パネルから追加してください</span></div>'
        + '<div class="cq-phone-tip" style="margin-top:6px">電話番号がないと架電できません</div>';
@@ -2511,7 +4254,12 @@ function callQueueNext() {
 }
 
 // 初期ロード
-window.addEventListener('DOMContentLoaded', function(){});
+window.addEventListener('DOMContentLoaded', function(){
+  loadTriggerStatus();
+  initProductPresets();
+  // 広島1,772社を初回のみバックグラウンドで自動インポート
+  setTimeout(autoImportHiroshimaOnce, 2000);
+});
 
 // ─── カレンダーピッカー ──────────────────────────────────────────
 var _cal = { targetId: null, hasTime: false, year: 2026, month: 0, selDate: null };
