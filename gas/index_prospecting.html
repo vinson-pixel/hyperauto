@@ -1169,9 +1169,13 @@ textarea.input{height:80px;resize:none;font-family:inherit}
       </div>
     </div>
     <button class="dp-close" onclick="closeDetail()">✕</button>
-    <button class="dp-close" onclick="deleteProspectRow()" title="この会社をリストから削除" style="background:rgba(220,38,38,.15);color:#fca5a5;margin-right:4px">🗑</button>
+    <button class="dp-close" onclick="deleteDetailRow()" title="削除" style="background:rgba(220,38,38,.15);color:#fca5a5;margin-right:4px">🗑</button>
   </div>
 
+  <!-- 顧客管理・下請け管理用コンテンツ（共通カード） -->
+  <div id="dp-alt-content" style="display:none;padding:16px"></div>
+
+  <div id="dp-prospect-content">
   <div class="dp-body">
     <!-- 架電ボタン -->
     <div class="dp-call-row" id="dp-callbtns"></div>
@@ -1304,6 +1308,7 @@ textarea.input{height:80px;resize:none;font-family:inherit}
       <div id="dp-analysis"></div>
     </div>
   </div>
+  </div><!-- /dp-prospect-content -->
 </div>
 
 <!-- ── 架電メモモーダル ───────────────────────────────────── -->
@@ -1994,8 +1999,75 @@ function submitCall(){
 
 // ─── 詳細パネル ─────────────────────────────────────────────────
 var _detailRow=null;
+var _detailType='prospect'; // 'prospect' | 'customer' | 'subcon'
+var _detailAltRow=null;
 var _analysisCache={};
+
+function deleteDetailRow(){
+  if(_detailType==='customer'){ deleteCustomerConfirm(_detailAltRow, document.getElementById('dp-company').value||''); }
+  else if(_detailType==='subcon'){ deleteSubconConfirm(_detailAltRow, document.getElementById('dp-company').value||''); }
+  else { deleteProspectRow(); }
+}
+
+function _openAltPanel(company, contentHtml){
+  document.getElementById('dp-company').value = company||'';
+  document.getElementById('dp-prospect-content').style.display='none';
+  var alt=document.getElementById('dp-alt-content');
+  alt.innerHTML=contentHtml;
+  alt.style.display='block';
+  document.getElementById('detailPanel').classList.add('open');
+  document.getElementById('overlay').classList.add('on');
+}
+
+function openCustomerDetail(rowIndex){
+  _detailType='customer'; _detailAltRow=rowIndex;
+  var c=_customers.find(function(x){return x.rowIndex===rowIndex;});
+  if(!c) return;
+  var html='<div class="dp-fields">'
+    +'<div class="dpf full"><div class="dp-flbl">📅 受注日</div><div class="dpf-in" style="background:#f8fafc">'+esc(c.wonDate||'—')+'</div></div>'
+    +'<div class="dpf"><div class="dp-flbl">📞 電話番号</div>'
+    +(c.phone?'<a href="tel:'+esc(c.phone)+'" class="dpf-in" style="background:#f8fafc;color:#4338ca;text-decoration:none">'+esc(c.phone)+'</a>':'<div class="dpf-in" style="background:#f8fafc;color:#9ca3af">—</div>')
+    +'</div>'
+    +'<div class="dpf"><div class="dp-flbl">👤 担当者</div><div class="dpf-in" style="background:#f8fafc">'+esc(c.contact||'—')+'</div></div>'
+    +'<div class="dpf"><div class="dp-flbl">📧 メール</div>'
+    +(c.email?'<a href="mailto:'+esc(c.email)+'" class="dpf-in" style="background:#f8fafc;color:#4338ca;text-decoration:none">'+esc(c.email)+'</a>':'<div class="dpf-in" style="background:#f8fafc;color:#9ca3af">—</div>')
+    +'</div>'
+    +'<div class="dpf full"><div class="dp-flbl">📍 住所</div><div class="dpf-in" style="background:#f8fafc">'+esc(c.address||'—')+'</div></div>'
+    +'<div class="dpf full"><div class="dp-flbl">📅 最終連絡日</div><div class="dpf-in" style="background:#f8fafc">'+esc(c.lastContact||'—')+'</div></div>'
+    +'<div class="dpf full"><div class="dp-flbl">📝 メモ</div><div class="dpf-in" style="background:#f8fafc;white-space:pre-wrap;min-height:60px">'+esc(c.memo||'')+'</div></div>'
+    +'</div>'
+    +'<div style="margin-top:14px"><button class="btn btn-outline btn-sm" onclick="openCustomerEdit('+rowIndex+')">✏️ 編集</button></div>';
+  _openAltPanel(c.company, html);
+}
+
+function openSubconDetail(rowIndex){
+  _detailType='subcon'; _detailAltRow=rowIndex;
+  var s=_subcons.find(function(x){return x.rowIndex===rowIndex;});
+  if(!s) return;
+  var stc=({'空き':'#dcfce7;color:#15803d','稼働中':'#fee2e2;color:#dc2626','要確認':'#fef3c7;color:#92400e'})[s.status]||'#f3f4f6;color:#374151';
+  var html='<div class="dp-fields">'
+    +'<div class="dpf full"><div class="dp-flbl">🔧 稼働状況</div><span class="badge" style="background:'+stc+'">'+esc(s.status||'—')+'</span></div>'
+    +'<div class="dpf"><div class="dp-flbl">📞 電話番号</div>'
+    +(s.phone?'<a href="tel:'+esc(s.phone)+'" class="dpf-in" style="background:#f8fafc;color:#4338ca;text-decoration:none">'+esc(s.phone)+'</a>':'<div class="dpf-in" style="background:#f8fafc;color:#9ca3af">—</div>')
+    +'</div>'
+    +'<div class="dpf"><div class="dp-flbl">👤 担当者</div><div class="dpf-in" style="background:#f8fafc">'+esc(s.contact||'—')+'</div></div>'
+    +'<div class="dpf"><div class="dp-flbl">📧 メール</div>'
+    +(s.email?'<a href="mailto:'+esc(s.email)+'" class="dpf-in" style="background:#f8fafc;color:#4338ca;text-decoration:none">'+esc(s.email)+'</a>':'<div class="dpf-in" style="background:#f8fafc;color:#9ca3af">—</div>')
+    +'</div>'
+    +'<div class="dpf"><div class="dp-flbl">🔨 得意工種</div><div class="dpf-in" style="background:#f8fafc">'+esc(s.specialty||'—')+'</div></div>'
+    +'<div class="dpf"><div class="dp-flbl">📍 対応エリア</div><div class="dpf-in" style="background:#f8fafc">'+esc(s.area||'—')+'</div></div>'
+    +'<div class="dpf"><div class="dp-flbl">💴 単価（昼間）</div><div class="dpf-in" style="background:#f8fafc">'+esc(s.rate||'—')+'</div></div>'
+    +'<div class="dpf"><div class="dp-flbl">💴 単価（夜間）</div><div class="dpf-in" style="background:#f8fafc">'+esc(s.rateNight||'—')+'</div></div>'
+    +'<div class="dpf full"><div class="dp-flbl">📝 メモ</div><div class="dpf-in" style="background:#f8fafc;white-space:pre-wrap;min-height:60px">'+esc(s.memo||'')+'</div></div>'
+    +'</div>'
+    +'<div style="margin-top:14px"><button class="btn btn-outline btn-sm" onclick="openSubconEdit('+rowIndex+')">✏️ 編集</button></div>';
+  _openAltPanel(s.company, html);
+}
+
 function openDetail(rowIndex){
+  _detailType='prospect';
+  document.getElementById('dp-alt-content').style.display='none';
+  document.getElementById('dp-prospect-content').style.display='';
   _detailRow=rowIndex;
   var p=_prospects.find(function(x){return x.rowIndex===rowIndex;});
   if(!p) return;
@@ -2136,6 +2208,9 @@ function closeDetail(){
   document.getElementById('detailPanel').classList.remove('open');
   document.getElementById('overlay').classList.remove('on');
   document.querySelectorAll('.prospect-row').forEach(function(r){r.classList.remove('sel');});
+  _detailType='prospect';
+  document.getElementById('dp-alt-content').style.display='none';
+  document.getElementById('dp-prospect-content').style.display='';
 }
 function deleteProspectRow(){
   if(!_detailRow) return;
@@ -2753,7 +2828,7 @@ function renderCustomers() {
     } else {
       lcLabel = ds + '日前（' + c.lastContact + '）'; lcColor = '#16a34a';
     }
-    html += '<div class="cust-card '+cls+'" onclick="openCustomerEdit('+c.rowIndex+')">'
+    html += '<div class="cust-card '+cls+'" onclick="openCustomerDetail('+c.rowIndex+')">'
       + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
       + '<div style="font-size:14px;font-weight:700;color:#1e40af;min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(c.company)+'</div>'
       + '<span style="font-size:11px;color:'+lcColor+';white-space:nowrap;font-weight:600">'+lcLabel+'</span>'
@@ -2892,7 +2967,7 @@ function renderSubcons() {
     } else if (s.rateNight) {
       rateHtml = '<span>🌙 夜: '+Number(s.rateNight).toLocaleString()+'円/日</span>';
     }
-    html += '<div style="background:#fff;border:1.5px solid #e8eaf0;border-radius:12px;padding:14px;cursor:pointer;transition:border .15s" onclick="openSubconEdit('+s.rowIndex+')" onmouseover="this.style.borderColor=\'#7c3aed\'" onmouseout="this.style.borderColor=\'#e8eaf0\'">'
+    html += '<div style="background:#fff;border:1.5px solid #e8eaf0;border-radius:12px;padding:14px;cursor:pointer;transition:border .15s" onclick="openSubconDetail('+s.rowIndex+')" onmouseover="this.style.borderColor=\'#7c3aed\'" onmouseout="this.style.borderColor=\'#e8eaf0\'">'
       + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
       + '<div style="font-size:13px;font-weight:700;color:#374151;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+displayName+subName+'</div>'
       + nightBadge
