@@ -363,6 +363,41 @@ function getProspectSheet_() {
   return getSheetByGid_(ss, PROSPECT_SHEET_GID);
 }
 
+// ── 手動追加 ────────────────────────────────────────────────────────
+function saveManualProspect(data) {
+  var sheet = getProspectSheet_();
+  if (!sheet) return { error: 'シートが見つかりません' };
+  if (!data || !data.company) return { error: '会社名は必須です' };
+
+  var lastRow = sheet.getLastRow();
+  if (lastRow > 1) {
+    var existing = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+    var nm = normalizeCompanyName_(data.company);
+    for (var i = 0; i < existing.length; i++) {
+      if (normalizeCompanyName_(String(existing[i][0])) === nm) {
+        return { duplicate: true, existing: String(existing[i][0]) };
+      }
+    }
+  }
+
+  var row = new Array(21).fill('');
+  row[PC.COMPANY  - 1] = expandCompanyAbbr_(data.company);
+  row[PC.INDUSTRY - 1] = (data.industry || '').slice(0, 20);
+  row[PC.PREF     - 1] = data.pref     || '';
+  row[PC.STAGE    - 1] = '未架電';
+  row[PC.CONTACT  - 1] = data.contact  || '';
+  row[PC.PHONE    - 1] = data.phone    || '';
+  row[PC.EMAIL    - 1] = data.email    || '';
+  row[PC.URL      - 1] = data.url      || '';
+  row[PC.CALL_COUNT-1] = 0;
+  row[PC.MEMO     - 1] = data.memo     || '';
+  row[PC.SOURCE   - 1] = 'manual';
+  row[PC.LIST_TYPE- 1] = '営業';
+
+  sheet.appendRow(row);
+  return { success: true, company: row[PC.COMPANY - 1] };
+}
+
 // ─── 旧→新 スプレッドシート移行 ─────────────────────────────────
 
 function migrateProspectSheet() {

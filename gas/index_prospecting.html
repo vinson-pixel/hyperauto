@@ -648,6 +648,7 @@ textarea.input{height:80px;resize:none;font-family:inherit}
       <button class="btn btn-gray btn-sm" onclick="resetFilters()">✕</button>
       <button class="btn btn-gray btn-sm" onclick="loadList()">🔄</button>
       <button class="btn btn-sm" id="bulkAnalyzeBtn" style="background:#7c3aed;color:#fff;flex-shrink:0" onclick="doBulkAnalyze()">🤖</button>
+      <button class="btn btn-sm" style="background:#15803d;color:#fff;flex-shrink:0" onclick="openManualAddModal()">＋ 手動追加</button>
       <button class="btn btn-gray btn-sm" id="advFilterToggle" onclick="toggleAdvFilter()" style="font-size:11px">詳細 ▾</button>
     </div>
     <!-- 詳細フィルター（折りたたみ） -->
@@ -3278,6 +3279,61 @@ function autoImportHiroshimaOnce() {
   });
 }
 
+// ── 手動追加 ─────────────────────────────────────
+function openManualAddModal() {
+  ['ma-company','ma-industry','ma-pref','ma-phone','ma-email','ma-contact','ma-url','ma-memo'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('manualAddAlert').innerHTML = '';
+  document.getElementById('manualAddSaveBtn').disabled = false;
+  document.getElementById('manualAddSaveBtn').textContent = '保存する';
+  document.getElementById('manualAddModal').style.display = 'flex';
+}
+function closeManualAddModal() {
+  document.getElementById('manualAddModal').style.display = 'none';
+}
+function submitManualAdd() {
+  var company = (document.getElementById('ma-company').value || '').trim();
+  if (!company) {
+    document.getElementById('manualAddAlert').innerHTML = '<div style="color:#dc2626;font-size:12px;margin-bottom:8px">❌ 会社名は必須です</div>';
+    return;
+  }
+  var btn = document.getElementById('manualAddSaveBtn');
+  btn.disabled = true; btn.textContent = '保存中…';
+  document.getElementById('manualAddAlert').innerHTML = '';
+  var data = {
+    company:  company,
+    industry: (document.getElementById('ma-industry').value || '').trim(),
+    pref:     (document.getElementById('ma-pref').value || '').trim(),
+    phone:    (document.getElementById('ma-phone').value || '').trim(),
+    email:    (document.getElementById('ma-email').value || '').trim(),
+    contact:  (document.getElementById('ma-contact').value || '').trim(),
+    url:      (document.getElementById('ma-url').value || '').trim(),
+    memo:     (document.getElementById('ma-memo').value || '').trim()
+  };
+  google.script.run
+    .withSuccessHandler(function(r) {
+      btn.disabled = false; btn.textContent = '保存する';
+      if (r.error) {
+        document.getElementById('manualAddAlert').innerHTML = '<div style="color:#dc2626;font-size:12px;margin-bottom:8px">❌ ' + r.error + '</div>';
+        return;
+      }
+      if (r.duplicate) {
+        document.getElementById('manualAddAlert').innerHTML = '<div style="color:#f59e0b;font-size:12px;margin-bottom:8px">⚠️ 「' + r.existing + '」が既にリストにあります</div>';
+        return;
+      }
+      closeManualAddModal();
+      loadList();
+      alert2('listAlert', '✅ 「' + r.company + '」を追加しました', 'ok');
+    })
+    .withFailureHandler(function(e) {
+      btn.disabled = false; btn.textContent = '保存する';
+      document.getElementById('manualAddAlert').innerHTML = '<div style="color:#dc2626;font-size:12px;margin-bottom:8px">❌ ' + e.message + '</div>';
+    })
+    .saveManualProspect(data);
+}
+
 // ── S-04 自動フォローアップ ────────────────────────
 function doFollowUpCount(){
   google.script.run
@@ -4387,6 +4443,31 @@ document.addEventListener('mousedown', function(e) {
     </select>
   </div>
   <button class="cal-confirm" onclick="calConfirm()">確定</button>
+</div>
+
+<!-- ── 手動追加モーダル ──────────────────────────────────── -->
+<div id="manualAddModal" class="modal" onclick="if(event.target===this)closeManualAddModal()">
+  <div class="modal-box" style="max-width:480px;width:92%">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-size:14px;font-weight:700">✏️ 会社を手動追加</div>
+      <button class="dp-close" style="background:#f4f5f9;color:#374151" onclick="closeManualAddModal()">✕</button>
+    </div>
+    <div id="manualAddAlert"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field" style="grid-column:1/-1"><label class="lbl">会社名 *</label><input class="input" id="ma-company" placeholder="株式会社〇〇"></div>
+      <div class="field"><label class="lbl">業種</label><input class="input" id="ma-industry" placeholder="電気工事業"></div>
+      <div class="field"><label class="lbl">所在地</label><input class="input" id="ma-pref" placeholder="愛知県名古屋市"></div>
+      <div class="field"><label class="lbl">電話番号</label><input class="input" id="ma-phone" placeholder="052-000-0000"></div>
+      <div class="field"><label class="lbl">メールアドレス</label><input class="input" id="ma-email" placeholder="info@example.com"></div>
+      <div class="field" style="grid-column:1/-1"><label class="lbl">担当者名</label><input class="input" id="ma-contact" placeholder="田中 部長"></div>
+      <div class="field" style="grid-column:1/-1"><label class="lbl">URL</label><input class="input" id="ma-url" placeholder="https://example.com"></div>
+      <div class="field" style="grid-column:1/-1"><label class="lbl">メモ</label><textarea class="input" id="ma-memo" rows="2" placeholder="特記事項など"></textarea></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn" id="manualAddSaveBtn" style="background:#15803d;color:#fff;flex:1" onclick="submitManualAdd()">保存する</button>
+      <button class="btn btn-outline" onclick="closeManualAddModal()">キャンセル</button>
+    </div>
+  </div>
 </div>
 
 </body>
