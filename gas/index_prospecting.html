@@ -501,8 +501,8 @@ textarea.input{height:80px;resize:none;font-family:inherit}
 <div class="nav">
   <div class="nav-tab on" onclick="switchTab('search')">🔍<span class="tb"> 発掘</span></div>
   <div class="nav-tab" onclick="switchTab('list')">📋<span class="tb"> リスト</span></div>
-  <div class="nav-tab" onclick="switchTab('meeting')">🤝<span class="tb"> 面談</span> <span id="cnt-meeting" class="tab-cnt tab-cnt-apo"></span></div>
-  <div class="nav-tab" onclick="switchTab('followup')">📌<span class="tb"> 追い中</span> <span id="cnt-followup" class="tab-cnt tab-cnt-win"></span></div>
+  <div class="nav-tab" onclick="switchTab('meeting')">🤝<span class="tb"> アポ管理</span> <span id="cnt-meeting" class="tab-cnt tab-cnt-apo"></span></div>
+  <div class="nav-tab" onclick="switchTab('followup')">📌<span class="tb"> 面談済み管理</span> <span id="cnt-followup" class="tab-cnt tab-cnt-win"></span></div>
   <div class="nav-tab" onclick="switchTab('won')">🏆<span class="tb"> 成約</span> <span id="cnt-won" class="tab-cnt" style="background:#15803d;color:#fff"></span></div>
   <div class="nav-tab" onclick="switchTab('call')" style="color:#4338ca;font-weight:700">📞<span class="tb"> 架電</span> <span id="cnt-call" class="tab-cnt" style="background:#4338ca;color:#fff"></span></div>
   <div class="nav-tab" style="position:relative;margin-left:auto" id="moreNavTab" onclick="toggleMoreMenu(event)">≡<span class="tb"> もっと</span>
@@ -543,7 +543,7 @@ textarea.input{height:80px;resize:none;font-family:inherit}
     <div class="row" style="margin-bottom:8px">
       <div class="field">
         <label class="lbl">業種・キーワード</label>
-        <input class="input" id="kw" placeholder="設計事務所・薬局チェーン・工務店" value="設計事務所">
+        <input class="input" id="kw" placeholder="設計事務所・薬局チェーン・工務店">
       </div>
       <div class="field">
         <label class="lbl">エリア</label>
@@ -739,8 +739,8 @@ textarea.input{height:80px;resize:none;font-family:inherit}
 <!-- ── 面談フェーズ ─────────────────────────────────────── -->
 <div id="tab-meeting" class="panel content">
   <div class="card" style="padding:10px 14px;margin-bottom:10px">
-    <div style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:6px">🤝 面談フェーズ — アポ確定リスト</div>
-    <div style="font-size:12px;color:#6b7280">アポが取れた会社。面談前の準備・メール送信はここから。</div>
+    <div style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:6px">🤝 アポ管理 — アポ確定リスト</div>
+    <div style="font-size:12px;color:#6b7280">アポが取れた会社。訪問前の準備・メール送信はここから。</div>
   </div>
   <div id="meetingAlert"></div>
   <div id="meetingList"><div class="loading">読み込み中…</div></div>
@@ -749,7 +749,7 @@ textarea.input{height:80px;resize:none;font-family:inherit}
 <!-- ── 追い中 ──────────────────────────────────────────── -->
 <div id="tab-followup" class="panel content">
   <div class="card" style="padding:10px 14px;margin-bottom:10px">
-    <div style="font-size:13px;font-weight:700;color:#7c3aed;margin-bottom:6px">📌 追い中フェーズ — 面談済み・受注前</div>
+    <div style="font-size:13px;font-weight:700;color:#7c3aed;margin-bottom:6px">📌 面談済み管理 — 受注前フォロー</div>
     <div style="font-size:12px;color:#6b7280">面談が終わり見積・検討中の案件。受注したら「受注!」、ダメなら「失注」へ移してください。</div>
   </div>
   <div id="followupAlert"></div>
