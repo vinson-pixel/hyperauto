@@ -591,7 +591,7 @@ function addProspects(places) {
 }
 
 function getProspects(limit) {
-  limit = limit || 2000;
+  limit = limit || 99999;
   var sheet = getProspectSheet_();
   if (!sheet) return [];
   var lastRow = sheet.getLastRow();

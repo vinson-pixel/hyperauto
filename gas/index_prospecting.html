@@ -1592,7 +1592,7 @@ var COL_TO_KEY={1:'company',2:'industry',3:'pref',4:'stage',5:'aiScore',6:'topPr
 // ─── リスト ──────────────────────────────────────────────────────
 function loadList(){
   document.getElementById('prospectList').innerHTML='<div class="loading">読み込み中…</div>';
-  apiGet({action:'getProspects',limit:3000},function(d){
+  apiGet({action:'getProspects',limit:99999},function(d){
     if(!d){ document.getElementById('prospectList').innerHTML='<div class="empty" style="color:#dc2626">接続エラー（GASが応答しませんでした）</div>'; return; }
     if(d.error){ document.getElementById('prospectList').innerHTML='<div class="empty" style="color:#dc2626">エラー: '+esc(d.error)+'</div>'; return; }
     _prospects=Array.isArray(d)?d:(d.items||d.data||[]);
@@ -3084,7 +3084,7 @@ function loadApoTable() {
   var tbody = document.getElementById('apoTableBody');
   if (!tbody) return;
   if (!_prospects.length) {
-    apiGet({action:'getProspects',limit:3000}, function(d) {
+    apiGet({action:'getProspects',limit:99999}, function(d) {
       _prospects = Array.isArray(d) ? d : [];
       renderApoTable();
     });
@@ -3136,7 +3136,7 @@ function renderApoTable() {
 function loadKpi() {
   document.getElementById('kpiCards').innerHTML = '<div class="loading">集計中…</div>';
   if (!_prospects.length) {
-    apiGet({action:'getProspects',limit:3000}, function(d) {
+    apiGet({action:'getProspects',limit:99999}, function(d) {
       _prospects = Array.isArray(d) ? d : [];
       renderKpi();
     });
@@ -3572,7 +3572,7 @@ function loadPhase(phase) {
   var el = document.getElementById(listId);
   if (el) el.innerHTML = '<div class="loading">読み込み中…</div>';
   if (!_prospects.length) {
-    apiGet({action:'getProspects',limit:3000}, function(d) {
+    apiGet({action:'getProspects',limit:99999}, function(d) {
       _prospects = Array.isArray(d) ? d : [];
       updateTabCounts();
       renderPhaseList(phase);
