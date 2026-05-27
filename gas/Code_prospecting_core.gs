@@ -3,7 +3,7 @@
 var PROSPECT_SS_ID     = '1CH-kXnv49mxjXYYOPczOoRC7ioMjy_WckEH_IegrRHg';
 var PROSPECT_SHEET_GID = 1022515681;
 
-// 列構成（20列）— 営業フロー順: 会社基本→ステージ/スコア→連絡先→活動記録→メモ→管理
+// 列構成（22列）— 営業フロー順: 会社基本→ステージ/スコア→連絡先→活動記録→メモ→管理
 var PC = {
   COMPANY:      1,  // A: 会社名
   INDUSTRY:     2,  // B: 業種
@@ -26,14 +26,56 @@ var PC = {
   CORP_NUM:     19, // S: 法人番号（T番号）
   CONTACTS:     20, // T: 担当者リスト（JSON）
   CAPITAL:      21, // U: 資本金
+  UUID:         22, // V: 永続ID（行番号ズレ防止）
 };
 
 var PROSPECT_HEADERS = [
   '会社名','業種','所在地','ステージ','AIスコア','推奨商材',
   '担当者名','役職','担当者直電','電話番号','メールアドレス','URL',
   '架電回数','最終架電日','アポ日時','メモ',
-  '流入経路','リスト種別','法人番号','担当者リスト','資本金'
+  '流入経路','リスト種別','法人番号','担当者リスト','資本金','UUID'
 ];
+
+function generateUuid_() {
+  return Utilities.getUuid().replace(/-/g,'').slice(0,12);
+}
+
+// rowIndexを信頼する前にUUIDまたは会社名で正しい行を特定する
+function findVerifiedRow_(hintRow, uuid, company) {
+  var sheet = getProspectSheet_();
+  var lastRow = sheet.getLastRow();
+  if (lastRow <= 1) return hintRow;
+
+  var cols = Math.max(sheet.getLastColumn(), 22);
+
+  // ① hint行でUUID一致を確認
+  if (hintRow >= 2 && hintRow <= lastRow) {
+    var hintData = sheet.getRange(hintRow, 1, 1, cols).getValues()[0];
+    var hintUuid = String(hintData[PC.UUID - 1] || '');
+    var hintComp = normalizeCompanyName_(String(hintData[PC.COMPANY - 1] || ''));
+    if (uuid && hintUuid === uuid) return hintRow;
+    if (!uuid && normalizeCompanyName_(company) === hintComp) return hintRow;
+  }
+
+  // ② UUID全行スキャン
+  if (uuid) {
+    var uuidCol = sheet.getRange(2, PC.UUID, lastRow - 1, 1).getValues();
+    for (var i = 0; i < uuidCol.length; i++) {
+      if (String(uuidCol[i][0]) === uuid) return i + 2;
+    }
+  }
+
+  // ③ 会社名フォールバック
+  if (company) {
+    var compCol = sheet.getRange(2, PC.COMPANY, lastRow - 1, 1).getValues();
+    var norm = normalizeCompanyName_(company);
+    for (var j = 0; j < compCol.length; j++) {
+      if (normalizeCompanyName_(String(compCol[j][0])) === norm) return j + 2;
+    }
+  }
+
+  return hintRow; // 最終フォールバック
+}
 
 // Date/文字列 → "yyyy/MM/dd HH:mm" or "yyyy/MM/dd" に正規化
 function formatSheetDate_(val) {
@@ -147,7 +189,11 @@ function convertCompanyNameFormats() {
       var norm = expandCompanyAbbr_(orig);
       if (norm !== orig) { updates.push({ r: i + 2, v: norm }); }
     });
-    updates.forEach(function(u) { sheet.getRange(u.r, PC.COMPANY).setValue(u.v); converted++; });
+    if (updates.length) {
+      updates.forEach(function(u) { data[u.r - 2][0] = u.v; });
+      sheet.getRange(2, PC.COMPANY, data.length, 1).setValues(data);
+      converted += updates.length;
+    }
   }
 
   var custSheet = getCustomerSheet_();
@@ -160,7 +206,11 @@ function convertCompanyNameFormats() {
       var norm = expandCompanyAbbr_(orig);
       if (norm !== orig) { custUpdates.push({ r: i + 2, v: norm }); }
     });
-    custUpdates.forEach(function(u) { custSheet.getRange(u.r, CC.COMPANY).setValue(u.v); converted++; });
+    if (custUpdates.length) {
+      custUpdates.forEach(function(u) { custData[u.r - 2][0] = u.v; });
+      custSheet.getRange(2, CC.COMPANY, custData.length, 1).setValues(custData);
+      converted += custUpdates.length;
+    }
   }
 
   return { ok: true, converted: converted };
@@ -191,15 +241,7 @@ function fetchCapital_(companyName, url, industry) {
     } catch(e) { Logger.log('fetchCapital scrape: ' + e); }
   }
 
-  // Claude fallback（学習データから）
-  var text = callClaude(
-    '会社の資本金を答えてください。金額のみ返してください（例: 1,000万円）。不明なら空文字を返してください。説明不要。',
-    '会社名: ' + companyName + (industry ? '\n業種: ' + industry : ''),
-    'claude-haiku-4-5-20251001', 64
-  );
-  if (!text) return '';
-  var m2 = text.match(/([0-9０-９,，]+\s*[万億千百]?\s*円)/);
-  return m2 ? m2[1].replace(/\s/g, '') : '';
+  return ''; // スクレイピング失敗時は空白を返す（AIハルシネーション防止）
 }
 
 // 資本金が空の行を一括取得（最大件数を指定して実行時間を制御）
@@ -363,6 +405,128 @@ function getProspectSheet_() {
   return getSheetByGid_(ss, PROSPECT_SHEET_GID);
 }
 
+function getCallLogSheet_() {
+  var ss = SpreadsheetApp.openById(PROSPECT_SS_ID);
+  var sheet = ss.getSheetByName('call_logs');
+  if (!sheet) {
+    sheet = ss.insertSheet('call_logs');
+    sheet.appendRow(['timestamp','date','company','rowIndex','result','person','note','callCount']);
+    sheet.getRange(1,1,1,8).setFontWeight('bold').setBackground('#f3f4f6');
+    sheet.setFrozenRows(1);
+  }
+  return sheet;
+}
+
+function appendCallLog_(rowIndex, company, result, person, note, callCount, caller) {
+  try {
+    var sheet = getCallLogSheet_();
+    // callerカラムがなければ追加
+    if (sheet.getLastRow() >= 1 && sheet.getLastColumn() < 9) {
+      sheet.getRange(1, 9).setValue('caller');
+    }
+    var now   = new Date();
+    var ts    = Utilities.formatDate(now, 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss');
+    var date  = Utilities.formatDate(now, 'Asia/Tokyo', 'yyyy/MM/dd');
+    sheet.appendRow([ts, date, company, rowIndex, result, person || '', note || '', callCount || 0, caller || '']);
+  } catch(e) {
+    // call_logs への書き込み失敗はメインの処理を止めない
+    Logger.log('call_log error: ' + e.message);
+  }
+}
+
+// call_logsのcaller空白行に名前を一括設定（セルフバックフィル用）
+function backfillCallerInLogs(callerName, days) {
+  if (!callerName) return { error: 'callerName必須' };
+  var sheet = getCallLogSheet_();
+  var lastRow = sheet.getLastRow();
+  if (lastRow <= 1) return { updated: 0 };
+  var daysBack = parseInt(days) || 30;
+  var cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - daysBack);
+  var colCount = Math.max(sheet.getLastColumn(), 9);
+  var data = sheet.getRange(2, 1, lastRow - 1, colCount).getValues();
+  var updates = [];
+  for (var i = 0; i < data.length; i++) {
+    if (String(data[i][8] || '').trim()) continue; // callerが既にある行はスキップ
+    var d = new Date(String(data[i][1] || '').replace(/\//g, '-'));
+    if (isNaN(d.getTime()) || d < cutoff) continue;
+    updates.push(i + 2); // 更新対象行番号（1-indexed + ヘッダー）
+  }
+  updates.forEach(function(r) { sheet.getRange(r, 9).setValue(callerName); });
+  return { updated: updates.length };
+}
+
+function getCallStats(days) {
+  var sheet = getCallLogSheet_();
+  var lastRow = sheet.getLastRow();
+  if (lastRow <= 1) return { daily: [], totals: {}, persons: [], hourly: [] };
+
+  var colCount = Math.max(sheet.getLastColumn(), 9);
+  var data = sheet.getRange(2, 1, lastRow - 1, colCount).getValues();
+  var cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - (days || 30));
+
+  var dailyMap  = {};
+  var personMap = {};
+  var hourMap   = {};
+  var totals = { calls: 0, apo: 0, interest: 0, ng: 0, callback: 0 };
+
+  data.forEach(function(row) {
+    var ts = new Date(String(row[0]).replace(/\//g,'-').replace(' ','T'));
+    if (isNaN(ts) || ts < cutoff) return;
+    var date   = String(row[1]);
+    var result = String(row[4]);
+    var caller = String(row[8] || '');
+
+    // daily
+    if (!dailyMap[date]) dailyMap[date] = { date: date, calls: 0, apo: 0, interest: 0 };
+    dailyMap[date].calls++;
+    totals.calls++;
+    if (result === 'アポ取れた') { dailyMap[date].apo++; totals.apo++; }
+    if (result === '興味あり')   { dailyMap[date].interest++; totals.interest++; }
+    if (result === 'NG')         totals.ng++;
+    if (result === '折り返し依頼' || result === '要再架電') totals.callback++;
+
+    // per-person
+    if (caller) {
+      if (!personMap[caller]) personMap[caller] = { caller: caller, calls: 0, apo: 0, interest: 0, ng: 0 };
+      personMap[caller].calls++;
+      if (result === 'アポ取れた') personMap[caller].apo++;
+      if (result === '興味あり')   personMap[caller].interest++;
+      if (result === 'NG')         personMap[caller].ng++;
+    }
+
+    // hourly（時間帯別）
+    var hour = ts.getHours();
+    if (!hourMap[hour]) hourMap[hour] = { hour: hour, calls: 0, apo: 0 };
+    hourMap[hour].calls++;
+    if (result === 'アポ取れた') hourMap[hour].apo++;
+  });
+
+  var daily   = Object.keys(dailyMap).sort().map(function(k){ return dailyMap[k]; });
+  var persons = Object.keys(personMap).map(function(k){ return personMap[k]; }).sort(function(a,b){ return b.calls-a.calls; });
+  var hourly  = Object.keys(hourMap).map(Number).sort(function(a,b){ return a-b; }).map(function(h){ return hourMap[h]; });
+  return { daily: daily, totals: totals, persons: persons, hourly: hourly };
+}
+
+// ─── UUID一括付番（既存データ移行） ──────────────────────────────
+function migrateAddUuids() {
+  var sheet = getProspectSheet_();
+  var lastRow = sheet.getLastRow();
+  if (lastRow <= 1) return { updated: 0, message: 'データなし' };
+  var cols = Math.max(sheet.getLastColumn(), 22);
+  var data = sheet.getRange(2, 1, lastRow - 1, cols).getValues();
+  var updates = [];
+  data.forEach(function(row, idx) {
+    var company = String(row[PC.COMPANY - 1] || '').trim();
+    var uuid    = String(row[PC.UUID    - 1] || '').trim();
+    if (company && !uuid) updates.push({ r: idx + 2, v: generateUuid_() });
+  });
+  if (!updates.length) return { updated: 0, message: '全行にUUID済み（移行不要）' };
+  updates.forEach(function(u) { sheet.getRange(u.r, PC.UUID).setValue(u.v); });
+  return { updated: updates.length, message: updates.length + '社にUUIDを付番しました' };
+}
+
 // ── 手動追加 ────────────────────────────────────────────────────────
 function saveManualProspect(data) {
   var sheet = getProspectSheet_();
@@ -393,6 +557,7 @@ function saveManualProspect(data) {
   row[PC.MEMO     - 1] = data.memo     || '';
   row[PC.SOURCE   - 1] = 'manual';
   row[PC.LIST_TYPE- 1] = '営業';
+  row[PC.UUID     - 1] = generateUuid_();
 
   sheet.appendRow(row);
   return { success: true, company: row[PC.COMPANY - 1] };

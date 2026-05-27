@@ -219,6 +219,22 @@ function trigger_monthly_1() {
  *   ?page=card  → 名刺登録フォーム（JECA用）
  *   デフォルト  → アースファスト作業報告書
  */
+function isAuthorized_() {
+  try {
+    var email = Session.getActiveUser().getEmail();
+    return email.endsWith('@marukendenkou.com');
+  } catch(e) { return false; }
+}
+
+function unauthorizedResponse_() {
+  return HtmlService.createHtmlOutput(
+    '<div style="font-family:sans-serif;padding:40px;text-align:center">' +
+    '<h2>アクセス権限がありません</h2>' +
+    '<p>このシステムはマルケン電工社員専用です。<br>会社アカウント（@marukendenkou.com）でGoogleにログインしてください。</p>' +
+    '</div>'
+  ).setTitle('アクセス拒否');
+}
+
 function doGet(e) {
   var page = (e && e.parameter && e.parameter.page) || 'arsfast';
   if (page === 'card') {
@@ -227,6 +243,7 @@ function doGet(e) {
       .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
   }
   if (page === 'prospecting') {
+    if (!isAuthorized_()) return unauthorizedResponse_();
     var action = (e && e.parameter && e.parameter.action) || '';
     if (action) {
       return handleProspectingApi_(e);
@@ -244,7 +261,89 @@ function doGet(e) {
 
 // ─── 営業リスト API（GETベース） ──────────────────────────────────
 
+// google.script.run 経由でHTMLから直接呼び出すディスパッチャ
+// fetch()不要 → CORS問題が発生しない
+function prospectApi(action, paramsJson) {
+  if (!isAuthorized_()) return { error: '認証エラー: 会社アカウントでログインしてください' };
+  var p = {};
+  try { p = paramsJson ? JSON.parse(paramsJson) : {}; } catch(e) {}
+  try {
+    // ─ GET系 ───────────────────────────────────────────────
+    if (action === 'getProspects')      return getProspects(parseInt(p.limit) || 300);
+    if (action === 'getStats')          return getStats();
+    if (action === 'searchLeads')       return searchLeads(p.keyword, p.area, p.source, parseInt(p.maxResults)||20, p.quick===true||p.quick==='1');
+    if (action === 'cleanSheet')        return cleanProspectSheet();
+    if (action === 'fillIndustry')      return fillMissingIndustry(parseInt(p.startRow)||2, parseInt(p.chunkSize)||0);
+    if (action === 'migrateAddUuids')   return migrateAddUuids();
+    if (action === 'cleanIndustry')     return cleanIndustryField();
+    if (action === 'fillCorpNum')       return autoFillCorpNum();
+    if (action === 'lookupCorpNum') {
+      if (!getProp('NTA_APP_ID')) return { error: 'NTA_APP_ID未設定' };
+      return { corpNum: lookupCorpNum_(p.name||'') };
+    }
+    if (action === 'autoDiscover')      return autoDiscoverLeads();
+    if (action === 'filterLeads')       return filterLeadsBatch();
+    if (action === 'analyzeFeedback')   return analyzeFeedback();
+    if (action === 'fillDetails')       return autoFillCompanyDetails();
+    if (action === 'bulkCleanup')       return bulkCleanup();
+    if (action === 'deleteUntouchedProspects') return deleteUntouchedProspects();
+    if (action === 'deleteNgProspects') return deleteNgProspects();
+    if (action === 'getCallStats')      return getCallStats(parseInt(p.days)||30);
+    if (action === 'resetStalledProspects') return resetStalledProspects(p.days);
+    if (action === 'autoArchiveOldNg')  return autoArchiveOldNg(p.days);
+    if (action === 'getHumanTasks')     return getHumanTasks();
+    if (action === 'getVisitList')      return getVisitList(p.area, p.maxCount);
+    if (action === 'weeklyReport')      return sendWeeklyStrategyReport();
+    if (action === 'ping')              return { ok: true };
+    if (action === 'getListOpportunities') return getListOpportunities();
+    if (action === 'getCustomers')      return getCustomers();
+    if (action === 'getSubcontractors') return getSubcontractors();
+    // ─ POST系 ──────────────────────────────────────────────
+    if (action === 'logCallResult')     return logCallResult(p.rowIndex, p.result, p.notes, p.uuid, p.company, p.caller||'');
+    if (action === 'addProspects')      return addProspects(p.places);
+    if (action === 'generateTalkScript') return generateTalkScript(p.rowIndex);
+    if (action === 'generatePersonalizedEmail') return generatePersonalizedEmail(p.rowIndex, p.templateId, p.note);
+    if (action === 'previewEmail')      return previewEmail(p.rowIndex, p.templateId, p.note);
+    if (action === 'sendProspectEmail') return sendProspectEmail(p.rowIndex, p.templateId, p.note, p.asDraft);
+    if (action === 'updateCell')        return updateProspectCell(p.rowIndex, p.col, p.value);
+    if (action === 'analyzeCompany')    return analyzeCompany(p.rowIndex);
+    if (action === 'analyzeCompanyDeep') return analyzeCompanyDeep(p.rowIndex);
+    if (action === 'generateCampaign')  return generateCampaign(p.product, p.limit);
+    if (action === 'addCustomer')       return addCustomer(p.data);
+    if (action === 'updateCustomerCell') return updateCustomerCell(p.rowIndex, p.col, p.value);
+    if (action === 'deleteCustomer')    return deleteCustomer(p.rowIndex);
+    if (action === 'addSubcontractor')  return addSubcontractor(p.data);
+    if (action === 'updateSubcontractorCell') return updateSubcontractorCell(p.rowIndex, p.col, p.value);
+    if (action === 'deleteSubcontractor') return deleteSubcontractor(p.rowIndex);
+    if (action === 'syncAllCustomersToProspects') return syncAllCustomersToProspects();
+    if (action === 'enrichCapitals')    return enrichCapitals(p.maxRows||30);
+    if (action === 'enrichCapitalForRow') return enrichCapitalForRow(p.rowIndex);
+    if (action === 'enrichRowIfEmpty')  return enrichRowIfEmpty(p.rowIndex);
+    if (action === 'convertCompanyNameFormats') return convertCompanyNameFormats();
+    if (action === 'migrateAddressFromMemo') return migrateAddressFromMemo();
+    if (action === 'deleteProspect')    return deleteProspect(p.rowIndex);
+    if (action === 'cancelApo')         return cancelApo(p.rowIndex, p.uuid||'', p.company||'');
+    if (action === 'importAllHiroshimaQuick') return importAllHiroshimaQuick();
+    if (action === 'analyzeListOpportunities') return analyzeListOpportunities();
+    if (action === 'syncWonToCustomers')        return syncWonToCustomers();
+    if (action === 'backfillCallerInLogs')      return backfillCallerInLogs(p.callerName, p.days);
+    if (action === 'revertWonProspect')         return revertWonProspect(p.rowIndex);
+    if (action === 'revertCustomerToProspect') return revertCustomerToProspect(p.rowIndex, p.stage);
+    if (action === 'getDeals')         return getDeals(p.customerName || '');
+    if (action === 'addDeal')          return addDeal(p);
+    if (action === 'updateDealStage')  return updateDealStage(p.dealId, p.stage);
+    if (action === 'deleteDeal')       return deleteDeal(p.dealId);
+    return { error: '不明なアクション: ' + action };
+  } catch(err) {
+    return { error: err.toString() };
+  }
+}
+
 function handleProspectingApi_(e) {
+  if (!isAuthorized_()) {
+    return ContentService.createTextOutput(JSON.stringify({ error: '認証エラー: 会社アカウントでログインしてください' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
   var p      = e.parameter;
   var action = p.action || '';
   var result;
@@ -253,7 +352,8 @@ function handleProspectingApi_(e) {
     else if (action === 'getStats')      result = getStats();
     else if (action === 'searchLeads')   result = searchLeads(p.keyword, p.area, p.source, parseInt(p.maxResults) || 20, p.quick === '1');
     else if (action === 'cleanSheet')    result = cleanProspectSheet();
-    else if (action === 'fillIndustry')  result = fillMissingIndustry();
+    else if (action === 'fillIndustry')  result = fillMissingIndustry(parseInt(p.startRow)||2, parseInt(p.chunkSize)||0);
+    else if (action === 'migrateAddUuids') result = migrateAddUuids();
     else if (action === 'cleanIndustry') result = cleanIndustryField();
     else if (action === 'fillCorpNum')   result = autoFillCorpNum();
     else if (action === 'lookupCorpNum') {
@@ -264,7 +364,12 @@ function handleProspectingApi_(e) {
     else if (action === 'filterLeads')   result = filterLeadsBatch();
     else if (action === 'analyzeFeedback')   result = analyzeFeedback();
     else if (action === 'fillDetails')       result = autoFillCompanyDetails();
-    else if (action === 'bulkCleanup')       result = bulkCleanup();
+    else if (action === 'bulkCleanup')              result = bulkCleanup();
+    else if (action === 'deleteUntouchedProspects') result = deleteUntouchedProspects();
+    else if (action === 'deleteNgProspects')        result = deleteNgProspects();
+    else if (action === 'getCallStats')             result = getCallStats(parseInt(p.days)||30);
+    else if (action === 'resetStalledProspects')    result = resetStalledProspects(p.days);
+    else if (action === 'autoArchiveOldNg')         result = autoArchiveOldNg(p.days);
     else if (action === 'getHumanTasks')     result = getHumanTasks();
     else if (action === 'getVisitList')      result = getVisitList(p.area, p.maxCount);
     else if (action === 'weeklyReport')      result = sendWeeklyStrategyReport();
@@ -298,7 +403,7 @@ function doPost(e) {
     var r;
     try {
       var a = body.prospectAction;
-      if      (a === 'logCallResult')             r = logCallResult(body.rowIndex, body.result, body.notes);
+      if      (a === 'logCallResult')             r = logCallResult(body.rowIndex, body.result, body.notes, body.uuid, body.company, body.caller||'');
       else if (a === 'addProspects')              r = addProspects(body.places);
       else if (a === 'generateTalkScript')        r = generateTalkScript(body.rowIndex);
       else if (a === 'generatePersonalizedEmail') r = generatePersonalizedEmail(body.rowIndex, body.templateId, body.note);
@@ -321,6 +426,7 @@ function doPost(e) {
       else if (a === 'convertCompanyNameFormats')    r = convertCompanyNameFormats();
       else if (a === 'migrateAddressFromMemo')       r = migrateAddressFromMemo();
       else if (a === 'deleteProspect')               r = deleteProspect(body.rowIndex);
+      else if (a === 'cancelApo')                    r = cancelApo(body.rowIndex, body.uuid||'', body.company||'');
       else if (a === 'importAllHiroshimaQuick')     r = importAllHiroshimaQuick();
       else if (a === 'analyzeListOpportunities')   r = analyzeListOpportunities();
       else r = { error: '不明なアクション' };

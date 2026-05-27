@@ -278,6 +278,26 @@ function updateProspectCell(rowIndex, col, value) {
     var cell = sheet.getRange(rowIndex, col);
     cell.setValue(value);
     if (col === PC.CALL_COUNT) cell.setNumberFormat('0');
+
+    // ステージが「受注」に変わったら顧客管理シートに自動転記
+    if (col === PC.STAGE && value === '受注') {
+      try {
+        var cols = Math.max(sheet.getLastColumn(), 22);
+        var row  = sheet.getRange(rowIndex, 1, 1, cols).getValues()[0];
+        var today = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd');
+        addCustomer({
+          company:     String(row[PC.COMPANY - 1] || '').trim(),
+          wonDate:     today,
+          contact:     String(row[PC.CONTACT - 1] || ''),
+          phone:       String(row[PC.PHONE - 1] || row[PC.DIRECT_PHONE - 1] || ''),
+          email:       String(row[PC.EMAIL - 1] || ''),
+          lastContact: today,
+          address:     String(row[PC.PREF - 1] || ''),
+          memo:        '【営業リストより自動転記】' + (row[PC.MEMO - 1] ? '\n' + String(row[PC.MEMO - 1]).replace(/【AI分析[^】]*】/g,'').trim() : ''),
+        });
+      } catch(e2) { Logger.log('顧客転記失敗: ' + e2); }
+    }
+
     return { success: true };
   } catch(e) {
     return { error: e.toString() };

@@ -10,6 +10,8 @@ function generateQueryVariations(keyword, area) {
     '  例：「業務用エアコン」→["飲食店","工場 製造業","倉庫 物流","介護施設","スーパー"]\n' +
     '  例：「LED改修」→["製造業 工場","倉庫 物流","病院 クリニック","スーパー 商業施設","学校 公共施設"]\n' +
     '  例：「電気工事 店舗」→["内装工事会社","店舗設計事務所","テナント改装 工務店","建設会社 店舗工事","リフォーム会社"]\n' +
+    '- 「〇〇事業者」「〇〇会社」「〇〇業者」のように企業そのものを指す場合 → その事業を営む会社・法人を直接探すクエリを生成せよ（設置先ではなくその業種の会社）\n' +
+    '  例：「EV充電インフラ事業者」→["EV充電器設置会社","電気自動車充電サービス会社","EVチャージャー設置業者","充電ステーション運営会社","EV充電設備販売会社"]\n' +
     '- 業種名が入力された場合 → 言い換え・関連業種バリエーションを生成せよ\n\n' +
     'JSON配列のみ: ["クエリ1","クエリ2","クエリ3","クエリ4","クエリ5"]',
     'claude-haiku-4-5-20251001', 200
@@ -78,9 +80,11 @@ function getSubAreas_(area) {
   return subAreaMap[area] || [];
 }
 
-// ─── 一時修正: 会社名を検索して更新 ────────────────────────────────
-// 会社情報を電話番号で照合して修正（GASエディタから手動実行）
-function verifyAndFixCompany() {
+// ─── [削除済みマイグレーション・一時修正関数] ──────────────────────
+// verifyAndFixCompany / migrate* / fixHanamori / fixCompanyName_sekku / fixAllPhoneNumbers
+// 移行完了・運用終了のため全削除（2026-05-27）
+
+function _DELETED_PLACEHOLDER_() {
   var TARGET = '花森'; // 会社名に含まれる文字列で検索
 
   var sheet = getProspectSheet_();
@@ -164,46 +168,8 @@ function verifyAndFixCompany() {
     }
   }
 
-  if (!found) Logger.log('「' + TARGET + '」を含む会社が見つかりませんでした');
 }
 
-// 【1回だけ実行】担当者直電をC列（担当者名の隣）に移動
-// 旧: A会社名 B担当者名 C電話番号 ... O担当者直電
-// 新: A会社名 B担当者名 C担当者直電 D電話番号 ... O法人番号
-function migrateDirectPhoneToColC() {
-  var sheet = getProspectSheet_();
-  if (!sheet) { Logger.log('シートエラー'); return; }
-  // 既に移行済み確認（C列ヘッダーが「担当者直電」なら終了）
-  if (String(sheet.getRange(1, 3).getValue()) === '担当者直電') {
-    Logger.log('✅ 既に移行済み（C列=担当者直電）'); return;
-  }
-  var lastRow = sheet.getLastRow();
-  // 旧O列(15)の担当者直電データを保存
-  var directData = lastRow > 1
-    ? sheet.getRange(2, 15, lastRow - 1, 1).getValues()
-    : [];
-  // C列の前に新列を挿入 → 旧C-O が D-P にシフト
-  sheet.insertColumnBefore(3);
-  // 新C(3)に担当者直電ヘッダーと値をセット
-  sheet.getRange(1, 3).setValue('担当者直電').setFontWeight('bold');
-  if (directData.length) {
-    sheet.getRange(2, 3, directData.length, 1).setValues(directData);
-  }
-  // 旧O(15)が挿入で P(16) になった → 中身をクリア & 列削除
-  if (lastRow > 1) sheet.getRange(2, 16, lastRow - 1, 1).clearContent();
-  sheet.getRange(1, 16).clearContent();
-  sheet.deleteColumn(16);
-  Logger.log('✅ 担当者直電をC列に移動完了（' + directData.length + '行処理）');
-}
-
-// 【旧】O列「担当者直電」ヘッダー追加（使用済み→migrateDirectPhoneToColCを使うこと）
-function migrateAddDirectPhoneColumn() {
-  Logger.log('このマイグレーションは不要です。migrateDirectPhoneToColC() を実行してください。');
-}
-
-// 【1回だけ実行】Q列「役職」追加 + 担当者名（B列）から役職を分離
-// 例: "田中（部長）" → B=田中、Q=部長
-// 列を新順序に並べ替え（ヘッダー名ベースで安全に実行）
 function migrateReorderColumns() {
   var sheet = getProspectSheet_();
   if (!sheet) return { error: 'シートエラー' };
@@ -250,144 +216,6 @@ function migrateReorderColumns() {
 
   Logger.log('✅ 列並べ替え完了: ' + (lastRow - 1) + '件');
   return { ok: true, message: '列並べ替え完了 (' + (lastRow - 1) + '件)' };
-}
-
-// S列「AIスコア」・T列「推奨商材」ヘッダーを追加（1回だけ実行）
-function migrateAddScoreColumns() {
-  var sheet = getProspectSheet_();
-  if (!sheet) { Logger.log('シートエラー'); return; }
-  var sVal = String(sheet.getRange(1, PC.AI_SCORE).getValue()).trim();
-  var tVal = String(sheet.getRange(1, PC.TOP_PRODUCT).getValue()).trim();
-  if (sVal === 'AIスコア' && tVal === '推奨商材') {
-    Logger.log('✅ 既に移行済み（S=AIスコア, T=推奨商材）'); return;
-  }
-  sheet.getRange(1, PC.AI_SCORE).setValue('AIスコア').setFontWeight('bold').setBackground('#faf5ff');
-  sheet.getRange(1, PC.TOP_PRODUCT).setValue('推奨商材').setFontWeight('bold').setBackground('#faf5ff');
-  Logger.log('✅ S列（AIスコア）・T列（推奨商材）追加完了');
-}
-
-function migrateExtractRoleColumn() {
-  var sheet = getProspectSheet_();
-  if (!sheet) { Logger.log('シートエラー'); return; }
-  if (String(sheet.getRange(1, PC.ROLE).getValue()) === '役職') {
-    Logger.log('✅ 既に移行済み（Q列=役職）'); return;
-  }
-  sheet.getRange(1, PC.ROLE).setValue('役職').setFontWeight('bold');
-  var lastRow = sheet.getLastRow();
-  if (lastRow <= 1) { Logger.log('✅ ヘッダーのみ追加（データなし）'); return; }
-  var data = sheet.getRange(2, PC.CONTACT, lastRow - 1, 1).getValues();
-  var updated = 0;
-  for (var i = 0; i < data.length; i++) {
-    var full = String(data[i][0] || '').trim();
-    if (!full) continue;
-    // "田中（部長）" or "田中(部長)" → name/role分割
-    var m = full.match(/^(.+?)[\（(]([^\）)]+)[\）)]$/);
-    if (m) {
-      sheet.getRange(i + 2, PC.CONTACT).setValue(m[1].trim());
-      sheet.getRange(i + 2, PC.ROLE).setValue(m[2].trim());
-      updated++;
-    }
-  }
-  Logger.log('✅ 役職分離完了: ' + updated + '社 / Q列ヘッダー追加');
-  return { updated: updated };
-}
-
-// P列「担当者リスト」ヘッダーを追加（1回だけ実行）
-function migrateAddContactsColumn() {
-  var sheet = getProspectSheet_();
-  if (!sheet) { Logger.log('シートエラー'); return; }
-  var header = String(sheet.getRange(1, PC.CONTACTS).getValue()).trim();
-  if (header === '担当者リスト') { Logger.log('✅ 既に追加済み'); return; }
-  sheet.getRange(1, PC.CONTACTS).setValue('担当者リスト').setFontWeight('bold');
-  Logger.log('✅ P列に「担当者リスト」ヘッダーを追加しました');
-}
-
-// 全リストの電話番号が結合されているものを分割修正
-// 会社番号 → PHONE列, 担当者携帯 → メモに【携帯】として追記
-function fixAllPhoneNumbers() {
-  var sheet = getProspectSheet_();
-  if (!sheet) { Logger.log('シートエラー'); return; }
-  var lastRow = sheet.getLastRow();
-  if (lastRow <= 1) { Logger.log('データなし'); return; }
-
-  var data = sheet.getRange(2, 1, lastRow - 1, Math.max(sheet.getLastColumn(), 21)).getValues();
-  var fixed = 0;
-
-  for (var i = 0; i < data.length; i++) {
-    var raw = String(data[i][PC.PHONE - 1] || '').trim();
-    if (!raw) continue;
-
-    // 文字列中の全電話番号を抽出
-    var allNums = raw.match(/0\d{1,4}[-\s]?\d{2,4}[-\s]?\d{4}/g);
-    if (!allNums || allNums.length <= 1) continue; // 1件以下なら問題なし
-
-    var mainPhone = allNums[0];
-    var subNums   = allNums.slice(1);
-    var company   = String(data[i][PC.COMPANY - 1] || '');
-
-    // PHONE列を会社番号のみに
-    sheet.getRange(i + 2, PC.PHONE).setValue(mainPhone);
-
-    // 2つ目以降を直電列に保存（既存がなければ）
-    var existingDirect = String(data[i][PC.DIRECT_PHONE - 1] || '').trim();
-    if (!existingDirect && subNums.length) {
-      sheet.getRange(i + 2, PC.DIRECT_PHONE).setValue(subNums.join(' / '));
-    }
-
-    Logger.log('行' + (i+2) + ' ' + company + ': ' + raw + ' → 会社:' + mainPhone + ' / 携帯:' + subNums.join(', '));
-    fixed++;
-  }
-
-  Logger.log('✅ 修正完了: ' + fixed + '件');
-  return { fixed: fixed };
-}
-
-// 株式会社花森の情報を正確に修正
-function fixHanamori() {
-  var sheet = getProspectSheet_();
-  if (!sheet) { Logger.log('シートエラー'); return; }
-  var data = sheet.getDataRange().getValues();
-
-  for (var i = 1; i < data.length; i++) {
-    var company = String(data[i][PC.COMPANY - 1] || '');
-    if (company.indexOf('花森') === -1) continue;
-
-    var row = i + 1;
-    // 会社名を正式名称に戻す
-    sheet.getRange(row, PC.COMPANY).setValue('株式会社花森');
-
-    // 電話番号を分割（2つ連結されているので最初の固定電話だけ使う）
-    var rawPhone = String(data[i][PC.PHONE - 1] || '');
-    var fixedPhone = rawPhone.match(/0\d{1,4}-\d{2,4}-\d{4}/);
-    if (fixedPhone) {
-      sheet.getRange(row, PC.PHONE).setValue(fixedPhone[0]);
-      Logger.log('電話番号修正: ' + rawPhone + ' → ' + fixedPhone[0]);
-    }
-
-    // URLをトップページに修正
-    sheet.getRange(row, PC.URL).setValue('https://www.hanamori-k.co.jp/');
-
-    // 所在地を正確に
-    sheet.getRange(row, PC.PREF).setValue('愛知県');
-
-    Logger.log('✅ 修正完了 (行' + row + '): 株式会社花森 / ' + (fixedPhone ? fixedPhone[0] : rawPhone));
-    return;
-  }
-  Logger.log('花森が見つかりませんでした');
-}
-
-function fixCompanyName_sekku() {
-  var sheet = getProspectSheet_();
-  if (!sheet) { Logger.log('シートエラー'); return; }
-  var data = sheet.getDataRange().getValues();
-  for (var i = 1; i < data.length; i++) {
-    if (String(data[i][0]).trim() === '株式会社セック') {
-      sheet.getRange(i + 1, PC.COMPANY).setValue('セック株式会社');
-      Logger.log('Row ' + (i + 1) + ' → セック株式会社 に更新');
-      return;
-    }
-  }
-  Logger.log('株式会社セック が見つからなかった');
 }
 
 function searchLeads(keyword, area, source, maxResults, quick) {
@@ -561,14 +389,17 @@ function addProspects(places) {
     });
   }
 
+  var noContact = 0;
   for (var i = 0; i < places.length; i++) {
     var p = places[i];
     if (!p.name) continue;
     var cn = String(p.corpNum || '').trim();
     var nm = normalizeCompanyName_(p.name);
     if ((cn && existingCorpNums[cn]) || existingNormNames[nm]) { skipped++; continue; }
+    // 電話番号もURLも住所もない場合はゴミデータとしてスキップ
+    if (!p.phone && !p.website && !p.address) { noContact++; continue; }
 
-    var row = new Array(21).fill('');
+    var row = new Array(22).fill('');
     row[PC.COMPANY     - 1] = expandCompanyAbbr_(p.name);
     row[PC.INDUSTRY    - 1] = (p.industry || '').slice(0, 20);
     row[PC.PREF        - 1] = p.pref      || '';
@@ -580,6 +411,7 @@ function addProspects(places) {
     row[PC.SOURCE      - 1] = p.source    || 'リード発掘';
     row[PC.LIST_TYPE   - 1] = p.listType  || '営業';
     row[PC.CORP_NUM    - 1] = cn;
+    row[PC.UUID        - 1] = generateUuid_();
 
     sheet.appendRow(row);
     if (cn) existingCorpNums[cn] = true;
@@ -587,7 +419,7 @@ function addProspects(places) {
     lastRow++;
     added++;
   }
-  return { added: added, skipped: skipped };
+  return { added: added, skipped: skipped, noContact: noContact };
 }
 
 function getProspects(limit) {
@@ -597,7 +429,7 @@ function getProspects(limit) {
   var lastRow = sheet.getLastRow();
   if (lastRow <= 1) return [];
 
-  var cols = Math.max(sheet.getLastColumn(), 21);
+  var cols = Math.max(sheet.getLastColumn(), 22);
   var data = sheet.getRange(2, 1, lastRow - 1, cols).getValues();
   var result = [];
 
@@ -627,6 +459,7 @@ function getProspects(limit) {
       aiScore:     parseInt(row[PC.AI_SCORE   - 1]) || 0,
       topProduct:  String(row[PC.TOP_PRODUCT  - 1] || '').trim(),
       capital:     String(row[PC.CAPITAL      - 1] || '').trim(),
+      uuid:        String(row[PC.UUID         - 1] || '').trim(),
     });
   });
   // アクティブなステージを必ず含める（limitで押し出されないよう優先）

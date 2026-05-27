@@ -16,6 +16,7 @@ body { font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-s
 .field { margin-bottom: 10px; }
 .field:last-child { margin-bottom: 0; }
 .lbl { font-size: 12px; color: #666; margin-bottom: 4px; }
+.lbl .opt { font-size: 11px; color: #aaa; margin-left: 4px; }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
 input[type=text], input[type=date], input[type=time], input[type=tel], input[type=email], textarea, select {
@@ -29,16 +30,23 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 .radios { display: flex; gap: 16px; flex-wrap: wrap; }
 .radios label { display: flex; align-items: center; gap: 7px; font-size: 15px; cursor: pointer; }
 .radios input[type=radio] { width: 18px; height: 18px; accent-color: #185FA5; }
-.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
-.tbl th { font-size: 11px; font-weight: 700; color: #888; padding: 6px 4px; border-bottom: 1px solid #eee; text-align: left; }
-.tbl td { padding: 4px; border-bottom: 1px solid #f0f0f0; }
-.tbl td input { border: none; border-radius: 6px; background: #f8f8f6; padding: 7px 9px; width: 100%; font-size: 14px; outline: none; }
+/* 動的テーブル */
+.dyn-tbl { width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 8px; }
+.dyn-tbl th { font-size: 11px; font-weight: 700; color: #888; padding: 6px 4px; border-bottom: 1px solid #eee; text-align: left; }
+.dyn-tbl td { padding: 3px 2px; border-bottom: 1px solid #f0f0f0; }
+.dyn-tbl td input { border: none; border-radius: 6px; background: #f8f8f6; padding: 7px 9px; width: 100%; font-size: 14px; outline: none; }
+.dyn-tbl td input:focus { background: #eaf4ff; }
+.dyn-tbl .del-cell { width: 28px; text-align: center; }
+.dyn-tbl .del-btn { background: none; border: none; color: #ccc; font-size: 16px; cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+.dyn-tbl .del-btn:hover { color: #e74c3c; background: #fef0f0; }
+.add-row-btn { font-size: 13px; color: #185FA5; background: none; border: 1.5px dashed #185FA5; border-radius: 7px; padding: 6px 14px; cursor: pointer; width: 100%; }
+.add-row-btn:hover { background: #f0f6ff; }
+/* サイン */
 .sign-hint { font-size: 12px; color: #888; text-align: center; margin-bottom: 8px; }
 .sign-wrap { border: 1.5px dashed #ccc; border-radius: 10px; background: #f0f6ff; padding: 1rem; text-align: center; cursor: pointer; }
 .sign-wrap:hover { background: #e8f0ff; }
 .sign-tap-hint { font-size: 14px; color: #185FA5; font-weight: 600; }
 .sign-sub { font-size: 12px; color: #999; margin-top: 4px; }
-.sig-status { flex: 1; font-size: 12px; color: #888; }
 /* モーダル */
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; }
 .modal-overlay.active { display: flex; }
@@ -49,6 +57,7 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 .modal-btns { display: flex; gap: 10px; margin-top: 12px; }
 .modal-btns .btn { flex: 1; }
 .btn-ok { background: #185FA5; color: #fff; border-color: #185FA5; font-weight: 700; }
+/* 写真 */
 .photo-upload-area { border: 1.5px dashed #ccc; border-radius: 10px; background: #fafafa; padding: 1.2rem; text-align: center; cursor: pointer; }
 .photo-upload-area:hover { border-color: #185FA5; background: #f0f6ff; }
 .photo-upload-text { font-size: 14px; color: #888; margin-bottom: 4px; }
@@ -58,15 +67,38 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 .photo-preview-item .remove-btn { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; background: #e74c3c; color: #fff; border: none; border-radius: 50%; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .photo-count { font-size: 12px; color: #185FA5; margin-top: 8px; font-weight: 500; }
 .photo-section-label { font-size: 13px; font-weight: 600; color: #185FA5; margin-bottom: 8px; }
-.email-preview { font-size: 12px; color: #666; background: #f8f8f6; border-radius: 8px; padding: 10px 12px; line-height: 1.8; margin-top: 8px; }
+/* ボタン */
 .btn { padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: #fff; color: #1a1a1a; font-size: 14px; cursor: pointer; font-family: inherit; }
 .btn-primary { background: #185FA5; color: #fff; border-color: #185FA5; font-size: 16px; font-weight: 700; width: 100%; padding: 16px; border-radius: 10px; margin-top: 6px; }
+.btn-retry { background: #e67e22; color: #fff; border-color: #e67e22; font-size: 15px; font-weight: 700; width: 100%; padding: 14px; border-radius: 10px; margin-top: 8px; display: none; }
 .status-bar { display: none; margin-top: 14px; padding: 14px 18px; border-radius: 10px; font-size: 14px; text-align: center; font-weight: 500; }
 .status-ok { background: #eaf6ef; color: #1a7a45; border: 1px solid #a3d9b8; }
 .status-err { background: #fef0f0; color: #c0392b; border: 1px solid #f5a5a5; }
 .loading { background: #fff9e6; color: #856404; border: 1px solid #ffc107; }
 .divider { border: none; border-top: 1px solid #f0f0f0; margin: 14px 0; }
 .signed-preview { margin-top: 10px; border-radius: 8px; border: 1px solid #ddd; width: 100%; max-height: 100px; object-fit: contain; display: none; }
+/* 検索 */
+.order-search { margin-bottom: 10px; position: relative; }
+.order-search input { padding-left: 34px; font-size: 14px; }
+.order-search::before { content: '🔍'; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 14px; }
+/* 案件カード */
+.order-card { border: 1.5px solid #e8e8e4; border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; cursor: pointer; background: #fff; transition: border-color .15s, background .15s; }
+.order-card:hover { border-color: #185FA5; background: #f8fbff; }
+.order-card-name { font-size: 14px; font-weight: 700; color: #1a1a1a; margin-bottom: 3px; }
+.order-card-type { font-size: 12px; color: #888; }
+/* 選択済み案件 */
+.selected-box { background: #eaf4ff; border-radius: 10px; border: 1.5px solid #185FA5; padding: 12px 14px; margin-top: 10px; }
+.selected-name { font-size: 15px; font-weight: 700; color: #185FA5; margin-bottom: 2px; }
+.selected-type { font-size: 12px; color: #555; margin-bottom: 8px; }
+.email-toggle { font-size: 12px; color: #185FA5; background: none; border: none; cursor: pointer; text-decoration: underline; padding: 0; }
+.email-section { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid #c8dff5; }
+/* ドラフト */
+.draft-section { background: #fff; border: 1.5px solid #185FA5; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
+/* 管理パネル */
+.admin-wrap { background: #f8f8f6; border-radius: 10px; padding: 12px; margin-top: 6px; }
+.admin-group-title { font-size: 11px; font-weight: 700; color: #999; margin: 10px 0 6px; text-transform: uppercase; }
+.admin-btns { display: flex; flex-direction: column; gap: 6px; }
+.admin-result { font-size: 11px; color: #444; text-align: left; min-height: 16px; white-space: pre-wrap; word-break: break-all; max-height: 360px; overflow-y: auto; margin-top: 8px; background: #fff; border-radius: 6px; padding: 8px; }
 </style>
 </head>
 <body>
@@ -92,30 +124,75 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
     <h1>アースファスト作業報告書</h1>
   </div>
 
+  <!-- 管理パネル -->
+  <details style="margin-bottom:12px;">
+    <summary style="font-size:12px;color:#aaa;cursor:pointer;list-style:none;text-align:right;">⚙️ 管理</summary>
+    <div class="admin-wrap">
+      <div class="admin-group-title">メンテナンス</div>
+      <div class="admin-btns">
+        <button class="btn" onclick="if(confirm('メールアドレス自動補完を実行します。1〜2分かかります。続けますか？')) runAdminAction('fillEmails')" style="font-size:13px;padding:10px;">📬 メールアドレスを自動補完</button>
+        <button class="btn" onclick="runAdminAction('fixDups')" style="font-size:13px;padding:10px;color:#c0392b;">🗑 重複行を削除</button>
+        <button class="btn" onclick="runAdminAction('recoverSiteNames')" style="font-size:13px;padding:10px;">🏪 現場名を件名から復元</button>
+        <button class="btn" onclick="runAdminAction('cleanBadNames')" style="font-size:13px;padding:10px;">🧹 不正な現場名を消去</button>
+        <button class="btn" onclick="runAdminAction('setupTrigger')" style="font-size:13px;padding:10px;background:#27ae60;color:#fff;">⏰ 自動補完を有効化（初回のみ）</button>
+        <button class="btn" onclick="runAdminAction('checkTrigger')" style="font-size:13px;padding:10px;">📅 自動補完の状態確認</button>
+      </div>
+      <details style="margin-top:10px;">
+        <summary style="font-size:11px;color:#bbb;cursor:pointer;list-style:none;">🔧 開発者向けデバッグ</summary>
+        <div class="admin-btns" style="margin-top:8px;">
+          <button class="btn" onclick="runAdminAction('fixFlags')" style="font-size:12px;padding:8px;background:#f0f0f0;">AFフラグ漏れを修正</button>
+          <button class="btn" onclick="runAdminAction('debugCC')" style="font-size:12px;padding:8px;background:#f0f0f0;">CCデバッグ</button>
+          <button class="btn" onclick="runAdminAction('diagnose')" style="font-size:12px;padding:8px;background:#f0f0f0;">重複・TO未設定を診断</button>
+          <button class="btn" onclick="runAdminAction('debugNitori')" style="font-size:12px;padding:8px;background:#f0f0f0;">ニトリTO診断</button>
+          <button class="btn" onclick="runAdminAction('diagnoseSketchers')" style="font-size:12px;padding:8px;background:#f0f0f0;">スケッチャーズ行を確認</button>
+        </div>
+      </details>
+      <div class="admin-result" id="adminResult" style="display:none;"></div>
+    </div>
+  </details>
+
+  <!-- 案件を選択 -->
   <div class="sec">
     <div class="sec-title">案件を選択</div>
-    <div id="orderListWrap">
-      <div id="orderLoading" style="text-align:center;padding:16px;color:#888;font-size:14px;">案件を読み込み中...</div>
-      <div id="orderList" style="display:none;"></div>
-      <div id="orderEmpty" style="display:none;text-align:center;padding:16px;color:#888;font-size:13px;">未対応の案件がありません</div>
+    <div class="order-search">
+      <input type="text" id="orderSearch" placeholder="店舗名で絞り込み…" oninput="filterOrders(this.value)" autocomplete="off">
     </div>
-    <div id="selectedOrderBox" style="display:none;margin-top:10px;padding:10px 12px;background:#eaf4ff;border-radius:8px;border:1.5px solid #185FA5;">
-      <div style="font-size:11px;color:#185FA5;font-weight:700;margin-bottom:6px;">✓ 送信先</div>
-      <div class="field">
-        <div class="lbl" style="font-size:11px;">TO（必須）</div>
-        <input type="email" id="toEmailInput" placeholder="例：kawa@arsfast.com" style="font-size:13px;">
+    <div id="orderLoading" style="text-align:center;padding:16px;color:#888;font-size:14px;">案件を読み込み中...</div>
+    <div id="orderList" style="display:none;"></div>
+    <div id="orderEmpty" style="display:none;text-align:center;padding:16px;color:#888;font-size:13px;">未対応の案件がありません</div>
+
+    <!-- 選択済み表示 -->
+    <div class="selected-box" id="selectedOrderBox" style="display:none;">
+      <div class="selected-name" id="selectedName"></div>
+      <div class="selected-type" id="selectedType"></div>
+      <button class="email-toggle" onclick="toggleEmailSection()">📧 送信先を確認・変更</button>
+      <div class="email-section" id="emailSection">
+        <div class="field">
+          <div class="lbl">TO（必須）</div>
+          <input type="email" id="toEmailInput" placeholder="例：kawa@arsfast.com" style="font-size:13px;">
+        </div>
+        <div class="field" style="margin-top:6px;">
+          <div class="lbl">CC（カンマ区切りで複数可）</div>
+          <input type="text" id="ccEmailInput" placeholder="例：info@marukendenkou.com" style="font-size:13px;">
+        </div>
       </div>
-      <div class="field" style="margin-top:6px;">
-        <div class="lbl" style="font-size:11px;">CC（カンマ区切りで複数可）</div>
-        <input type="text" id="ccEmailInput" placeholder="例：info@marukendenkou.com" style="font-size:13px;">
-      </div>
-      <button type="button" onclick="clearOrderSelection()" style="margin-top:6px;font-size:11px;color:#888;background:none;border:none;cursor:pointer;text-decoration:underline;">選び直す</button>
+      <button type="button" onclick="clearOrderSelection()" style="margin-top:8px;font-size:11px;color:#888;background:none;border:none;cursor:pointer;text-decoration:underline;">選び直す</button>
     </div>
   </div>
 
+  <!-- 一時保存リスト -->
+  <div class="draft-section" id="draftListSection" style="display:none;">
+    <div style="font-size:12px;font-weight:700;color:#185FA5;margin-bottom:8px;">💾 一時保存データ</div>
+    <div id="draftListItems"></div>
+  </div>
+
+  <!-- 一時保存ボタン（案件選択後に表示） -->
+  <button class="btn" id="draftBtn" onclick="saveDraft()" style="display:none;width:100%;margin-bottom:12px;font-size:15px;padding:14px;border-radius:10px;border:1.5px dashed #185FA5;color:#185FA5;background:#f0f6ff;">💾 一時保存</button>
+
+  <!-- 基本情報 -->
   <div class="sec">
     <div class="sec-title">基本情報</div>
-    <div class="field"><div class="lbl">店舗No.</div><input type="text" id="storeNo" placeholder="例：A001"></div>
+    <div class="field"><div class="lbl">店舗No. <span class="opt">（省略可）</span></div><input type="text" id="storeNo" placeholder="例：A001"></div>
     <div class="field"><div class="lbl">お客様名</div><input type="text" id="clientName" placeholder="〇〇株式会社"></div>
     <div class="field"><div class="lbl">住所</div><input type="text" id="address" placeholder="大阪府〇〇市…"></div>
     <div class="row2">
@@ -124,6 +201,7 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
     </div>
   </div>
 
+  <!-- 依頼情報 -->
   <div class="sec">
     <div class="sec-title">依頼情報</div>
     <div class="row2">
@@ -140,9 +218,21 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
       </div>
     </div>
     <div class="field"><div class="lbl">依頼内容詳細</div><textarea id="requestDetail" placeholder="依頼の詳細を入力してください…"></textarea></div>
-    <div class="field"><div class="lbl">作業者名</div><input type="text" id="workerName" placeholder="田中 一郎"></div>
+    <div class="field">
+      <div class="lbl">作業者名</div>
+      <select id="workerNameSelect" onchange="handleWorkerSelect(this)" style="margin-bottom:0;">
+        <option value="">選択してください</option>
+        <option value="川口">川口</option>
+        <option value="重野">重野</option>
+        <option value="浅井">浅井</option>
+        <option value="ヴィンソン">ヴィンソン</option>
+        <option value="__custom__">その他（直接入力）</option>
+      </select>
+      <input type="text" id="workerName" placeholder="名前を入力" style="display:none;margin-top:6px;">
+    </div>
   </div>
 
+  <!-- 作業情報 -->
   <div class="sec">
     <div class="sec-title">作業情報</div>
     <div class="row3">
@@ -161,33 +251,41 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
     <div class="field"><div class="lbl">作業内容</div><textarea id="workDetail" placeholder="実際に行った作業の詳細を入力してください…"></textarea></div>
   </div>
 
+  <!-- 故障機器 -->
   <div class="sec">
     <div class="sec-title">故障機器</div>
-    <table class="tbl">
-      <thead><tr><th style="width:38%">機器名</th><th style="width:38%">形式</th><th style="width:24%">個数</th></tr></thead>
-      <tbody>
-        <tr><td><input type="text" class="f-name" placeholder="機器名"></td><td><input type="text" class="f-type" placeholder="形式"></td><td><input type="text" class="f-qty"></td></tr>
-        <tr><td><input type="text" class="f-name"></td><td><input type="text" class="f-type"></td><td><input type="text" class="f-qty"></td></tr>
-        <tr><td><input type="text" class="f-name"></td><td><input type="text" class="f-type"></td><td><input type="text" class="f-qty"></td></tr>
+    <table class="dyn-tbl" id="faultTable">
+      <thead><tr><th style="width:36%">機器名</th><th style="width:36%">形式</th><th style="width:18%">個数</th><th class="del-cell"></th></tr></thead>
+      <tbody id="faultBody">
+        <tr>
+          <td><input type="text" class="f-name" placeholder="機器名"></td>
+          <td><input type="text" class="f-type" placeholder="形式"></td>
+          <td><input type="text" class="f-qty"></td>
+          <td class="del-cell"><button class="del-btn" onclick="removeRow(this)">×</button></td>
+        </tr>
       </tbody>
     </table>
+    <button class="add-row-btn" onclick="addFaultRow()">＋ 行を追加</button>
   </div>
 
+  <!-- 使用部品 -->
   <div class="sec">
     <div class="sec-title">使用部品</div>
-    <table class="tbl">
-      <thead><tr><th style="width:38%">部品名</th><th style="width:38%">形式</th><th style="width:24%">個数</th></tr></thead>
-      <tbody>
-        <tr><td><input type="text" class="p-name" placeholder="部品名"></td><td><input type="text" class="p-type" placeholder="形式"></td><td><input type="text" class="p-qty"></td></tr>
-        <tr><td><input type="text" class="p-name"></td><td><input type="text" class="p-type"></td><td><input type="text" class="p-qty"></td></tr>
-        <tr><td><input type="text" class="p-name"></td><td><input type="text" class="p-type"></td><td><input type="text" class="p-qty"></td></tr>
-        <tr><td><input type="text" class="p-name"></td><td><input type="text" class="p-type"></td><td><input type="text" class="p-qty"></td></tr>
-        <tr><td><input type="text" class="p-name"></td><td><input type="text" class="p-type"></td><td><input type="text" class="p-qty"></td></tr>
-        <tr><td><input type="text" class="p-name"></td><td><input type="text" class="p-type"></td><td><input type="text" class="p-qty"></td></tr>
+    <table class="dyn-tbl" id="partsTable">
+      <thead><tr><th style="width:36%">部品名</th><th style="width:36%">形式</th><th style="width:18%">個数</th><th class="del-cell"></th></tr></thead>
+      <tbody id="partsBody">
+        <tr>
+          <td><input type="text" class="p-name" placeholder="部品名"></td>
+          <td><input type="text" class="p-type" placeholder="形式"></td>
+          <td><input type="text" class="p-qty"></td>
+          <td class="del-cell"><button class="del-btn" onclick="removeRow(this)">×</button></td>
+        </tr>
       </tbody>
     </table>
+    <button class="add-row-btn" onclick="addPartsRow()">＋ 行を追加</button>
   </div>
 
+  <!-- 施工写真 -->
   <div class="sec">
     <div class="sec-title">施工写真</div>
     <div class="field">
@@ -213,6 +311,7 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
     </div>
   </div>
 
+  <!-- 確認者サイン -->
   <div class="sec">
     <div class="sec-title">確認者サイン</div>
     <div class="sign-wrap" onclick="openSigModal()">
@@ -222,8 +321,15 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
     <img id="signedPreview" class="signed-preview" />
   </div>
 
-  <button class="btn btn-primary" onclick="submitForm()">送信してPDFを保存・メール送付</button>
+  <button class="btn btn-primary" id="submitBtn" onclick="submitForm()">送信する</button>
+  <button class="btn btn-retry" id="retryBtn" onclick="retrySubmit()">⚠️ 送信に失敗しました — 再送信する</button>
   <div class="status-bar" id="statusBar"></div>
+</div>
+
+<!-- 一時保存復元バナー -->
+<div id="draftBanner" style="display:none;position:fixed;top:0;left:0;width:100%;background:#185FA5;color:#fff;padding:12px 16px;z-index:999;font-size:14px;text-align:center;">
+  <span id="draftBannerText"></span>
+  <button onclick="discardDraft()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;padding:4px 12px;border-radius:6px;margin-left:12px;cursor:pointer;font-size:13px;">閉じる</button>
 </div>
 
 <script>
@@ -231,208 +337,577 @@ const canvas = document.getElementById('sig');
 const ctx = canvas.getContext('2d');
 let drawing = false, signed = false;
 let photoFilesBefore = [];
-let photoFilesAfter = [];
+let photoFilesAfter  = [];
+var selectedOrder    = null;
+var currentDraftId   = null;
+var allOrders        = [];
+var lastSubmitData   = null; // 再送信用
 
-// 選択中の案件情報
-var selectedOrder = null;
+// ─── 管理パネル ────────────────────────────────────────────────
+function runAdminAction(action) {
+  var result = document.getElementById('adminResult');
+  result.style.display = 'block';
+  result.textContent = '実行中…';
+  google.script.run
+    .withSuccessHandler(function(msg) { result.textContent = msg || '完了'; })
+    .withFailureHandler(function(e)   { result.textContent = 'エラー: ' + e; })
+    .adminRunAction(action);
+}
 
-// 案件一覧をサーバーから取得して再描画
+// ─── 案件一覧 ──────────────────────────────────────────────────
 function loadOrders() {
-  var list = document.getElementById('orderList');
+  var list    = document.getElementById('orderList');
   var loading = document.getElementById('orderLoading');
-  var empty = document.getElementById('orderEmpty');
+  var empty   = document.getElementById('orderEmpty');
   list.innerHTML = '';
   list.style.display = 'none';
   empty.style.display = 'none';
   loading.style.display = 'block';
-  loading.textContent = '案件を読み込み中...';
+  loading.textContent = '案件を読み込み中…';
+  document.getElementById('orderSearch').value = '';
 
   google.script.run
     .withSuccessHandler(function(orders) {
       loading.style.display = 'none';
-      if (!orders || orders.length === 0) {
-        empty.style.display = 'block';
-        return;
-      }
-      list.style.display = 'block';
-      orders.forEach(function(o) {
-        var ccArr = Array.isArray(o.reply_cc_emails) ? o.reply_cc_emails : [];
-        var card = document.createElement('div');
-        card.style.cssText = 'border:1.5px solid #e8e8e4;border-radius:10px;padding:12px 14px;margin-bottom:8px;cursor:pointer;background:#fff;transition:border-color .15s;';
-        card.innerHTML =
-          '<div style="font-size:12px;font-weight:700;color:#185FA5;margin-bottom:3px;">' +
-            (o.site_no ? o.site_no + '　' : '') + escapeHtml(o.site_name || '') +
-          '</div>' +
-          (o.work_type ? '<div style="font-size:11px;color:#888;margin-bottom:4px;">' + escapeHtml(o.work_type) + '</div>' : '') +
-          '<div style="font-size:11px;color:#aaa;">返信先: ' + escapeHtml(o.reply_to_email || '') +
-            (ccArr.length > 0 ? ' +' + ccArr.length + '名CC' : '') + '</div>';
-        card.addEventListener('mouseover', function() { card.style.borderColor = '#185FA5'; });
-        card.addEventListener('mouseout', function() { if (selectedOrder && selectedOrder.id === o.id) return; card.style.borderColor = '#e8e8e4'; });
-        card.addEventListener('click', function() { selectOrder(o, card); });
-        list.appendChild(card);
-      });
+      allOrders = orders || [];
+      if (allOrders.length === 0) { empty.style.display = 'block'; return; }
+      renderOrders(allOrders);
     })
-    .withFailureHandler(function(err) {
+    .withFailureHandler(function() {
       loading.textContent = '案件の読み込みに失敗しました';
     })
     .getOrders();
 }
 
-window.addEventListener('load', loadOrders);
-
-function escapeHtml(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function renderOrders(orders) {
+  var list  = document.getElementById('orderList');
+  var empty = document.getElementById('orderEmpty');
+  list.innerHTML = '';
+  if (orders.length === 0) {
+    list.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  list.style.display = 'block';
+  orders.forEach(function(o) {
+    var card = document.createElement('div');
+    card.className = 'order-card';
+    var reqDateLabel = '';
+    if (o.requested_at) {
+      var rd = new Date(o.requested_at);
+      reqDateLabel = ' · ' + (rd.getMonth()+1) + '/' + rd.getDate() + '依頼';
+    }
+    card.innerHTML =
+      '<div class="order-card-name">' + escapeHtml(o.site_name || '') + '</div>' +
+      '<div class="order-card-type">' + (o.work_type ? escapeHtml(o.work_type) : '') + reqDateLabel + '</div>';
+    card.addEventListener('click', function() { selectOrder(o); });
+    list.appendChild(card);
+  });
 }
 
-function selectOrder(o, card) {
-  selectedOrder = o;
-  var ccArr = Array.isArray(o.reply_cc_emails) ? o.reply_cc_emails : [];
+function filterOrders(q) {
+  if (!q) { renderOrders(allOrders); return; }
+  var kw = q.toLowerCase();
+  renderOrders(allOrders.filter(function(o) {
+    return (o.site_name || '').toLowerCase().indexOf(kw) !== -1 ||
+           (o.work_type || '').toLowerCase().indexOf(kw) !== -1;
+  }));
+}
 
-  // フォームに自動入力
-  if (o.site_name)      setVal('clientName',    o.site_name);
-  if (o.site_address)   setVal('address',       o.site_address);
-  if (o.site_tel)       setVal('tel',           o.site_tel);
-  if (o.requester)      setVal('requester',     o.requester);
-  if (o.work_date)      setVal('reqDate',       o.work_date);
+function selectOrder(o) {
+  selectedOrder = o;
+
+  // 自動補完フィールドをリセット
+  ['clientName','address','tel','requester','reqDate','reqTime','requestDetail','workDate'].forEach(function(id){ forceVal(id,''); });
+  document.querySelectorAll('input[name="wtype"]').forEach(function(r){ r.checked = false; });
+
+  forceVal('clientName', o.site_name    || '');
+  forceVal('address',    o.site_address || '');
+  forceVal('tel',        o.site_tel     || '');
+  if (o.requester && o.requester.indexOf('マルケン') === -1) forceVal('requester', o.requester);
   if (o.requested_at) {
-    var d = new Date(o.requested_at);
-    var hh = ('0' + (d.getUTCHours() + 9)).slice(-2);
-    var mm = ('0' + d.getUTCMinutes()).slice(-2);
-    if (parseInt(hh) >= 24) hh = ('0' + (parseInt(hh) - 24)).slice(-2);
-    setVal('reqTime', hh + ':' + mm);
+    var d   = new Date(o.requested_at);
+    var jst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+    forceVal('reqDate', jst.toISOString().slice(0, 10));
+    forceVal('reqTime', ('0'+jst.getUTCHours()).slice(-2) + ':' + ('0'+jst.getUTCMinutes()).slice(-2));
   }
-  if (o.request_detail) setVal('requestDetail', o.request_detail);
+  if (o.work_date)      forceVal('workDate',      String(o.work_date).slice(0, 10));
+  if (o.request_detail) forceVal('requestDetail', o.request_detail);
   if (o.work_type)      setWorkTypeRadio(o.work_type);
 
-  // 送信先をinput欄にセット
-  document.getElementById('toEmailInput').value = o.reply_to_email || '';
+  var BLOCKED_TO = ['s.shigeno1016@gmail.com', 'mky7584gd@gmail.com'];
+  var toEmail = (o.reply_to_email || '').trim().toLowerCase();
+  if (BLOCKED_TO.indexOf(toEmail) !== -1) toEmail = '';
+  document.getElementById('toEmailInput').value = toEmail;
+  var ccArr = Array.isArray(o.reply_cc_emails) ? o.reply_cc_emails : [];
   document.getElementById('ccEmailInput').value = buildCcEmails(ccArr);
-  document.getElementById('orderListWrap').style.display = 'none';
+
+  // 選択済み表示
+  document.getElementById('selectedName').textContent = o.site_name || '';
+  document.getElementById('selectedType').textContent = o.work_type || '';
+  document.getElementById('orderList').style.display = 'none';
+  document.getElementById('orderLoading').style.display = 'none';
+  document.getElementById('orderEmpty').style.display = 'none';
+  document.getElementById('orderSearch').style.display = 'none';
   document.getElementById('selectedOrderBox').style.display = 'block';
+  document.getElementById('draftBtn').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function clearOrderSelection() {
   selectedOrder = null;
-  document.getElementById('orderListWrap').style.display = 'block';
   document.getElementById('selectedOrderBox').style.display = 'none';
-  loadOrders();  // サーバーから最新の案件リストを再取得
+  document.getElementById('orderSearch').style.display = 'block';
+  document.getElementById('emailSection').style.display = 'none';
+  document.getElementById('draftBtn').style.display = 'none';
+  loadOrders();
 }
 
-function setVal(id, val) {
-  var el = document.getElementById(id);
-  if (el && !el.value) el.value = val;
+function toggleEmailSection() {
+  var s = document.getElementById('emailSection');
+  s.style.display = s.style.display === 'none' || !s.style.display ? 'block' : 'none';
 }
 
-function setWorkTypeRadio(workType) {
-  if (!workType) return;
-  var wt = workType;
+// ─── 一時保存 ──────────────────────────────────────────────────
+function saveDraft() {
+  if (!selectedOrder) { showStatus('先に案件を選択してください', 'status-err'); return; }
+  var draftId = currentDraftId || Date.now().toString();
+  currentDraftId = draftId;
+  var draft = {
+    savedAt: new Date().toISOString(),
+    order:   selectedOrder,
+    toEmail: document.getElementById('toEmailInput').value,
+    ccEmail: document.getElementById('ccEmailInput').value,
+    fields: {
+      storeNo: v('storeNo'), clientName: v('clientName'), address: v('address'), tel: v('tel'),
+      requester: v('requester'), reqDate: v('reqDate'), reqTime: v('reqTime'),
+      requestDetail: v('requestDetail'), workerName: v('workerName'),
+      workDate: v('workDate'), startTime: v('startTime'), endTime: v('endTime'),
+      workDetail: v('workDetail'), wtype: radio('wtype'), workStatus: radio('status')
+    }
+  };
+  var btn = document.getElementById('draftBtn');
+  btn.textContent = '💾 保存中…';
+  google.script.run
+    .withSuccessHandler(function() {
+      btn.textContent = '💾 一時保存';
+      showStatus('一時保存しました（写真・サインは含まれません）', 'status-ok');
+      loadDraftList();
+    })
+    .withFailureHandler(function(e) {
+      btn.textContent = '💾 一時保存';
+      showStatus('保存に失敗しました: ' + e, 'status-err');
+    })
+    .saveDraftServer(draftId, JSON.stringify(draft));
+}
+
+function loadDraftList() {
+  google.script.run
+    .withSuccessHandler(function(json) {
+      var section = document.getElementById('draftListSection');
+      var items   = document.getElementById('draftListItems');
+      if (!json) { section.style.display = 'none'; return; }
+      var list = JSON.parse(json);
+      if (!list || list.length === 0) { section.style.display = 'none'; return; }
+      items.innerHTML = '';
+      list.forEach(function(d) {
+        var t = new Date(d.savedAt);
+        var label = (t.getMonth()+1) + '/' + t.getDate() + ' ' + ('0'+t.getHours()).slice(-2) + ':' + ('0'+t.getMinutes()).slice(-2);
+        var row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;';
+        row.innerHTML =
+          '<div style="min-width:0;flex:1;">' +
+            '<div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(d.siteName || '（案件未選択）') + '</div>' +
+            '<div style="font-size:11px;color:#888;">' + label + '</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:6px;margin-left:8px;flex-shrink:0;">' +
+            '<button onclick="restoreDraftById(\'' + d.id + '\')" style="font-size:12px;padding:5px 10px;border:1px solid #185FA5;border-radius:6px;color:#185FA5;background:#fff;cursor:pointer;">復元</button>' +
+            '<button onclick="deleteDraftById(\'' + d.id + '\')" style="font-size:12px;padding:5px 10px;border:1px solid #e74c3c;border-radius:6px;color:#e74c3c;background:#fff;cursor:pointer;">削除</button>' +
+          '</div>';
+        items.appendChild(row);
+      });
+      section.style.display = 'block';
+    })
+    .withFailureHandler(function() {})
+    .loadDraftListServer();
+}
+
+function restoreDraftById(id) {
+  google.script.run
+    .withSuccessHandler(function(saved) {
+      if (!saved) return;
+      try {
+        var draft = JSON.parse(saved);
+        if (!draft || !draft.order) return;
+        currentDraftId = id;
+        selectedOrder  = draft.order;
+        document.getElementById('toEmailInput').value = draft.toEmail || '';
+        document.getElementById('ccEmailInput').value = draft.ccEmail || '';
+        document.getElementById('selectedName').textContent = draft.order.site_name || '';
+        document.getElementById('selectedType').textContent = draft.order.work_type  || '';
+        document.getElementById('orderLoading').style.display = 'none';
+        document.getElementById('orderList').style.display = 'none';
+        document.getElementById('orderSearch').style.display = 'none';
+        document.getElementById('selectedOrderBox').style.display = 'block';
+        document.getElementById('draftBtn').style.display = 'block';
+        var f = draft.fields || {};
+        forceVal('storeNo', f.storeNo); forceVal('clientName', f.clientName); forceVal('address', f.address);
+        forceVal('tel', f.tel); forceVal('requester', f.requester);
+        forceVal('reqDate', f.reqDate); forceVal('reqTime', f.reqTime);
+        forceVal('requestDetail', f.requestDetail);
+        forceVal('workDate', f.workDate); forceVal('startTime', f.startTime);
+        forceVal('endTime', f.endTime); forceVal('workDetail', f.workDetail);
+        setRadioVal('wtype', f.wtype); setRadioVal('status', f.workStatus);
+        if (f.workerName) setWorkerName(f.workerName);
+        var t = new Date(draft.savedAt);
+        var label = (t.getMonth()+1) + '/' + t.getDate() + ' ' + ('0'+t.getHours()).slice(-2) + ':' + ('0'+t.getMinutes()).slice(-2);
+        document.getElementById('draftBannerText').textContent = '一時保存を復元しました（' + (draft.order.site_name||'') + ' ' + label + '）';
+        document.getElementById('draftBanner').style.display = 'block';
+        document.querySelector('.wrap').style.paddingTop = '3.5rem';
+      } catch(e) {}
+    })
+    .withFailureHandler(function() {})
+    .loadDraftServer(id);
+}
+
+function deleteDraftById(id) {
+  google.script.run
+    .withSuccessHandler(function() {
+      if (currentDraftId === id) currentDraftId = null;
+      loadDraftList();
+    })
+    .withFailureHandler(function() {})
+    .deleteDraftServer(id);
+}
+
+function discardDraft() {
+  document.getElementById('draftBanner').style.display = 'none';
+  document.querySelector('.wrap').style.paddingTop = '';
+}
+
+// ─── 動的テーブル行 ────────────────────────────────────────────
+function addFaultRow() {
+  var tr = document.createElement('tr');
+  tr.innerHTML =
+    '<td><input type="text" class="f-name"></td>' +
+    '<td><input type="text" class="f-type"></td>' +
+    '<td><input type="text" class="f-qty"></td>' +
+    '<td class="del-cell"><button class="del-btn" onclick="removeRow(this)">×</button></td>';
+  document.getElementById('faultBody').appendChild(tr);
+}
+function addPartsRow() {
+  var tr = document.createElement('tr');
+  tr.innerHTML =
+    '<td><input type="text" class="p-name"></td>' +
+    '<td><input type="text" class="p-type"></td>' +
+    '<td><input type="text" class="p-qty"></td>' +
+    '<td class="del-cell"><button class="del-btn" onclick="removeRow(this)">×</button></td>';
+  document.getElementById('partsBody').appendChild(tr);
+}
+function removeRow(btn) {
+  var tbody = btn.closest('tbody');
+  if (tbody.rows.length <= 1) {
+    // 最後の1行はクリアのみ
+    btn.closest('tr').querySelectorAll('input').forEach(function(i){ i.value = ''; });
+    return;
+  }
+  btn.closest('tr').remove();
+}
+
+// ─── ヘルパー ──────────────────────────────────────────────────
+function forceVal(id, val) { var el = document.getElementById(id); if (el) el.value = val || ''; }
+function setVal(id, val)   { var el = document.getElementById(id); if (el && !el.value) el.value = val; }
+function v(id)             { return (document.getElementById(id)||{}).value || ''; }
+function radio(name)       { var el = document.querySelector('input[name="' + name + '"]:checked'); return el ? el.value : ''; }
+function escapeHtml(s)     { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function setRadioVal(name, val) {
+  if (!val) return;
+  document.querySelectorAll('input[name="' + name + '"]').forEach(function(r){ r.checked = (r.value === val); });
+}
+
+var WORKER_PRESETS = ['川口', '重野', '浅井', 'ヴィンソン'];
+function handleWorkerSelect(sel) {
+  var input = document.getElementById('workerName');
+  if (sel.value === '__custom__') { input.style.display = 'block'; input.value = ''; input.focus(); }
+  else { input.style.display = 'none'; input.value = sel.value; }
+}
+function setWorkerName(name) {
+  if (!name) return;
+  var sel = document.getElementById('workerNameSelect');
+  var input = document.getElementById('workerName');
+  if (WORKER_PRESETS.indexOf(name) !== -1) { sel.value = name; input.style.display = 'none'; input.value = name; }
+  else { sel.value = '__custom__'; input.style.display = 'block'; input.value = name; }
+}
+
+function setWorkTypeRadio(wt) {
+  if (!wt) return;
   var val = null;
-  if (/修理|交換|故障|不具合|復旧/.test(wt)) val = '修理';
-  else if (/工事|施工|設置|取付|配線/.test(wt)) val = '工事';
+  // 「工事」は「交換工事」より先に判定（「照明器具交換工事」→工事、「TV交換」→修理）
+  if (/工事$|施工|設置|取付|配線/.test(wt)) val = '工事';
+  else if (/修理|故障|不具合|復旧/.test(wt)) val = '修理';
+  else if (/交換|取替/.test(wt)) val = '修理';
   else if (/見積|調査/.test(wt)) val = '見積調査';
   else if (/点検|検査|定期/.test(wt)) val = '点検';
-  if (val) {
-    var radios = document.querySelectorAll('input[name="wtype"]');
-    radios.forEach(function(r) { if (r.value === val) r.checked = true; });
-  }
+  if (val) document.querySelectorAll('input[name="wtype"]').forEach(function(r){ if (r.value === val) r.checked = true; });
 }
 
 function buildCcEmails(ccArr) {
-  // "Name <email>" や "<email>" 形式からアドレスだけ取り出す
-  function extractAddr(s) {
-    var m = String(s || '').match(/<([^>]+)>/);
-    return (m ? m[1] : String(s || '')).trim().toLowerCase();
-  }
-
-  var seen = {};
-  var result = [];
-  (ccArr || []).forEach(function(item) {
+  function extractAddr(s) { var m = String(s||'').match(/<([^>]+)>/); return (m ? m[1] : String(s||'')).trim().toLowerCase(); }
+  var seen = {}, result = [];
+  (ccArr||[]).forEach(function(item) {
     var email = extractAddr(item);
     if (!email || email.indexOf('@') === -1) return;
-    // 社長個人Gmail・弊社アドレス（info@除く）は除外
-    if (email === 'mky7584gd@gmail.com') return;
+    if (email === 'mky7584gd@gmail.com' || email === 's.shigeno1016@gmail.com') return;
     if (email.indexOf('@marukendenkou.com') !== -1 && email !== 'info@marukendenkou.com') return;
     if (!seen[email]) { seen[email] = true; result.push(email); }
   });
-  // info@marukendenkou.com は必ず含める
   if (!seen['info@marukendenkou.com']) result.push('info@marukendenkou.com');
   return result.join(',');
 }
 
-// 署名モーダル
-function openSigModal() {
-  document.getElementById('sigModal').classList.add('active');
-  initCanvas();
-}
-function closeSigModal() {
-  if (!signed) {
-    document.getElementById('sigModal').classList.remove('active');
-    return;
-  }
-  // プレビュー表示
-  const preview = document.getElementById('signedPreview');
-  preview.src = canvas.toDataURL('image/jpeg', 0.5);
-  preview.style.display = 'block';
-  document.getElementById('sigSt').textContent = '✅ 署名済み';
-  document.getElementById('sigSt').style.color = '#1a7a45';
-  document.getElementById('sigModal').classList.remove('active');
-}
-function initCanvas() {
-  const r = canvas.getBoundingClientRect();
-  const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-  canvas.width = Math.min(r.width * dpr, 600);
-  canvas.height = Math.min(300 * dpr, 450);
-  ctx.scale(canvas.width / r.width, canvas.height / 300);
-  ctx.strokeStyle = '#185FA5';
-  ctx.lineWidth = 2.5;
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+function tableRows(c1,c2,c3) {
+  var n=document.querySelectorAll(c1), t=document.querySelectorAll(c2), q=document.querySelectorAll(c3);
+  var rows=[];
+  for(var i=0;i<n.length;i++) if(n[i].value||t[i].value||q[i].value) rows.push([n[i].value,t[i].value,q[i].value]);
+  return rows;
 }
 
-function pos(e) {
-  const r = canvas.getBoundingClientRect();
-  const src = e.touches ? e.touches[0] : e;
-  return { x: src.clientX - r.left, y: src.clientY - r.top };
+function showStatus(msg, type) {
+  var el = document.getElementById('statusBar');
+  el.textContent = msg;
+  el.className = 'status-bar ' + type;
+  el.style.display = 'block';
 }
-canvas.addEventListener('mousedown', e => { drawing = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
-canvas.addEventListener('mousemove', e => { if (!drawing) return; const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); signed = true; });
-canvas.addEventListener('mouseup', () => drawing = false);
-canvas.addEventListener('mouseleave', () => drawing = false);
-canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); }, {passive:false});
-canvas.addEventListener('touchmove', e => { e.preventDefault(); if (!drawing) return; const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); signed = true; }, {passive:false});
-canvas.addEventListener('touchend', () => drawing = false);
 
-function clearSig() {
-  const r = canvas.getBoundingClientRect();
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+// ─── フォームリセット ──────────────────────────────────────────
+function resetForm() {
+  selectedOrder  = null;
+  currentDraftId = null;
+  lastSubmitData = null;
   signed = false;
+  photoFilesBefore = [];
+  photoFilesAfter  = [];
+
+  // フィールドクリア
+  ['storeNo','clientName','address','tel','requester','reqDate','reqTime',
+   'requestDetail','workerName','workDate','startTime','endTime','workDetail',
+   'toEmailInput','ccEmailInput'].forEach(function(id){ forceVal(id,''); });
+  document.querySelectorAll('input[name="wtype"], input[name="status"]').forEach(function(r){ r.checked = false; });
+  document.getElementById('workerNameSelect').value = '';
+  document.getElementById('workerName').style.display = 'none';
+
+  // テーブルリセット（1行のみ残す）
+  ['faultBody','partsBody'].forEach(function(tbId) {
+    var tb = document.getElementById(tbId);
+    while (tb.rows.length > 1) tb.deleteRow(tb.rows.length - 1);
+    tb.rows[0].querySelectorAll('input').forEach(function(i){ i.value = ''; });
+  });
+
+  // 写真プレビューリセット
+  ['photoBeforePreview','photoAfterPreview'].forEach(function(id){ document.getElementById(id).innerHTML = ''; });
+  ['photoBeforeCount','photoAfterCount'].forEach(function(id){ document.getElementById(id).textContent = ''; });
+  document.getElementById('photoBeforeInput').value = '';
+  document.getElementById('photoAfterInput').value  = '';
+
+  // サインリセット
+  clearSig();
+  document.getElementById('signedPreview').style.display = 'none';
+  document.getElementById('sigSt').textContent = '未署名';
+  document.getElementById('sigSt').style.color = '';
+
+  // UI状態リセット
+  document.getElementById('selectedOrderBox').style.display = 'none';
+  document.getElementById('orderSearch').style.display = 'block';
+  document.getElementById('emailSection').style.display = 'none';
+  document.getElementById('draftBtn').style.display = 'none';
+  document.getElementById('draftBanner').style.display = 'none';
+  document.querySelector('.wrap').style.paddingTop = '';
+  document.getElementById('retryBtn').style.display = 'none';
+  document.getElementById('submitBtn').style.display = 'block';
+
+  loadOrders();
+  loadDraftList();
 }
 
-function handlePhotos(input, type) {
-  const files = Array.from(input.files);
-  const target = type === 'before' ? photoFilesBefore : photoFilesAfter;
-  files.forEach(file => {
-    if (!target.find(f => f.name === file.name && f.size === file.size)) target.push(file);
+// ─── 送信 ─────────────────────────────────────────────────────
+async function buildSubmitData() {
+  if (!selectedOrder) return null;
+
+  // iOSはEXIFで回転情報を保持するためCanvasで正しい向きに描画する
+  function getExifOrientation(buf) {
+    var view = new DataView(buf);
+    if (view.getUint16(0, false) !== 0xFFD8) return 1;
+    var len = view.byteLength, off = 2;
+    while (off < len) {
+      var marker = view.getUint16(off, false);
+      if (marker === 0xFFE1) {
+        if (view.getUint32(off + 4, false) !== 0x45786966) break;
+        var le = view.getUint16(off + 10, false) === 0x4949;
+        var firstIFD = view.getUint32(off + 14, le);
+        var tags = view.getUint16(off + 10 + firstIFD, le);
+        for (var i = 0; i < tags; i++) {
+          var base = off + 10 + firstIFD + 2 + i * 12;
+          if (view.getUint16(base, le) === 0x0112) return view.getUint16(base + 8, le);
+        }
+        break;
+      }
+      off += 2 + view.getUint16(off + 2, false);
+    }
+    return 1;
+  }
+  const toBase64 = file => new Promise(resolve => {
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      var orientation = 1;
+      try { orientation = getExifOrientation(ev.target.result); } catch(_) {}
+      const img = new Image(), url = URL.createObjectURL(file);
+      img.onload = () => {
+        const maxSize = 1024;
+        let w = img.width, h = img.height;
+        if (w > maxSize || h > maxSize) {
+          if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+          else       { w = Math.round(w * maxSize / h); h = maxSize; }
+        }
+        const cv = document.createElement('canvas');
+        const rotated = orientation >= 5 && orientation <= 8;
+        cv.width = rotated ? h : w; cv.height = rotated ? w : h;
+        const c = cv.getContext('2d');
+        switch(orientation) {
+          case 2: c.transform(-1,0,0,1,cv.width,0); break;
+          case 3: c.transform(-1,0,0,-1,cv.width,cv.height); break;
+          case 4: c.transform(1,0,0,-1,0,cv.height); break;
+          case 5: c.transform(0,1,1,0,0,0); break;
+          case 6: c.transform(0,1,-1,0,cv.height,0); break;
+          case 7: c.transform(0,-1,-1,0,cv.height,cv.width); break;
+          case 8: c.transform(0,-1,1,0,0,cv.width); break;
+        }
+        c.drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        resolve({ name: file.name, base64: cv.toDataURL('image/jpeg', 0.7) });
+      };
+      img.src = url;
+    };
+    reader.readAsArrayBuffer(file);
   });
+
+  const photoDataBefore = await Promise.all(photoFilesBefore.map(toBase64));
+  const photoDataAfter  = await Promise.all(photoFilesAfter.map(toBase64));
+
+  const tmpCanvas = document.createElement('canvas');
+  tmpCanvas.width = 400; tmpCanvas.height = 150;
+  const tmpCtx = tmpCanvas.getContext('2d');
+  tmpCtx.fillStyle = '#ffffff';
+  tmpCtx.fillRect(0, 0, 400, 150);
+  tmpCtx.drawImage(canvas, 0, 0, 400, 150);
+
+  return {
+    toEmail:        document.getElementById('toEmailInput').value.trim(),
+    ccEmail:        document.getElementById('ccEmailInput').value.trim(),
+    pendingOrderId: selectedOrder.id,
+    inReplyTo:      selectedOrder.in_reply_to || null,
+    storeNo:        v('storeNo'),
+    clientName:     v('clientName'),
+    address:        v('address'),
+    tel:            v('tel'),
+    requester:      v('requester'),
+    reqDate:        v('reqDate'),
+    reqTime:        v('reqTime'),
+    workType:       radio('wtype'),
+    requestDetail:  v('requestDetail'),
+    workerName:     v('workerName'),
+    workDate:       v('workDate'),
+    startTime:      v('startTime'),
+    endTime:        v('endTime'),
+    workStatus:     radio('status'),
+    workDetail:     v('workDetail'),
+    faults:         tableRows('.f-name','.f-type','.f-qty'),
+    parts:          tableRows('.p-name','.p-type','.p-qty'),
+    signImage:      tmpCanvas.toDataURL('image/jpeg', 0.5),
+    photosBefore:   photoDataBefore,
+    photosAfter:    photoDataAfter
+  };
+}
+
+async function submitForm() {
+  if (!selectedOrder) { showStatus('案件を選択してください', 'status-err'); return; }
+  if (!document.getElementById('toEmailInput').value.trim()) {
+    // emailSectionを開いて気づかせる
+    document.getElementById('emailSection').style.display = 'block';
+    showStatus('送信先TOメールアドレスを確認してください', 'status-err'); return;
+  }
+  if (!v('clientName')) { showStatus('お客様名を入力してください', 'status-err'); return; }
+  if (!v('workDate'))   { showStatus('作業日を入力してください', 'status-err'); return; }
+  if (!v('workerName')) { showStatus('作業者名を選択または入力してください', 'status-err'); return; }
+  if (!radio('status')) { showStatus('完了状況を選択してください', 'status-err'); return; }
+  if (!signed)          { showStatus('確認者のサインをもらってください', 'status-err'); return; }
+
+  showStatus('送信中…写真が多い場合は少し時間がかかります', 'loading');
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('retryBtn').style.display = 'none';
+
+  lastSubmitData = await buildSubmitData();
+
+  google.script.run
+    .withSuccessHandler(function() {
+      if (currentDraftId) { google.script.run.deleteDraftServer(currentDraftId); }
+      showStatus('✅ 送信完了！メール送付・ドライブ保存しました', 'status-ok');
+      document.getElementById('submitBtn').disabled = false;
+      setTimeout(function() {
+        if (confirm('送信が完了しました。フォームをリセットして次の案件に進みますか？')) {
+          resetForm();
+          document.getElementById('statusBar').style.display = 'none';
+        }
+      }, 800);
+    })
+    .withFailureHandler(function(err) {
+      showStatus('送信に失敗しました: ' + (err.message || err), 'status-err');
+      document.getElementById('submitBtn').disabled = false;
+      document.getElementById('retryBtn').style.display = 'block';
+    })
+    .createPDF(lastSubmitData);
+}
+
+function retrySubmit() {
+  if (!lastSubmitData) { submitForm(); return; }
+  showStatus('再送信中…', 'loading');
+  document.getElementById('retryBtn').style.display = 'none';
+  document.getElementById('submitBtn').disabled = true;
+  google.script.run
+    .withSuccessHandler(function() {
+      if (currentDraftId) { google.script.run.deleteDraftServer(currentDraftId); }
+      showStatus('✅ 送信完了！', 'status-ok');
+      document.getElementById('submitBtn').disabled = false;
+      setTimeout(function() {
+        if (confirm('送信が完了しました。フォームをリセットしますか？')) { resetForm(); document.getElementById('statusBar').style.display = 'none'; }
+      }, 800);
+    })
+    .withFailureHandler(function(err) {
+      showStatus('再送信に失敗しました: ' + (err.message || err), 'status-err');
+      document.getElementById('submitBtn').disabled = false;
+      document.getElementById('retryBtn').style.display = 'block';
+    })
+    .createPDF(lastSubmitData);
+}
+
+// ─── 写真 ─────────────────────────────────────────────────────
+function handlePhotos(input, type) {
+  var files = Array.from(input.files);
+  var target = type === 'before' ? photoFilesBefore : photoFilesAfter;
+  files.forEach(function(f) { if (!target.find(function(x){ return x.name===f.name && x.size===f.size; })) target.push(f); });
   renderPhotoPreview(type);
   input.value = '';
 }
-
 function renderPhotoPreview(type) {
-  const files = type === 'before' ? photoFilesBefore : photoFilesAfter;
-  const previewId = type === 'before' ? 'photoBeforePreview' : 'photoAfterPreview';
-  const countId = type === 'before' ? 'photoBeforeCount' : 'photoAfterCount';
-  const preview = document.getElementById(previewId);
-  const count = document.getElementById(countId);
+  var files   = type === 'before' ? photoFilesBefore : photoFilesAfter;
+  var preview = document.getElementById(type === 'before' ? 'photoBeforePreview' : 'photoAfterPreview');
+  var count   = document.getElementById(type === 'before' ? 'photoBeforeCount'   : 'photoAfterCount');
   preview.innerHTML = '';
-  files.forEach((file, i) => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      const item = document.createElement('div');
+  files.forEach(function(file, i) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var item = document.createElement('div');
       item.className = 'photo-preview-item';
       item.innerHTML = '<img src="' + e.target.result + '"><button class="remove-btn" onclick="removePhoto(\'' + type + '\',' + i + ')">×</button>';
       preview.appendChild(item);
@@ -441,104 +916,44 @@ function renderPhotoPreview(type) {
   });
   count.textContent = files.length > 0 ? files.length + '枚選択済み' : '';
 }
-
 function removePhoto(type, index) {
   if (type === 'before') photoFilesBefore.splice(index, 1);
   else photoFilesAfter.splice(index, 1);
   renderPhotoPreview(type);
 }
 
-function v(id) { return (document.getElementById(id)||{}).value||''; }
-function radio(name) { const el = document.querySelector('input[name="' + name + '"]:checked'); return el ? el.value : ''; }
-function tableRows(c1,c2,c3) {
-  const n=document.querySelectorAll(c1), t=document.querySelectorAll(c2), q=document.querySelectorAll(c3);
-  const rows=[];
-  for(let i=0;i<n.length;i++) if(n[i].value||t[i].value||q[i].value) rows.push([n[i].value,t[i].value,q[i].value]);
-  return rows;
+// ─── サイン ────────────────────────────────────────────────────
+function openSigModal()  { document.getElementById('sigModal').classList.add('active'); initCanvas(); clearSig(); }
+function closeSigModal() {
+  if (!signed) { document.getElementById('sigModal').classList.remove('active'); return; }
+  var preview = document.getElementById('signedPreview');
+  preview.src = canvas.toDataURL('image/jpeg', 0.5);
+  preview.style.display = 'block';
+  document.getElementById('sigSt').textContent = '✅ 署名済み';
+  document.getElementById('sigSt').style.color = '#1a7a45';
+  document.getElementById('sigModal').classList.remove('active');
 }
-
-function showStatus(msg, type) {
-  const el = document.getElementById('statusBar');
-  el.textContent = msg;
-  el.className = 'status-bar ' + type;
-  el.style.display = 'block';
+function initCanvas() {
+  var r = canvas.getBoundingClientRect();
+  var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+  canvas.width  = Math.min(r.width * dpr, 600);
+  canvas.height = Math.min(300 * dpr, 450);
+  ctx.scale(canvas.width / r.width, canvas.height / 300);
+  ctx.strokeStyle = '#185FA5'; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
+function pos(e) { var r = canvas.getBoundingClientRect(), src = e.touches ? e.touches[0] : e; return { x: src.clientX - r.left, y: src.clientY - r.top }; }
+canvas.addEventListener('mousedown',  function(e){ drawing=true; var p=pos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); });
+canvas.addEventListener('mousemove',  function(e){ if(!drawing) return; var p=pos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); signed=true; });
+canvas.addEventListener('mouseup',    function(){ drawing=false; });
+canvas.addEventListener('mouseleave', function(){ drawing=false; });
+canvas.addEventListener('touchstart', function(e){ e.preventDefault(); drawing=true; var p=pos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); }, {passive:false});
+canvas.addEventListener('touchmove',  function(e){ e.preventDefault(); if(!drawing) return; var p=pos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); signed=true; }, {passive:false});
+canvas.addEventListener('touchend',   function(){ drawing=false; });
+function clearSig() { var r=canvas.getBoundingClientRect(); ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,canvas.width,canvas.height); signed=false; }
 
-async function submitForm() {
-  if (!selectedOrder) { showStatus('案件を選択してください', 'status-err'); return; }
-  if (!document.getElementById('toEmailInput').value.trim()) { showStatus('送信先TOメールアドレスを入力してください', 'status-err'); return; }
-  if (!v('clientName')) { showStatus('お客様名を入力してください', 'status-err'); return; }
-  if (!signed) { showStatus('確認者のサインをもらってください', 'status-err'); return; }
-
-  showStatus('送信中…写真が多い場合は少し時間がかかります', 'loading');
-
-  const toBase64 = file => new Promise(resolve => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = () => {
-      const maxSize = 1024;
-      let w = img.width, h = img.height;
-      if (w > maxSize || h > maxSize) {
-        if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
-        else { w = Math.round(w * maxSize / h); h = maxSize; }
-      }
-      const cv = document.createElement('canvas');
-      cv.width = w; cv.height = h;
-      cv.getContext('2d').drawImage(img, 0, 0, w, h);
-      URL.revokeObjectURL(url);
-      resolve({ name: file.name, base64: cv.toDataURL('image/jpeg', 0.7) });
-    };
-    img.src = url;
-  });
-
-  const photoDataBefore = await Promise.all(photoFilesBefore.map(toBase64));
-  const photoDataAfter = await Promise.all(photoFilesAfter.map(toBase64));
-
-  const data = {
-    toEmail: document.getElementById('toEmailInput').value.trim(),
-    ccEmail: document.getElementById('ccEmailInput').value.trim(),
-    pendingOrderId: selectedOrder ? selectedOrder.id : null,
-    inReplyTo: selectedOrder ? (selectedOrder.in_reply_to || null) : null,
-    storeNo: v('storeNo'),
-    clientName: v('clientName'),
-    address: v('address'),
-    tel: v('tel'),
-    requester: v('requester'),
-    reqDate: v('reqDate'),
-    reqTime: v('reqTime'),
-    workType: radio('wtype'),
-    requestDetail: v('requestDetail'),
-    workerName: v('workerName'),
-    workDate: v('workDate'),
-    startTime: v('startTime'),
-    endTime: v('endTime'),
-    workStatus: radio('status'),
-    workDetail: v('workDetail'),
-    faults: tableRows('.f-name','.f-type','.f-qty'),
-    parts: tableRows('.p-name','.p-type','.p-qty'),
-    signImage: (function() {
-      const tmpCanvas = document.createElement('canvas');
-      tmpCanvas.width = 400;
-      tmpCanvas.height = 150;
-      const tmpCtx = tmpCanvas.getContext('2d');
-      tmpCtx.fillStyle = '#ffffff';
-      tmpCtx.fillRect(0, 0, 400, 150);
-      tmpCtx.drawImage(canvas, 0, 0, 400, 150);
-      return tmpCanvas.toDataURL('image/jpeg', 0.5);
-    })(),
-    photosBefore: photoDataBefore,
-    photosAfter: photoDataAfter
-  };
-
-  google.script.run
-    .withSuccessHandler(function(url) {
-      showStatus('送信完了！ドライブに保存・メール送付しました！', 'status-ok');
-    })
-    .withFailureHandler(function(err) {
-      showStatus('エラー：' + err.message, 'status-err');
-    })
-    .createPDF(data);
-}
+// ─── 初期化 ────────────────────────────────────────────────────
+window.addEventListener('load', function() { loadOrders(); loadDraftList(); });
 </script>
 </body>
 </html>

@@ -100,8 +100,11 @@ function s01_emailFetcher() {
   agentLog('S-01-①', 'START', 'メール取得開始');
 
   const label = getOrCreateLabel('AI処理済み');
-  const todayStr = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd');
-  const threads = GmailApp.search('in:inbox -label:AI処理済み after:' + todayStr);
+  // トリガー停止時に当日分が漏れないよう過去3日分を対象にする
+  const threeDaysAgo = new Date();
+  threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+  const fromStr = Utilities.formatDate(threeDaysAgo, 'Asia/Tokyo', 'yyyy/MM/dd');
+  const threads = GmailApp.search('in:inbox -label:AI処理済み after:' + fromStr);
 
   // 件名重複チェック用キャッシュ（6時間有効）
   const cache = CacheService.getScriptCache();
@@ -133,8 +136,14 @@ ${emailData.body}
 
 【分類基準】
 category:
-  「案件」= 見積依頼・工事依頼・発注・現場相談など仕事になる可能性があるメール
-  「返信必要」= 案件ではないが返信が必要（質問・確認・取引先連絡・パートナー問い合わせ）
+  「案件」= 見積依頼・工事依頼・発注・現場相談など新規の仕事になる可能性があるメール
+  ※以下は「案件」ではなく「返信必要」に分類すること：
+    - 請求書の依頼・請求のお願い・残額の請求
+    - 工事完了報告・引き渡し完了・竣工連絡
+    - 既存案件の精算・値引き・差し引きの連絡
+    - 支払い条件の確認・変更依頼
+    - 工事代金の清算に関するやり取り
+  「返信必要」= 案件ではないが返信が必要（質問・確認・取引先連絡・請求・完了報告など）
   「不要」= 一方的な営業メール・スパム・自動配信・明らかに関係ない
 priority: high=緊急または大型案件 / medium=通常 / low=急がない
 region: 都道府県または地域名（不明は「不明」）
@@ -230,30 +239,61 @@ function s01_crmWriter(emailData, result) {
   // 案件管理スプシ（メインシート）
   const sheet = getSheet('SHEET_ID', '案件一覧');
   if (sheet) {
-    // 重複チェック（備考列にメールIDが埋め込まれているか確認）
+    // 重複チェック: スレッドID+現場名で判定（同一スレッドの返信メールによる二重登録を防ぐ）
+    // 　 = 全角スペース。/\s/だけでは全角スペースを除去できないため明示的に追加
+    const locationKey = (result.location || '').replace(/[\s　]/g, '').substring(0, 20) || '0';
+    const dedupeKey = '[tid:' + (emailData.threadId || emailData.id) + '_' + locationKey + ']';
     const lastRow = sheet.getLastRow();
     if (lastRow > 1) {
       const notes = sheet.getRange(2, COL_S.NOTES, lastRow - 1).getValues().flat();
-      if (notes.some(function(n) { return String(n).includes('[ID:' + emailData.id + ']'); })) {
-        agentLog('S-01-④', 'SKIP', 'メールID重複: ' + emailData.id);
+      if (notes.some(function(n) { return String(n).includes(dedupeKey); })) {
+        agentLog('S-01-④', 'SKIP', 'スレッド重複: ' + dedupeKey);
         return false;
       }
     }
 
     const row = new Array(23).fill('');
-    row[COL_S.COMPANY   - 1] = result.customer  || '';
-    row[COL_S.SITE      - 1] = result.location  || result.customer || '';
-    row[COL_S.WORK_TYPE - 1] = result.workType  || '';
+    row[COL_S.COMPANY   - 1] = result.customer || '';
+    // location が取れない場合は会社名を現場名に使わない（スプシが汚れるため空欄）
+    row[COL_S.SITE      - 1] = result.location || '';
+    row[COL_S.WORK_TYPE - 1] = result.workType || '';
     row[COL_S.AI_DATE   - 1] = nowStr();
     row[COL_S.STATUS    - 1] = '新規';
-    row[COL_S.AMOUNT    - 1] = result.estAmount || '';
-    row[COL_S.NOTES     - 1] = '[ID:' + emailData.id + '] ' + (result.notes || '');
+    // estAmountはAI推定値のため金額列に入れない。備考に[AI推定]として記録
+    const estAmtNote = result.estAmount ? ' [AI推定金額:' + Number(result.estAmount).toLocaleString() + '円]' : '';
+    row[COL_S.NOTES     - 1] = dedupeKey + estAmtNote + ' ' + (result.notes || '');
 
     appendRow(sheet, row);
     agentLog('S-01-④', 'OK', '案件一覧に記録完了');
   }
 
   return true;
+}
+
+/**
+ * s01_replyNeededNotifier — 「返信必要」メールをLINEに通知
+ * 案件ではないが対応が必要なメール（請求・完了報告・確認等）を通知する。
+ * @param {{subject:string, from:string}} emailData メールデータ
+ * @param {{customer:string, notes:string}} result 分類結果
+ */
+function s01_replyNeededNotifier(emailData, result) {
+  agentLog('S-01-REPLY', 'START', '返信必要通知: ' + emailData.subject);
+
+  const lines = [
+    '🔵【返信必要】',
+    '件名: ' + emailData.subject,
+    result.customer ? '相手: ' + result.customer : '送信元: ' + emailData.from,
+    result.notes    ? '内容: ' + result.notes    : null,
+    '─────────────────',
+    '新規案件ではありません',
+  ].filter(Boolean).join('\n');
+
+  sendLineToManager(lines, [
+    lineQR('✅ 対応済み', 'action=reply_done&subject=' + encodeURIComponent(emailData.subject.substring(0, 30))),
+    lineQR('👁 確認した',  'action=reply_seen&subject=' + encodeURIComponent(emailData.subject.substring(0, 30))),
+  ]);
+
+  agentLog('S-01-REPLY', 'OK', 'LINE通知完了');
 }
 
 /**
@@ -333,22 +373,23 @@ function runEmailIntakeTeam() {
       }
 
       const emailData = {
-        id:      msgId,
-        subject: subject,
-        from:    msg.getFrom(),
-        cc:      msg.getCc(),
-        body:    msg.getPlainBody().substring(0, 6000),
-        date:    msg.getDate().toString(),
+        id:       msgId,
+        threadId: thread.getId(),
+        subject:  subject,
+        from:     msg.getFrom(),
+        cc:       msg.getCc(),
+        body:     msg.getPlainBody().substring(0, 6000),
+        date:     msg.getDate().toString(),
       };
 
       // ② 分類（Grok）
       const result = s01_classifier(emailData);
 
       if (result.category === '不要') {
-        agentLog('S-01', 'SKIP', '返信不要→スキップ: ' + subject);
+        agentLog('S-01', 'SKIP', '不要→スキップ: ' + subject);
         skipped++;
 
-      } else {
+      } else if (result.category === '案件') {
         // ③ 返信文生成（Claude）
         const draftBody = s01_draftComposer(emailData, result);
 
@@ -356,18 +397,20 @@ function runEmailIntakeTeam() {
         s01_crmWriter(emailData, result);
 
         // ⑤ アースファスト案件の場合Supabaseに登録
-        if (result.category === '案件' && s01_isArsfastOrder(emailData)) {
+        if (s01_isArsfastOrder(emailData)) {
           s01_arsfastWriter(emailData, thread.getId());
         }
 
-        // Gmail下書き作成
+        // Gmail下書き作成（CCも含める）
         let draftCreated = false;
         try {
+          const draftOpts = { name: '株式会社マルケン電工' };
+          if (emailData.cc) draftOpts.cc = emailData.cc;
           GmailApp.createDraft(
             emailData.from,
             'Re: ' + emailData.subject,
             draftBody + MARUKEN_SIGNATURE,
-            { name: '株式会社マルケン電工' }
+            draftOpts
           );
           draftCreated = true;
         } catch(draftErr) {
@@ -377,12 +420,13 @@ function runEmailIntakeTeam() {
         // ⑥ LINE通知
         s01_notifier(result, msgId, draftCreated);
 
-        // S-02 ヒアリングチーム: 作戦検討中のため一時停止
-        // if (result.category === '案件') {
-        //   runHearingTeam(emailData, result);
-        // }
-
         processed++;
+
+      } else {
+        // 返信必要: スプシ登録・下書きなし。LINE通知のみ
+        agentLog('S-01', 'INFO', '返信必要→LINE通知のみ: ' + subject);
+        s01_replyNeededNotifier(emailData, result);
+        skipped++;
       }
 
       // 件名キャッシュ更新
@@ -394,10 +438,14 @@ function runEmailIntakeTeam() {
 
     } catch(e) {
       agentLog('S-01', 'ERROR', e.toString());
+      // エラーをLINEに通知（処理が止まっていることを知らせる）
+      try {
+        sendLineToManager('⚠️【EmailIntakeTeam エラー】\n' + e.toString().substring(0, 200), []);
+      } catch(_) {}
     }
   });
 
-  agentLog('S-01', 'END', '=== EmailIntakeTeam 完了 | 処理: ' + processed + '件 / スキップ: ' + skipped + '件 ===');
+  agentLog('S-01', 'END', '=== EmailIntakeTeam 完了 | 案件: ' + processed + '件 / 返信必要+スキップ: ' + skipped + '件 ===');
 }
 
 
@@ -460,6 +508,34 @@ function extractForwardedSender(body) {
 }
 
 /**
+ * extractForwardedCCFromBody_ — 転送メール本文のヘッダー部分から全メールアドレスを取得
+ * Cc: だけでなく To: や折り返し行も含めて抽出する
+ */
+function extractForwardedCCFromBody_(body) {
+  var fwdMarkers = ['---------- Forwarded message', '-------- Forwarded Message', 'Forwarded message'];
+  var fwdIdx = -1;
+  for (var si = 0; si < fwdMarkers.length; si++) {
+    fwdIdx = body.indexOf(fwdMarkers[si]);
+    if (fwdIdx !== -1) break;
+  }
+  var section = fwdIdx !== -1 ? body.substring(fwdIdx) : body;
+  var blankLine = section.search(/\r?\n\r?\n/);
+  var headerSection = blankLine !== -1 ? section.substring(0, blankLine) : section.substring(0, 2000);
+
+  var BLOCK = ['mky7584gd', 's.shigeno1016'];
+  var emails = [];
+  var pat = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g;
+  var m;
+  while ((m = pat.exec(headerSection)) !== null) {
+    var e = m[0].toLowerCase();
+    if (BLOCK.every(function(b) { return e.indexOf(b) === -1; }) && emails.indexOf(e) === -1) {
+      emails.push(e);
+    }
+  }
+  return emails;
+}
+
+/**
  * s01_arsfastWriter — アースファスト案件の情報をSupabaseに登録
  * Claudeでメール本文から構造化データを抽出してwork_reportsテーブルに挿入。
  * reply_to_email・in_reply_to を保存することで報告書送付時に元メールへ返信できる。
@@ -481,17 +557,19 @@ function s01_arsfastWriter(emailData, threadId) {
     } catch(e) {}
   }
 
-  // 社長Gmailからの転送メールの場合、本文から元の送信者を抽出
+  // 社長Gmailからの転送メールの場合、本文から元の送信者とCCを抽出
   var replyTo = extractEmail(emailData.from);
   var replyThreadId = threadId;
+  var forwardedCC = [];
   if (emailData.from && emailData.from.includes('mky7584gd@gmail.com')) {
     var originalSender = extractForwardedSender(emailData.body);
     if (originalSender) {
       replyTo = extractEmail(originalSender);
-      agentLog('S-01-ARSFAST', 'INFO', '転送メール検出。返信先: ' + replyTo);
+      forwardedCC = extractForwardedCCFromBody_(emailData.body);
+      agentLog('S-01-ARSFAST', 'INFO', '転送メール検出。返信先: ' + replyTo + ' CC: ' + forwardedCC.join(','));
     } else {
       agentLog('S-01-ARSFAST', 'WARN', '転送元送信者の抽出失敗。このレコードはスキップ');
-      return; // 返信先が不明なレコードは登録しない
+      return;
     }
     replyThreadId = null;
   }
@@ -522,6 +600,29 @@ ${emailData.body.substring(0, 4000)}
     return;
   }
 
+  // 同名現場の重複チェック（別スレッドからのフォローアップで二重登録を防ぐ）
+  var extractedSiteName = (extracted.site_name || '').replace(/\s/g, '').substring(0, 12);
+  if (extractedSiteName.length >= 4) {
+    try {
+      var cutoff90 = new Date();
+      cutoff90.setDate(cutoff90.getDate() - 90);
+      var nameCheckUrl = SUPABASE_URL + '/rest/v1/work_reports'
+        + '?site_name=ilike.*' + encodeURIComponent(extractedSiteName) + '*'
+        + '&client_format=eq.arsfast'
+        + '&created_at=gte.' + encodeURIComponent(cutoff90.toISOString())
+        + '&select=id,site_name,status&limit=3';
+      var nameCheckRes = UrlFetchApp.fetch(nameCheckUrl, {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON },
+        muteHttpExceptions: true, deadline: 8
+      });
+      var existingByName = JSON.parse(nameCheckRes.getContentText());
+      if (Array.isArray(existingByName) && existingByName.length > 0) {
+        agentLog('S-01-ARSFAST', 'SKIP', '同名現場が既に存在: ' + extracted.site_name + ' → ' + existingByName[0].site_name);
+        return;
+      }
+    } catch(e) { agentLog('S-01-ARSFAST', 'WARN', '現場名重複チェックエラー: ' + e); }
+  }
+
   try {
     const res = UrlFetchApp.fetch(SUPABASE_URL + '/rest/v1/work_reports', {
       method: 'post',
@@ -542,7 +643,7 @@ ${emailData.body.substring(0, 4000)}
         work_date:        Utilities.formatDate(emailData.date ? new Date(emailData.date) : new Date(), 'Asia/Tokyo', 'yyyy-MM-dd'),
         requested_at:     (emailData.date ? new Date(emailData.date) : new Date()).toISOString(),
         reply_to_email:   replyTo,
-        reply_cc_emails:  emailData.cc ? emailData.cc.split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s; }) : [],
+        reply_cc_emails:  forwardedCC.length > 0 ? forwardedCC : (emailData.cc ? emailData.cc.split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s; }) : []),
         in_reply_to:      replyThreadId,
         status:           'pending',
         client_format:    'arsfast',
@@ -559,9 +660,9 @@ ${emailData.body.substring(0, 4000)}
       if (emailData.body && emailData.body.indexOf('ダイナム') !== -1) {
         agentLog('S-01-ARSFAST', 'INFO', 'ダイナム案件のためAFフラグをスキップ: ' + (extracted.site_name || emailData.subject));
       } else {
-        var ccList = emailData.cc
-          ? emailData.cc.split(',').map(function(s){ return extractEmail(s.trim()); }).filter(function(s){ return s && s.indexOf('@') !== -1; })
-          : [];
+        var ccList = forwardedCC.length > 0
+          ? forwardedCC
+          : (emailData.cc ? emailData.cc.split(',').map(function(s){ return extractEmail(s.trim()); }).filter(function(s){ return s && s.indexOf('@') !== -1; }) : []);
         s01_arsfastSetGroup_(emailData.id, replyTo, ccList, replyThreadId, extracted.request_detail || '');
       }
     }
@@ -649,19 +750,28 @@ function runEmailBackfill() {
   let processed = 0;
   let skipped   = 0;
 
-  threads.forEach(function(thread) {
+  // forEachではbreakが使えないためforループで実装（50件打ち切りを確実に機能させる）
+  for (let i = 0; i < threads.length; i++) {
+    // GASの6分制限対策: 50件で打ち切り
+    if (processed + skipped >= 50) {
+      agentLog('S-01-BACKFILL', 'WARN', '50件上限に達したため打ち切り。再度実行してください。');
+      break;
+    }
+
+    const thread = threads[i];
     try {
       const msg     = thread.getMessages()[0];
       const msgId   = msg.getId();
       const subject = msg.getSubject();
 
       const emailData = {
-        id:      msgId,
-        subject: subject,
-        from:    msg.getFrom(),
-        cc:      msg.getCc(),
-        body:    msg.getPlainBody().substring(0, 6000),
-        date:    msg.getDate().toString(),
+        id:       msgId,
+        threadId: thread.getId(),
+        subject:  subject,
+        from:     msg.getFrom(),
+        cc:       msg.getCc(),
+        body:     msg.getPlainBody().substring(0, 6000),
+        date:     msg.getDate().toString(),
       };
 
       // 分類（Grok）
@@ -671,11 +781,13 @@ function runEmailBackfill() {
         thread.moveToArchive();
         thread.addLabel(label);
         skipped++;
-        return;
+        continue;
       }
 
-      // スプシ記録のみ（返信文生成・LINE通知はスキップ）
-      s01_crmWriter(emailData, result);
+      // スプシ記録のみ（返信文生成・LINE通知はスキップ）— 「案件」のみ登録
+      if (result.category === '案件') {
+        s01_crmWriter(emailData, result);
+      }
 
       // アースファスト案件はSupabaseにも登録
       if (result.category === '案件' && s01_isArsfastOrder(emailData)) {
@@ -685,18 +797,113 @@ function runEmailBackfill() {
       thread.addLabel(label);
       processed++;
 
-      // GASの6分制限対策: 処理件数が多い場合は途中で打ち切る
-      if (processed + skipped >= 50) {
-        agentLog('S-01-BACKFILL', 'WARN', '50件上限に達したため打ち切り。再度実行してください。');
-        return;
-      }
-
     } catch(e) {
       agentLog('S-01-BACKFILL', 'ERROR', e.toString());
+      skipped++;
     }
-  });
+  }
 
   agentLog('S-01-BACKFILL', 'END', 'バックフィル完了 | 処理: ' + processed + '件 / スキップ: ' + skipped + '件');
+}
+
+/**
+ * deleteTachibanaRow49 — たちばな大府の重複行（行49・5/25登録）を削除
+ * 手動で1回だけ実行すること。
+ */
+function deleteTachibanaRow49() {
+  const sheet = getSheet('SHEET_ID', '案件一覧');
+  if (!sheet) { Logger.log('シートが見つかりません'); return; }
+
+  const lastRow = sheet.getLastRow();
+  const data = sheet.getRange(2, 1, lastRow - 1, COL_S.NOTES).getValues();
+
+  for (let i = data.length - 1; i >= 0; i--) {
+    const site    = String(data[i][COL_S.SITE - 1]).replace(/[\s　]/g, '');
+    const company = String(data[i][COL_S.COMPANY - 1]);
+    const aiDate  = data[i][COL_S.AI_DATE - 1];
+    // たちばな大府・ユニティ大阪・5/25登録の行を削除
+    if (site.includes('たちばな') && site.includes('大府') && company.includes('ユニティ') && aiDate) {
+      const d = new Date(aiDate);
+      if (d.getMonth() === 4 && d.getDate() === 25) { // 5月25日
+        const rowNum = i + 2;
+        Logger.log('削除: 行' + rowNum + ' | ' + data[i][COL_S.SITE - 1]);
+        sheet.deleteRow(rowNum);
+        return;
+      }
+    }
+  }
+  Logger.log('対象行が見つかりませんでした');
+}
+
+/**
+ * auditCrmSheet — AI登録行の一覧をログに出力してゴミデータを確認する
+ * GASエディタから手動実行して、誤登録の疑いがある行をチェックする。
+ * 出力: 行番号 / 現場名 / 会社名 / AI登録日 / ステータス / 備考（抜粋）
+ */
+function auditCrmSheet() {
+  const sheet = getSheet('SHEET_ID', '案件一覧');
+  if (!sheet) { Logger.log('シートが見つかりません'); return; }
+
+  const lastRow = sheet.getLastRow();
+  if (lastRow <= 1) { Logger.log('データなし'); return; }
+
+  const data = sheet.getRange(2, 1, lastRow - 1, COL_S.NOTES).getValues();
+  let count = 0;
+
+  Logger.log('=== AI登録行 一覧 ===');
+  data.forEach(function(row, i) {
+    const aiDate = row[COL_S.AI_DATE - 1];
+    if (!aiDate) return; // AI登録日がない行はスキップ
+
+    const rowNum    = i + 2;
+    const company   = row[COL_S.COMPANY   - 1];
+    const site      = row[COL_S.SITE      - 1];
+    const status    = row[COL_S.STATUS    - 1];
+    const notes     = String(row[COL_S.NOTES - 1]).substring(0, 60);
+
+    Logger.log('行' + rowNum + ' | ' + site + ' | ' + company + ' | ' + aiDate + ' | ' + status + ' | ' + notes);
+    count++;
+  });
+
+  Logger.log('=== 合計: ' + count + '行 ===');
+}
+
+/**
+ * deleteWrongCrmRow — 誤登録された案件行を現場名で検索して削除
+ * GASエディタから手動で1回だけ実行すること。
+ * 削除対象: 現場名に「ジャック」「港区南十一番」を含む行
+ */
+function deleteWrongCrmRow() {
+  agentLog('S-01-DELETE', 'START', '誤登録行の削除開始');
+
+  const sheet = getSheet('SHEET_ID', '案件一覧');
+  if (!sheet) {
+    agentLog('S-01-DELETE', 'ERROR', 'シートが見つかりません');
+    return;
+  }
+
+  const lastRow = sheet.getLastRow();
+  if (lastRow <= 1) {
+    agentLog('S-01-DELETE', 'SKIP', 'データなし');
+    return;
+  }
+
+  const siteData = sheet.getRange(2, COL_S.SITE, lastRow - 1).getValues();
+  let deletedCount = 0;
+
+  // 後ろから削除することで行番号のズレを防ぐ
+  for (let i = siteData.length - 1; i >= 0; i--) {
+    const siteName = String(siteData[i][0]);
+    if (siteName.includes('ジャック') && siteName.includes('港区南十一番')) {
+      const rowNum = i + 2;
+      agentLog('S-01-DELETE', 'INFO', '削除対象: 行' + rowNum + ' - ' + siteName);
+      sheet.deleteRow(rowNum);
+      deletedCount++;
+    }
+  }
+
+  agentLog('S-01-DELETE', 'END', '削除完了: ' + deletedCount + '行');
+  Logger.log('削除完了: ' + deletedCount + '行');
 }
 
 /**

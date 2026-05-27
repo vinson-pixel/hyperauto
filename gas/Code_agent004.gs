@@ -68,11 +68,12 @@ function processNewEmails() {
         messages.some(function(m) { return isSelfSentEmail(m.getFrom()); });
 
       const emailData = {
-        id:      msgId,
-        subject: subject,
-        from:    msg.getFrom(),
-        body:    msg.getPlainBody().substring(0, 6000),
-        date:    msg.getDate().toString()
+        id:       msgId,
+        threadId: thread.getId(),
+        subject:  subject,
+        from:     msg.getFrom(),
+        body:     msg.getPlainBody().substring(0, 6000),
+        date:     msg.getDate().toString()
       };
 
       // 自社送信メールは案件対象外（Grok呼び出し前にはじく）
@@ -107,12 +108,10 @@ function processNewEmails() {
         });
       }
 
-      // 案件 or 返信必要 → LINE通知（不要はスキップ）
-      if (result.category !== '不要') {
-        // 返信必要・案件はGmailに下書き自動作成（転送元を検出して振り分け）
+      // 案件 → LINE通知あり / 返信必要 → Gmail下書きのみ / 不要 → アーカイブ
+      if (result.category === '案件') {
         const draftCreated = createGmailDraft(emailData, result, msg);
         writeToSupabase(emailData, result);
-        // LINEからの返信機能用にメールデータをキャッシュ（6時間有効）
         const firstJob = (result.jobs && result.jobs[0]) || {};
         cache.put('email_' + msgId, JSON.stringify({
           from:     emailData.from,
@@ -121,6 +120,8 @@ function processNewEmails() {
           customer: firstJob.customer || result.customer || '',
         }), 21600);
         notifyLine(result.category, result, msgId, draftCreated);
+      } else if (result.category === '返信必要') {
+        createGmailDraft(emailData, result, msg);
       } else {
         thread.moveToArchive();
         Logger.log('🗑 自動アーカイブ: ' + subject);
@@ -190,8 +191,9 @@ JSON形式のみで返答:
   "region": "東京"|"愛知"|"その他",
   "jobs": [
     {
-      "customer": "顧客名または会社名",
-      "location": "現場住所または地域（不明はnull）",
+      "customer": "元受け会社名（例：アースファスト株式会社）",
+      "siteName": "店舗名・現場名のみ（例：ウエルシア熱田5番町店）※住所・番地は絶対に含めない",
+      "siteAddress": "現場の住所（都道府県から番地まで。不明はnull）",
       "workType": "工事種別（不明はnull）",
       "estAmount": 数値またはnull
     }
@@ -526,7 +528,10 @@ function writeToExistingSheet(emailData, result, jobIndex) {
     const sheet = ss.getSheetByName('一覧') || ss.getSheets()[0];
 
     // 重複チェック: M列（備考）に同じ dedupeKey が含まれていればスキップ
-    const dedupeKey = '[mid:' + emailData.id + '_' + (jobIndex || 0) + ']';
+    // スレッドID+現場名で判定することで、同一スレッドの返信メールによる二重登録を防ぐ
+    const siteNameForKey = result.siteName || result.location || '';
+    const locationKey = siteNameForKey.replace(/\s/g, '').substring(0, 20) || String(jobIndex || 0);
+    const dedupeKey = '[tid:' + (emailData.threadId || emailData.id) + '_' + locationKey + ']';
     const lastRow = sheet.getLastRow();
     if (lastRow > 1) {
       const notesCells = sheet.getRange(2, 13, lastRow - 1, 1).getValues().flat();
@@ -534,12 +539,34 @@ function writeToExistingSheet(emailData, result, jobIndex) {
         Logger.log('⏭ 重複スキップ（既登録）: ' + dedupeKey);
         return;
       }
+
+      // 追加チェック: 現場名の正規化マッチ（スレッドが違っても同名現場はスキップ）
+      const normalizedNew = normalizeSiteNameForDedup_(siteNameForKey);
+      if (normalizedNew.length >= 4) {
+        const allRows = sheet.getRange(2, 1, lastRow - 1, 11).getValues();
+        // 完了済みも含めて30日以内の同名現場はスキップ（報告書送信後の確認メール対策）
+        const CUTOFF = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // 30日前
+        const sameNameExists = allRows.some(function(r) {
+          const aiDate = r[5];
+          if (aiDate && new Date(aiDate) < CUTOFF) return false; // 30日より古い行は対象外
+          const normalizedExisting = normalizeSiteNameForDedup_(String(r[1] || ''));
+          return normalizedExisting.length >= 4 && (
+            normalizedExisting === normalizedNew ||
+            normalizedExisting.indexOf(normalizedNew) !== -1 ||
+            normalizedNew.indexOf(normalizedExisting) !== -1
+          );
+        });
+        if (sameNameExists) {
+          Logger.log('⏭ 重複スキップ（同名現場あり・30日以内）: ' + normalizedNew);
+          return;
+        }
+      }
     }
 
     const newRow = lastRow + 1;
     sheet.getRange(newRow, 1, 1, 13).setValues([[
       result.customer  || '',                          // A: 元受け会社
-      result.location  || '',                          // B: 現場名
+      result.siteName  || result.location || '',       // B: 現場名（店舗名のみ）
       result.workType  || '',                          // C: 施工内容
       '',                                              // D: 施工日（未定）
       '',                                              // E: 完了日（未定）
@@ -550,7 +577,7 @@ function writeToExistingSheet(emailData, result, jobIndex) {
       '',                                              // J: 完了報告
       '新規',                                          // K: ステータス
       result.estAmount || '',                          // L: 金額
-      (result.region ? '[' + result.region + '] ' : '') + (result.notes || '') + ' ' + dedupeKey,  // M: 備考（地域・重複チェックキー埋め込み）
+      (result.region ? '[' + result.region + '] ' : '') + (result.siteAddress ? '[ADDR:' + result.siteAddress + '] ' : '') + (result.notes || '') + ' ' + dedupeKey,  // M: 備考（住所・地域・重複チェックキー埋め込み）
     ]]);
 
     Logger.log('✅ 既存スプシ（一覧）に転写: row ' + newRow + ' | ' + dedupeKey);
@@ -913,4 +940,13 @@ function setLineWebhookUrl() {
   } else {
     Logger.log('❌ 設定失敗 (' + code + '): ' + res.getContentText());
   }
+}
+
+// 現場名を正規化（重複チェック用）: スペース除去・全角半角統一・法人格除去
+function normalizeSiteNameForDedup_(name) {
+  return String(name || "")
+    .replace(/\s/g, "")
+    .replace(/[ａ-ｚＡ-Ｚ０-９]/g, function(c) { return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); })
+    .replace(/株式会社|有限会社|合同会社|（株）|\(株\)/g, "")
+    .toLowerCase();
 }
