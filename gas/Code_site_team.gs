@@ -423,7 +423,8 @@ ${data.jobs.map(j =>
 
 上記をもとに、夕方の日報LINEメッセージを書いてください。`;
 
-  return callClaude(sys, user);
+  const rpt = callClaude(sys, user);
+  return (rpt && String(rpt).indexOf('__CLAUDE_ERR__') !== 0) ? rpt : null;
 }
 
 /**
@@ -615,7 +616,12 @@ ${items.map(it =>
 
 テキストのみで発注メール本文を返してください（件名は含めず、本文のみ）:`;
 
-  return callClaude(sys, user);
+  const body = callClaude(sys, user);
+  if (!body || String(body).indexOf('__CLAUDE_ERR__') === 0) {
+    agentLog('P-03-3', 'ERROR', '発注メール生成失敗: ' + (body || 'null'));
+    return null;
+  }
+  return body;
 }
 
 /**
@@ -768,7 +774,8 @@ function p04_captionGenerator(photos) {
     }
 
     const user = `ファイル名: ${photo.name}\nフェーズ: ${photo.phase}\n\nキャプション（テキストのみ）:`;
-    const caption = callClaude(sys, user) || fallbackCaption;
+    const _raw = callClaude(sys, user);
+    const caption = (_raw && String(_raw).indexOf('__CLAUDE_ERR__') !== 0) ? _raw : fallbackCaption;
     return { ...photo, caption: caption.trim() };
   });
 }

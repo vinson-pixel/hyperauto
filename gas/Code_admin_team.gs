@@ -209,7 +209,8 @@ ${kpi.todayJobs.map(j => `・${j.customerName}（${j.workType}）${j.location}`)
 
 朝の業務報告LINEメッセージを書いてください:`;
 
-  return callClaude(sys, user);
+  const msg = callClaude(sys, user);
+  return (msg && String(msg).indexOf('__CLAUDE_ERR__') !== 0) ? msg : null;
 }
 
 /**
@@ -473,7 +474,9 @@ ${issues.map(i =>
 
 緊急度の高いものから順に、対処方法も含めて報告してください:`;
 
-  return callClaude(sys, user) || issues.map(i => `・${i.type}: ${i.detail || i.count + '件'}`).join('\n');
+  const alert = callClaude(sys, user);
+  if (alert && String(alert).indexOf('__CLAUDE_ERR__') !== 0) return alert;
+  return issues.map(i => `・${i.type}: ${i.detail || i.count + '件'}`).join('\n');
 }
 
 /**
@@ -745,7 +748,8 @@ ${(strategy.actionItems || []).map(a => '・' + a).join('\n')}
 
 月初のLINEレポートメッセージを書いてください:`;
 
-  return callClaude(sys, user) || '月次レポートの生成に失敗しました。';
+  const rpt = callClaude(sys, user);
+  return (rpt && String(rpt).indexOf('__CLAUDE_ERR__') !== 0) ? rpt : '月次レポートの生成に失敗しました。';
 }
 
 /**

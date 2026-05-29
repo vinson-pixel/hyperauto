@@ -201,7 +201,7 @@ ${invoice.address}
 
   const docText = callClaude(systemPrompt, userPrompt);
 
-  if (!docText) {
+  if (!docText || String(docText).indexOf('__CLAUDE_ERR__') === 0) {
     // フォールバック: 手動テンプレート
     return `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -250,8 +250,10 @@ function f01_emailSender(invoice) {
 
   const userPrompt = `顧客名: ${invoice.customer}\n工事内容: ${invoice.workContent}\n工事完了日: ${invoice.completeDate}`;
 
-  const coverText = callClaude(systemPrompt, userPrompt) ||
-    `${invoice.customer} 様\n\nお世話になっております。\n株式会社マルケン電工でございます。\n\n先日ご依頼いただきました工事が完了いたしましたので、ご請求書をお送りいたします。\nご確認のほどよろしくお願い申し上げます。`;
+  const _coverRaw = callClaude(systemPrompt, userPrompt);
+  const coverText = (_coverRaw && String(_coverRaw).indexOf('__CLAUDE_ERR__') !== 0)
+    ? _coverRaw
+    : `${invoice.customer} 様\n\nお世話になっております。\n株式会社マルケン電工でございます。\n\n先日ご依頼いただきました工事が完了いたしましたので、ご請求書をお送りいたします。\nご確認のほどよろしくお願い申し上げます。`;
 
   const subject = `【ご請求書】${invoice.workContent} / 株式会社マルケン電工`;
   const body = `${coverText}\n\n${invoice.docText}\n\nご不明な点がございましたら、お気軽にお問い合わせください。`;
@@ -920,7 +922,7 @@ ${MARUKEN_PROFILE}`;
 
   const summary = callClaude(systemPrompt, userPrompt);
 
-  if (!summary) {
+  if (!summary || String(summary).indexOf('__CLAUDE_ERR__') === 0) {
     return `【${kpi.month} 月次報告】\n案件数: ${kpi.jobCount}件\n売上（税込）: ¥${kpi.totalSalesInclTax.toLocaleString()}\n平均単価: ¥${kpi.avgAmount.toLocaleString()}\n回収率: ${kpi.collectionRate}%\n未入金: ${kpi.unpaidCount}件\n経費: ¥${kpi.totalExpenses.toLocaleString()}\n粗利率: ${kpi.grossProfitRate}%`;
   }
 

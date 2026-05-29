@@ -1768,8 +1768,8 @@ ${pitch.valueProposition}
 
   const script = callClaude(systemPrompt, userPrompt, 'claude-sonnet-4-6', 2000);
 
-  if (!script) {
-    agentLog('S-05-④', 'ERROR', 'スクリプト生成失敗');
+  if (!script || String(script).indexOf('__CLAUDE_ERR__') === 0) {
+    agentLog('S-05-④', 'ERROR', 'スクリプト生成失敗: ' + (script || 'null'));
     return `── 受付突破 ──
 「お世話になっております。株式会社マルケン電工と申します。電気設備のご担当者様はいらっしゃいますでしょうか」
 
@@ -1826,8 +1826,8 @@ ${MARUKEN_PROFILE}`;
 
   const objections = callClaude(systemPrompt, userPrompt, 'claude-haiku-4-5-20251001', 1200);
 
-  if (!objections) {
-    agentLog('S-05-⑤', 'ERROR', '断り文句生成失敗');
+  if (!objections || String(objections).indexOf('__CLAUDE_ERR__') === 0) {
+    agentLog('S-05-⑤', 'ERROR', '断り文句生成失敗: ' + (objections || 'null'));
     return `【断り文句】今は必要ない
 【切り返し】そうでございますか。では、年に一度の電気設備点検だけでもいかがでしょうか。ご費用もかかりません。
 

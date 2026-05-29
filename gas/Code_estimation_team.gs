@@ -865,7 +865,8 @@ function e04_generateCaption(fileName, phase, jobId) {
 
   const user = `ファイル名: ${fileName}\nフェーズ: ${phase}\n案件ID: ${jobId}\n\nキャプション（テキストのみで返答）:`;
 
-  return callClaude(sys, user);
+  const cap = callClaude(sys, user);
+  return (cap && String(cap).indexOf('__CLAUDE_ERR__') !== 0) ? cap : null;
 }
 
 /**
