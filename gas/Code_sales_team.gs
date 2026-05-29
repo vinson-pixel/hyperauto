@@ -124,52 +124,99 @@ function s01_emailFetcher() {
 function s01_classifier(emailData) {
   agentLog('S-01-②', 'START', '分類開始: ' + emailData.subject);
 
-  const systemPrompt = `あなたはマルケン電工（愛知県の電気工事会社）のメール仕分けAIです。
-全国の電気工事案件を対象に分析します。JSONのみで返答してください。`;
+  // ─────────────────────────────────────────────────────────────
+  // マルケン電工は電気工事の「受注側」。
+  // 「案件」= 他社（元請け・施主）から マルケン電工に工事を依頼するメール。
+  // AIに「受注側視点」を明確に持たせることで、
+  //   ① 他社への営業メール（不要）を誤分類しない
+  //   ② 精算・完了報告（返信必要）を案件と混同しない
+  //   ③ 低確信度案件を自動でスプシ登録しない（confidence で制御）
+  // ─────────────────────────────────────────────────────────────
+
+  const systemPrompt = `あなたはマルケン電工（愛知県名古屋市の電気工事会社）の受信メール仕分けAIです。
+マルケン電工は電気工事・設備工事の「受注側」の会社です。
+他社（元請け・施主・管理会社など）からマルケン電工への工事依頼が「案件」です。
+JSONのみで返答してください。`;
 
   const userPrompt = `以下のメールを分析してください。
 
 件名: ${emailData.subject}
 送信元: ${emailData.from}
-本文:
-${emailData.body}
+本文（最大5000文字）:
+${emailData.body.substring(0, 5000)}
 
-【分類基準】
-category:
-  「案件」= 見積依頼・工事依頼・発注・現場相談など新規の仕事になる可能性があるメール
-  ※以下は「案件」ではなく「返信必要」に分類すること：
-    - 請求書の依頼・請求のお願い・残額の請求
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+【分類ルール】
+
+■ 「案件」= マルケン電工が工事を受注できる依頼メール
+  ✅ 条件（以下のいずれか）:
+    - 見積依頼（「見積もりをお願いしたい」「金額を教えてください」）
+    - 工事・施工の依頼（「工事をお願いしたい」「現場対応をお願いします」）
+    - 発注連絡（「発注します」「よろしくお願いします（工事依頼の文脈）」）
+    - 現場調査の依頼（「一度見てもらえますか」）
+    - 既存取引先からの追加工事依頼（「次の物件もお願いしたい」「別の店舗も依頼したい」）
+
+  ❌ 「案件」ではない（以下は「返信必要」）:
+    - 既存案件の請求・入金・精算のやり取り
     - 工事完了報告・引き渡し完了・竣工連絡
-    - 既存案件の精算・値引き・差し引きの連絡
-    - 支払い条件の確認・変更依頼
-    - 工事代金の清算に関するやり取り
-  「返信必要」= 案件ではないが返信が必要（質問・確認・取引先連絡・請求・完了報告など）
-  「不要」= 一方的な営業メール・スパム・自動配信・明らかに関係ない
-priority: high=緊急または大型案件 / medium=通常 / low=急がない
-region: 都道府県または地域名（不明は「不明」）
-urgency: 「緊急」「通常」「余裕あり」のいずれか
+    - 施工日程の調整・確認のみ（新規依頼ではない）
+    - マルケン電工が下請けに依頼する逆方向の連絡
 
+■ 「返信必要」= 案件ではないが対応が必要なメール
+  - 取引先からの質問・確認・相談
+  - 請求書の催促・入金確認・精算交渉
+  - 工事完了報告・引き渡し完了報告
+  - 既存案件の変更・追加費用の相談（新規ではない）
+  - 応援職人・外注からの連絡
+
+■ 「不要」= 対応不要なメール
+  - マルケン電工に対する一方的な営業・商品紹介（「弊社サービスのご案内」）
+  - 求人・採用・下請け募集の案内メール
+  - スパム・メルマガ・自動配信通知
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+【few-shot 例（参考）】
+
+例A: 「〇〇店の電気工事をお願いできますか」 → 案件（confidence:0.95）
+例B: 「先日の工事の請求書をお送りください」 → 返信必要（confidence:0.95）
+例C: 「施工完了しました。ご確認ください」 → 返信必要（confidence:0.90）
+例D: 「貴社向けCRMシステムのご案内です」 → 不要（confidence:0.98）
+例E: 「次の物件もマルケンさんにお願いしたいです」 → 案件（confidence:0.90）
+例F: 「先日の〇〇工事、残金の支払いについて」 → 返信必要（confidence:0.95）
+例G: 「応援職人の手配は可能でしょうか（下請けからの連絡）」 → 返信必要（confidence:0.85）
+例H: 「工事の見積もりと、できれば早めに現場を見てほしい」 → 案件（confidence:0.95）
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 以下JSON形式のみで返答:
 {
   "category": "案件"|"返信必要"|"不要",
+  "confidence": 0.0〜1.0（分類の確信度。0.7未満は要確認）,
   "priority": "high"|"medium"|"low",
   "customer": "依頼元の会社名（例：アースファスト、ウエルシア薬局株式会社。不明はnull）",
-  "location": "工事現場となる店舗・施設の名前（住所や地域名ではなく店舗名。例：ウエルシア熱田5番町店、キクチメガネ知立店。不明はnull）",
-  "workType": "工事種別（不明はnull）",
+  "location": "工事現場となる店舗・施設の固有名詞（住所・地域名ではなく店舗名。例：ウエルシア熱田5番町店。不明はnull）",
+  "workType": "工事種別（例：電気設備工事・LED改修・エアコン設置。不明はnull）",
   "estAmount": 数値またはnull,
-  "region": "都道府県名（不明は不明）",
+  "region": "都道府県名（不明は「不明」）",
   "urgency": "緊急"|"通常"|"余裕あり",
-  "notes": "判断理由（1文）"
+  "notes": "分類理由（1文・具体的に）"
 }`;
 
   const result = callGrokJSON(systemPrompt, userPrompt, 'grok-3-mini-fast');
 
   if (!result) {
     agentLog('S-01-②', 'ERROR', 'Grok分類失敗 → デフォルト: 返信必要');
-    return { category: '返信必要', priority: 'low', region: '不明', urgency: '通常', notes: 'AI判定エラー' };
+    return { category: '返信必要', confidence: 0, priority: 'low', region: '不明', urgency: '通常', notes: 'AI判定エラー' };
   }
 
-  agentLog('S-01-②', 'OK', result.category + ' | ' + result.priority + ' | ' + result.region);
+  // confidence が 0.7 未満の「案件」は「要確認」にダウングレード
+  // → スプシに自動登録せず、LINE通知で人間が判断できるようにする
+  const conf = typeof result.confidence === 'number' ? result.confidence : 1.0;
+  if (result.category === '案件' && conf < 0.7) {
+    agentLog('S-01-②', 'WARN', `低確信度案件(${conf}) → 要確認に変更: ` + emailData.subject);
+    result.category = '要確認';
+  }
+
+  agentLog('S-01-②', 'OK', result.category + ' | conf:' + conf + ' | ' + (result.region || '不明'));
   return result;
 }
 
@@ -300,6 +347,39 @@ function s01_replyNeededNotifier(emailData, result) {
 }
 
 /**
+ * s01_uncertainNotifier — 「要確認」（低確信度案件）をLINEに通知
+ * AIが案件と判断したが確信度が低い場合。スプシ未登録で人間が判断する。
+ * @param {{subject:string, from:string, id:string}} emailData メールデータ
+ * @param {{customer:string, workType:string, location:string, notes:string, confidence:number}} result 分類結果
+ * @param {string} msgId メールID
+ */
+function s01_uncertainNotifier(emailData, result, msgId) {
+  agentLog('S-01-UNCERTAIN', 'START', '要確認通知: ' + emailData.subject);
+
+  const conf = result.confidence ? Math.round((result.confidence || 0) * 100) : '?';
+
+  const lines = [
+    '🟠【要確認】案件か判断できませんでした',
+    '件名: ' + emailData.subject,
+    result.customer  ? '相手: '   + result.customer  : '送信元: ' + emailData.from,
+    result.workType  ? '工事種別: ' + result.workType  : null,
+    result.location  ? '現場: '   + result.location  : null,
+    'AI確信度: ' + conf + '%',
+    result.notes     ? '理由: '   + result.notes     : null,
+    '─────────────────',
+    'スプシ未登録。案件なら「📋 案件登録」を押してください',
+  ].filter(Boolean).join('\n');
+
+  sendLineToManager(lines, [
+    lineQR('📋 案件登録', 'action=called&id=' + msgId),   // called と同じフローでスプシ更新
+    lineQR('✅ 返信必要', 'action=reply_done&subject=' + encodeURIComponent(emailData.subject.substring(0, 30))),
+    lineQR('🗑 不要',     'action=skip&id=' + msgId),
+  ]);
+
+  agentLog('S-01-UNCERTAIN', 'OK', 'LINE通知完了');
+}
+
+/**
  * S-01-⑤: LINEに通知するサブエージェント
  * 案件・返信必要カテゴリをクイックリプライ付きでLINE通知する。
  * @param {{category:string, priority:string, customer:string, location:string, workType:string, estAmount:number|null, urgency:string, notes:string}} result 分類結果
@@ -424,6 +504,12 @@ function runEmailIntakeTeam() {
         s01_notifier(result, msgId, draftCreated);
 
         processed++;
+
+      } else if (result.category === '要確認') {
+        // 低確信度案件: スプシ登録なし・下書きなし。LINE通知（🟠）で人間が判断
+        agentLog('S-01', 'INFO', '要確認案件→人間判断へ: ' + subject);
+        s01_uncertainNotifier(emailData, result, msgId);
+        skipped++;
 
       } else {
         // 返信必要: スプシ登録・下書きなし。LINE通知のみ
