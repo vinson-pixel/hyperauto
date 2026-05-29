@@ -374,7 +374,7 @@ function loadOrders() {
       renderOrders(allOrders);
     })
     .withFailureHandler(function() {
-      loading.textContent = '案件の読み込みに失敗しました';
+      loading.innerHTML = '案件の読み込みに失敗しました。<button onclick="loadOrders()" style="margin-left:8px;font-size:13px;padding:5px 12px;border:1px solid #185FA5;border-radius:6px;color:#185FA5;background:#fff;cursor:pointer;">再読み込み</button>';
     })
     .getOrders();
 }
@@ -529,14 +529,18 @@ function loadDraftList() {
       });
       section.style.display = 'block';
     })
-    .withFailureHandler(function() {})
+    .withFailureHandler(function() {
+      var section = document.getElementById('draftListSection');
+      document.getElementById('draftListItems').innerHTML = '<div style="font-size:12px;color:#c0392b;padding:4px 0;">一時保存データの読み込みに失敗しました</div>';
+      section.style.display = 'block';
+    })
     .loadDraftListServer();
 }
 
 function restoreDraftById(id) {
   google.script.run
     .withSuccessHandler(function(saved) {
-      if (!saved) return;
+      if (!saved) { showStatus('保存データが見つかりませんでした', 'status-err'); return; }
       try {
         var draft = JSON.parse(saved);
         if (!draft || !draft.order) return;
@@ -565,9 +569,13 @@ function restoreDraftById(id) {
         document.getElementById('draftBannerText').textContent = '一時保存を復元しました（' + (draft.order.site_name||'') + ' ' + label + '）';
         document.getElementById('draftBanner').style.display = 'block';
         document.querySelector('.wrap').style.paddingTop = '3.5rem';
-      } catch(e) {}
+      } catch(e) {
+        showStatus('ドラフトの復元に失敗しました', 'status-err');
+      }
     })
-    .withFailureHandler(function() {})
+    .withFailureHandler(function() {
+      showStatus('ドラフトの読み込みに失敗しました', 'status-err');
+    })
     .loadDraftServer(id);
 }
 
@@ -577,7 +585,9 @@ function deleteDraftById(id) {
       if (currentDraftId === id) currentDraftId = null;
       loadDraftList();
     })
-    .withFailureHandler(function() {})
+    .withFailureHandler(function() {
+      showStatus('ドラフトの削除に失敗しました', 'status-err');
+    })
     .deleteDraftServer(id);
 }
 
@@ -796,11 +806,12 @@ async function buildSubmitData() {
   const photoDataAfter  = await Promise.all(photoFilesAfter.map(toBase64));
 
   const tmpCanvas = document.createElement('canvas');
-  tmpCanvas.width = 400; tmpCanvas.height = 150;
+  const sigAspect = canvas.width > 0 && canvas.height > 0 ? canvas.width / canvas.height : 2.5;
+  tmpCanvas.width = 400; tmpCanvas.height = Math.round(400 / sigAspect);
   const tmpCtx = tmpCanvas.getContext('2d');
   tmpCtx.fillStyle = '#ffffff';
-  tmpCtx.fillRect(0, 0, 400, 150);
-  tmpCtx.drawImage(canvas, 0, 0, 400, 150);
+  tmpCtx.fillRect(0, 0, tmpCanvas.width, tmpCanvas.height);
+  tmpCtx.drawImage(canvas, 0, 0, tmpCanvas.width, tmpCanvas.height);
 
   return {
     toEmail:        document.getElementById('toEmailInput').value.trim(),
@@ -832,10 +843,10 @@ async function buildSubmitData() {
 
 async function submitForm() {
   if (!selectedOrder) { showStatus('案件を選択してください', 'status-err'); return; }
-  if (!document.getElementById('toEmailInput').value.trim()) {
-    // emailSectionを開いて気づかせる
+  var toEmailVal = document.getElementById('toEmailInput').value.trim();
+  if (!toEmailVal || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(toEmailVal)) {
     document.getElementById('emailSection').style.display = 'block';
-    showStatus('送信先TOメールアドレスを確認してください', 'status-err'); return;
+    showStatus(toEmailVal ? 'TOメールアドレスの形式が正しくありません' : '送信先TOメールアドレスを確認してください', 'status-err'); return;
   }
   if (!v('clientName')) { showStatus('お客様名を入力してください', 'status-err'); return; }
   if (!v('workDate'))   { showStatus('作業日を入力してください', 'status-err'); return; }
@@ -925,7 +936,14 @@ function removePhoto(type, index) {
 // ─── サイン ────────────────────────────────────────────────────
 function openSigModal()  { document.getElementById('sigModal').classList.add('active'); initCanvas(); clearSig(); }
 function closeSigModal() {
-  if (!signed) { document.getElementById('sigModal').classList.remove('active'); return; }
+  var hint = document.querySelector('#sigModal .sign-hint');
+  if (!signed) {
+    hint.textContent = '⚠ サインしてから完了を押してください';
+    hint.style.color = '#c0392b';
+    return;
+  }
+  hint.textContent = '下の枠内に指またはペンでサインしてください';
+  hint.style.color = '';
   var preview = document.getElementById('signedPreview');
   preview.src = canvas.toDataURL('image/jpeg', 0.5);
   preview.style.display = 'block';

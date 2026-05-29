@@ -37,6 +37,7 @@ function _logCallResultInner_(sheet, rowIndex, result, notes, caller) {
   if (result === '廃業')       sheet.getRange(rowIndex, PC.STAGE).setValue('廃業');
   if (result === '担当者変更') sheet.getRange(rowIndex, PC.STAGE).setValue('再架電待ち');
   if (result === '留守電')     sheet.getRange(rowIndex, PC.STAGE).setValue('再架電待ち');
+  if (result === '問い合わせフォーム送信') sheet.getRange(rowIndex, PC.FORM_SENT).setValue('送信待ち');
 
   // 受注確定 → 顧客管理シートに自動転記
   if (result === '受注') {
@@ -70,6 +71,24 @@ function _logCallResultInner_(sheet, rowIndex, result, notes, caller) {
 
   return { success: true, callCount: cur + 1 };
 } // end _logCallResultInner_
+
+// ─── フォーム管理 ───────────────────────────────────────────────
+
+function markFormSent(rowIndex) {
+  var today = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd');
+  getProspectSheet_().getRange(rowIndex, PC.FORM_SENT).setValue(today);
+  return { ok: true, date: today };
+}
+
+function markFormPending(rowIndex) {
+  getProspectSheet_().getRange(rowIndex, PC.FORM_SENT).setValue('送信待ち');
+  return { ok: true };
+}
+
+function clearFormStatus(rowIndex) {
+  getProspectSheet_().getRange(rowIndex, PC.FORM_SENT).setValue('');
+  return { ok: true };
+}
 
 // ─── シート整理 ─────────────────────────────────────────────────
 

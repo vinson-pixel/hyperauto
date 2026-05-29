@@ -218,7 +218,12 @@ function migrateReorderColumns() {
   return { ok: true, message: '列並べ替え完了 (' + (lastRow - 1) + '件)' };
 }
 
-function searchLeads(keyword, area, source, maxResults, quick) {
+function searchLeads(keyword, area, source, maxResults, quick, useWeb) {
+  // AIリスト生成モード（EV充電インフラ事業者など、Maps検索が向かないカテゴリ用）
+  if (useWeb) {
+    return searchByAI(keyword, area);
+  }
+
   var combined = [];
   var seen = {};
   var errors = [];
@@ -257,6 +262,93 @@ function searchLeads(keyword, area, source, maxResults, quick) {
     return { error: msg };
   }
   return { results: combined };
+}
+
+// AI知識ベース検索（Google Maps不向きなB2B業種向け）
+// Claude → Grok の順でフォールバック。両方不可なら静的シードを返す。
+function searchByAI(keyword, area) {
+  var areaStr = area || '日本全国';
+  var sys  = 'あなたは日本の企業データベースです。JSON配列のみ出力してください。説明・前置き・コード記法不要。';
+  var user = 'マルケン電工（愛知・電気工事業）の営業先として、「' + keyword + '」に該当する実在する日本企業を最大30社リストアップせよ。\n' +
+    'エリア: ' + areaStr + '（全国展開企業も含めてOK）\n\n' +
+    '出力形式（JSON配列）:\n' +
+    '[{"name":"会社名","website":"公式サイトURL","address":"本社所在地（都道府県+市区町村まで）","phone":"代表電話（わかれば）","industry":"' + keyword + '"}]\n\n' +
+    '注意: 実在する企業のみ。電話・サイトは不明なら空文字。大手〜スタートアップを混ぜて。';
+
+  // Claude → Grok の順で試みる
+  var text = null;
+  if (getProp('CLAUDE_API_KEY')) {
+    try { text = callClaude(sys, user, 'claude-haiku-4-5-20251001', 1500); } catch(e) {}
+  }
+  if (!text && getProp('XAI_API_KEY')) {
+    try { text = callGrok(sys, user, 'grok-3-mini-fast-beta'); } catch(e) {}
+  }
+
+  if (text) {
+    var match = text.match(/\[[\s\S]*\]/);
+    if (match) {
+      try {
+        var companies = JSON.parse(match[0]);
+        var results = companies.filter(function(c){ return c.name; }).map(function(c){
+          return {
+            name:     String(c.name    || '').trim(),
+            address:  String(c.address || ''),
+            phone:    String(c.phone   || ''),
+            website:  String(c.website || ''),
+            pref:     extractPref_(String(c.address || '')),
+            industry: keyword,
+          };
+        });
+        if (results.length) return { results: results };
+      } catch(e) {}
+    }
+  }
+
+  // Claude/Grok ともに利用不可 → 静的シードリストを返す
+  var seeds = _getAISearchSeeds_(keyword);
+  if (seeds.length) return { results: seeds, note: '⚠️ APIが一時停止中のため登録済みリストを表示しています。これらは全国展開の本部企業です（本社住所に関わらず全国で営業可能）。' };
+  return { error: 'AIが利用不可です（Claude/Grok APIキーを確認してください）。6月以降に再試行してください。' };
+}
+
+// API 利用不可時の静的シードリスト（代表的な企業を事前定義）
+function _getAISearchSeeds_(keyword) {
+  var seedMap = {
+    'EV充電インフラ事業者': [
+      { name:'Terra charge株式会社',       website:'https://terra-charge.jp',     address:'東京都港区',         phone:'', industry:keyword },
+      { name:'株式会社パワーエックス',       website:'https://powerx.co.jp',        address:'東京都中央区',       phone:'', industry:keyword },
+      { name:'e-Mobility Power株式会社',    website:'https://e-mp.jp',             address:'東京都港区',         phone:'03-6721-4000', industry:keyword },
+      { name:'株式会社ユアスタンド',         website:'https://yourstand.jp',        address:'東京都渋谷区',       phone:'', industry:keyword },
+      { name:'株式会社エネチェンジ',         website:'https://enechange.co.jp',     address:'東京都千代田区',     phone:'', industry:keyword },
+      { name:'ニチコン株式会社',            website:'https://www.nichicon.co.jp',  address:'京都府京都市中京区', phone:'075-231-8461', industry:keyword },
+      { name:'富士電機株式会社',            website:'https://www.fujielectric.co.jp',address:'東京都品川区',     phone:'03-5435-7111', industry:keyword },
+      { name:'東光高岳株式会社',            website:'https://www.tktk.co.jp',      address:'東京都荒川区',       phone:'03-5692-8600', industry:keyword },
+      { name:'オムロン ソーシアルソリューションズ株式会社', website:'https://socialsolution.omron.com', address:'東京都新宿区', phone:'', industry:keyword },
+      { name:'株式会社日本充電サービス',     website:'https://www.nippon-charge.jp', address:'東京都新宿区',     phone:'', industry:keyword },
+      { name:'株式会社ダイヘン',            website:'https://www.daihen.co.jp',    address:'大阪府大阪市淀川区', phone:'06-6302-2517', industry:keyword },
+      { name:'パナソニック エレクトリックワークス株式会社', website:'https://www2.panasonic.biz/jp/ew/', address:'大阪府門真市', phone:'', industry:keyword },
+      { name:'ChargePoint Japan株式会社',   website:'https://www.chargepoint.com/ja/', address:'東京都', phone:'', industry:keyword },
+      { name:'株式会社エコQ電',             website:'https://ecoqden.jp',          address:'東京都',             phone:'', industry:keyword },
+      { name:'トヨタコネクティッド株式会社', website:'https://www.toyotaconnected.co.jp', address:'愛知県名古屋市', phone:'', industry:keyword },
+    ],
+    'コインランドリー': [
+      { name:'WASHハウス株式会社',              website:'https://www.washhouse.jp',          address:'福岡県宮崎市',     phone:'0985-64-7777', industry:keyword },
+      { name:'株式会社アクア（旧パナソニックコインランドリー）', website:'https://aqua-laundry.jp', address:'東京都港区',   phone:'',            industry:keyword },
+      { name:'株式会社ランドリーワークス',       website:'https://landryworks.co.jp',         address:'東京都渋谷区',     phone:'',            industry:keyword },
+      { name:'株式会社ReBorn',                  website:'https://reborn-laundry.co.jp',      address:'東京都',           phone:'',            industry:keyword },
+      { name:'株式会社グラウンドワークス',       website:'https://groundworks.jp',            address:'東京都千代田区',   phone:'',            industry:keyword },
+      { name:'エムアイサービス株式会社',         website:'https://mi-service.co.jp',          address:'大阪府大阪市',     phone:'',            industry:keyword },
+      { name:'株式会社Baluko Laundry Place',    website:'https://baluko.jp',                 address:'東京都渋谷区',     phone:'',            industry:keyword },
+      { name:'フジコーポレーション株式会社',     website:'https://www.fuji-corporation.co.jp',address:'東京都豊島区',     phone:'03-5952-5511',industry:keyword },
+      { name:'株式会社プラスワン',              website:'https://plus-one-laundry.jp',        address:'東京都',           phone:'',            industry:keyword },
+      { name:'コインランドリー経営のFCシステム株式会社', website:'https://fc-system.jp',      address:'東京都',           phone:'',            industry:keyword },
+      { name:'株式会社ソニック',                website:'https://sonic-laundry.co.jp',        address:'東京都',           phone:'',            industry:keyword },
+      { name:'株式会社アップウォッシュ',         website:'https://upwash.jp',                 address:'大阪府',           phone:'',            industry:keyword },
+      { name:'洗濯工房 スピンランドリー運営会社',website:'',                                  address:'日本全国',         phone:'',            industry:keyword },
+    ],
+  };
+  var lk = keyword.toLowerCase();
+  var key = Object.keys(seedMap).find(function(k){ return lk.indexOf(k.toLowerCase()) !== -1 || k.toLowerCase().indexOf(lk) !== -1; });
+  return key ? seedMap[key].map(function(c){ c.pref = extractPref_(c.address); return c; }) : [];
 }
 
 // Google Custom Search（Web検索）
@@ -429,7 +521,7 @@ function getProspects(limit) {
   var lastRow = sheet.getLastRow();
   if (lastRow <= 1) return [];
 
-  var cols = Math.max(sheet.getLastColumn(), 22);
+  var cols = Math.max(sheet.getLastColumn(), 23);
   var data = sheet.getRange(2, 1, lastRow - 1, cols).getValues();
   var result = [];
 
@@ -460,14 +552,10 @@ function getProspects(limit) {
       topProduct:  String(row[PC.TOP_PRODUCT  - 1] || '').trim(),
       capital:     String(row[PC.CAPITAL      - 1] || '').trim(),
       uuid:        String(row[PC.UUID         - 1] || '').trim(),
+      formSent:    formatSheetDate_(row[PC.FORM_SENT  - 1]),
     });
   });
-  // アクティブなステージを必ず含める（limitで押し出されないよう優先）
-  var ACTIVE_STAGES = {'アポ確定':1,'商談中':1,'追い中':1,'見積提出':1,'受注':1,'興味あり':1};
-  var active = result.filter(function(p){ return ACTIVE_STAGES[p.stage]; });
-  var rest   = result.filter(function(p){ return !ACTIVE_STAGES[p.stage]; });
-  var combined = active.concat(rest.slice(-(Math.max(limit - active.length, 0))));
-  combined.sort(function(a,b){ return b.rowIndex - a.rowIndex; });
-  return combined;
+  result.sort(function(a,b){ return b.rowIndex - a.rowIndex; });
+  return result;
 }
 

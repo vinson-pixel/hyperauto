@@ -40,18 +40,6 @@ function normalizeJP(s) {
   return res.replace(/[\s　]/g, '').toLowerCase();
 }
 
-function debugSheetStructure() {
-  var ss = SpreadsheetApp.openById('1UptuKwGKdMiYGiyWwL55yLKXNQ5xkevKv-X0MVikcKw');
-  var sheets = ss.getSheets();
-  sheets.forEach(function(s) {
-    var headers = s.getRange(1, 1, 1, s.getLastColumn()).getValues()[0];
-    Logger.log('シート名: ' + s.getName() + ' (gid=' + s.getSheetId() + ')');
-    Logger.log('ヘッダー: ' + headers.join(' | '));
-    Logger.log('データ行数: ' + (s.getLastRow() - 1));
-    Logger.log('---');
-  });
-}
-
 // doGet はorchestrator.gsに一本化（ルーティング済み）
 
 // ─── ヘルパー ─────────────────────────────────────────────────
@@ -88,18 +76,6 @@ function extractEmailAddr_(s) {
   if (!s) return '';
   var m = String(s).match(/<([^>]+)>/);
   return m ? m[1].trim().toLowerCase() : String(s).trim().toLowerCase();
-}
-
-// 備考列のAFタグをパースしてメール情報を返す
-function parseArsfastNotes_(notes) {
-  var toMatch     = notes.match(/\[AF_TO:([^\]]+)\]/);
-  var ccMatch     = notes.match(/\[AF_CC:([^\]]*)\]/);
-  var threadMatch = notes.match(/\[AF_THREAD:([^\]]+)\]/);
-  return {
-    reply_to_email:  toMatch     ? toMatch[1].trim()                                          : '',
-    reply_cc_emails: ccMatch && ccMatch[1] ? ccMatch[1].split(',').map(function(s){return s.trim();}).filter(Boolean) : [],
-    in_reply_to:     threadMatch ? threadMatch[1].trim()                                      : '',
-  };
 }
 
 // 会社名でSupabaseレコードを探す（サイト詳細情報の補完用）
@@ -157,6 +133,7 @@ function getOrders() {
       }
     });
 
+    var BLOCKED_TO = ['s.shigeno1016@gmail.com', 'mky7584gd@gmail.com'];
     data.forEach(function(row, idx) {
       var company      = String(row[0]  || '').trim(); // A: 会社名
       var siteName     = String(row[1]  || '').trim() || company; // B: 現場名（なければ会社名）
@@ -167,7 +144,6 @@ function getOrders() {
       var status       = String(row[10] || '').trim(); // K: ステータス
       var afFlag       = String(row[13] || '').trim(); // N: AFフラグ
       var replyToRaw   = String(row[14] || '').trim().toLowerCase();
-      var BLOCKED_TO   = ['s.shigeno1016@gmail.com', 'mky7584gd@gmail.com'];
       var replyToEmail = BLOCKED_TO.indexOf(replyToRaw) !== -1 ? '' : String(row[14] || '').trim(); // O: 返信先メール
       var ccRaw        = String(row[15] || '').trim(); // P: CC
       var threadId     = String(row[16] || '').trim(); // Q: スレッドID
@@ -396,26 +372,24 @@ function createPDF(data) {
     '{{part6qty}}':      ((data.parts||[])[5]||[])[2]||''
   };
 
-  // セルを1つずつ置換（画像セルをスキップ）
+  // 一括読み込み→メモリ内置換→変更セルのみ書き込み（API呼び出し数を最小化）
   var maxRow = sheet2.getLastRow();
   var maxCol = sheet2.getLastColumn();
-  for (var i = 1; i <= maxRow; i++) {
-    for (var j = 1; j <= maxCol; j++) {
-      // ロゴエリア(O2:T7 = 行2-7, 列15-20)と署名セルはスキップ
-      if (i >= 2 && i <= 7 && j >= 15 && j <= 20) continue;
-      try {
-        var cell = sheet2.getRange(i, j);
-        var cellVal = cell.getValue();
-        if (typeof cellVal === 'string' && cellVal.indexOf('{{') !== -1) {
-          for (var key in replacements) {
-            if (cellVal.indexOf(key) !== -1) {
-              cellVal = cellVal.replace(new RegExp(key.replace(/[{}]/g,'\\$&'),'g'), replacements[key]);
-            }
-          }
-          cell.setValue(cellVal);
+  var allVals = sheet2.getRange(1, 1, maxRow, maxCol).getValues();
+  for (var i = 0; i < allVals.length; i++) {
+    for (var j = 0; j < allVals[i].length; j++) {
+      // ロゴエリア(O2:T7 = 行2-7, 列15-20)はスキップ（0-indexed: 行1-6, 列14-19）
+      if (i >= 1 && i <= 6 && j >= 14 && j <= 19) continue;
+      var cellVal = allVals[i][j];
+      if (typeof cellVal !== 'string' || cellVal.indexOf('{{') === -1) continue;
+      var newVal = cellVal;
+      for (var key in replacements) {
+        if (newVal.indexOf(key) !== -1) {
+          newVal = newVal.replace(new RegExp(key.replace(/[{}]/g,'\\$&'),'g'), replacements[key]);
         }
-      } catch(e) {
-        // 画像セルなどはスキップ
+      }
+      if (newVal !== cellVal) {
+        try { sheet2.getRange(i + 1, j + 1).setValue(newVal); } catch(_) {}
       }
     }
   }
@@ -654,7 +628,6 @@ function runArsfastEmailMigration() {
       // よくある誤字を修正して再検索
       var corrected = siteName
         .replace('ドラック', 'ドラッグ')
-        .replace('mytstic', 'mystic')
         .replace('mytstic', 'Mystic');
       if (corrected !== siteName) {
         queries.push(corrected + ' {from:arsfast.com to:arsfast.com cc:arsfast.com}');
@@ -769,9 +742,10 @@ function deleteAddressDuplicateRows() {
   var lastRow = sheet.getLastRow();
   var deleted = 0;
 
-  // 下から削除（行番号のずれを防ぐ）
+  // B列を一括取得してから下から削除（行番号のずれを防ぐ）
+  var bVals = sheet.getRange(2, 2, lastRow - 1, 1).getValues();
   for (var i = lastRow; i >= 2; i--) {
-    var siteName = String(sheet.getRange(i, 2).getValue() || '').trim(); // B列
+    var siteName = String(bVals[i - 2][0] || '').trim();
     // 住所パターン：丁目・番地・番・号・都道府県名を含む
     var isAddress = /丁目|番地|番町|[0-9]-[0-9]/.test(siteName) ||
                     /岐阜県|愛知県|三重県|静岡県|滋賀県/.test(siteName);
@@ -782,42 +756,6 @@ function deleteAddressDuplicateRows() {
     }
   }
   Logger.log('削除完了: ' + deleted + '件');
-}
-
-function debugOrders() {
-  var ss = SpreadsheetApp.openById(ARSFAST_SS_ID);
-  var sheet = getSheetByGid_(ss, ARSFAST_SHEET_GID);
-  var lastRow = sheet.getLastRow();
-  var data = sheet.getRange(2, 1, lastRow - 1, 13).getValues();
-  data.forEach(function(row, idx) {
-    var company      = String(row[0]  || '').trim();
-    var status       = String(row[10] || '').trim();
-    var notes        = String(row[12] || '');
-    var completeDate = row[4];
-    if (company.indexOf('眼鏡') !== -1 || company.indexOf('香流') !== -1) {
-      Logger.log('行' + (idx+2) + ': 会社名=' + company);
-      Logger.log('  ステータス=' + status);
-      Logger.log('  完了日=' + completeDate);
-      Logger.log('  備考=[' + notes + ']');
-      Logger.log('  [AF]あり=' + (notes.indexOf('[AF]') !== -1));
-    }
-  });
-}
-
-function findCell(sheet, text) {
-  var maxRow = sheet.getLastRow();
-  var maxCol = sheet.getLastColumn();
-  for (var i = 1; i <= maxRow; i++) {
-    for (var j = 1; j <= maxCol; j++) {
-      try {
-        var val = sheet.getRange(i, j).getValue();
-        if (typeof val === 'string' && val.indexOf(text) !== -1) {
-          return { row: i, col: j };
-        }
-      } catch(e) {}
-    }
-  }
-  return null;
 }
 
 // フォームの管理ボタンから呼び出されるアクションハンドラー
@@ -1075,10 +1013,14 @@ function diagnoseDuplicatesAndMissingTO_() {
 
   // 完了済み現場名セット（B列のみ、会社名フォールバックなし）
   var completedNm = {};
+  var REPEAT_CUTOFF_D = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
   for (var i = 0; i < data.length; i++) {
     var st = String(data[i][10] || '').trim();
     var jDone = data[i][9] === true || String(data[i][9]).toLowerCase() === 'true';
     if (DONE.indexOf(st) !== -1 || jDone) {
+      var cdRaw0 = data[i][4];
+      var cd0 = cdRaw0 instanceof Date ? cdRaw0 : (cdRaw0 ? new Date(String(cdRaw0)) : null);
+      if (cd0 && !isNaN(cd0.getTime()) && cd0 < REPEAT_CUTOFF_D) continue;
       var nm0 = normalizeJP(String(data[i][1] || ''));
       if (nm0.length >= 3) completedNm[nm0] = true;
     }
@@ -1111,7 +1053,8 @@ function diagnoseDuplicatesAndMissingTO_() {
     } else if (nm.length >= 3) {
       for (var k = 0; k < completedKeys.length; k++) {
         var cn = completedKeys[k];
-        if (cn.length >= 3 && (nm.indexOf(cn) !== -1 || cn.indexOf(nm) !== -1)) {
+        var shorter = Math.min(cn.length, nm.length);
+        if (shorter >= 7 && (nm.indexOf(cn) !== -1 || cn.indexOf(nm) !== -1)) {
           dups.push('行' + rowNum + ': ' + siteName + ' (→' + cn + ')');
           break;
         }
@@ -1209,7 +1152,9 @@ function fixDuplicateRows() {
     for (var pj = pi + 1; pj < normalizedRows.length; pj++) {
       var a = normalizedRows[pi];
       var b = normalizedRows[pj];
-      var nameMatch = a.nm === b.nm || a.nm.indexOf(b.nm) !== -1 || b.nm.indexOf(a.nm) !== -1;
+      var nmShorter = Math.min(a.nm.length, b.nm.length);
+      var nameMatch = a.nm === b.nm ||
+        (nmShorter >= 7 && (a.nm.indexOf(b.nm) !== -1 || b.nm.indexOf(a.nm) !== -1));
       if (!nameMatch) continue;
 
       // ①両方「新規」で同名・工事種別も一致（または一方が空） → 古い行(a)を削除

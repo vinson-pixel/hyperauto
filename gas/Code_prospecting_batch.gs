@@ -245,6 +245,11 @@ function autoScoreLeads() {
 }
 
 function autoDiscoverLeads() {
+  // 一時停止フラグ（再開する場合は 'false' に戻す）
+  if (PropertiesService.getScriptProperties().getProperty('AUTO_DISCOVER_PAUSED') === 'true') {
+    Logger.log('autoDiscoverLeads: 一時停止中');
+    return;
+  }
   var props = PropertiesService.getScriptProperties();
   var BATCH = 15;
 

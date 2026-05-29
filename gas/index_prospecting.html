@@ -521,6 +521,7 @@ textarea.input{height:80px;resize:none;font-family:inherit}
   <div class="nav-tab" onclick="switchTab('followup')">📌<span class="tb"> 面談済み管理</span> <span id="cnt-followup" class="tab-cnt tab-cnt-win"></span></div>
   <div class="nav-tab" onclick="switchTab('won')">🏆<span class="tb"> 成約</span> <span id="cnt-won" class="tab-cnt" style="background:#15803d;color:#fff"></span></div>
   <div class="nav-tab" onclick="switchTab('call')" style="color:#4338ca;font-weight:700">📞<span class="tb"> 架電</span> <span id="cnt-call" class="tab-cnt" style="background:#4338ca;color:#fff"></span></div>
+  <div class="nav-tab" onclick="switchTab('forms')">📋<span class="tb"> フォーム管理</span> <span id="cnt-forms" class="tab-cnt" style="background:#0369a1;color:#fff"></span></div>
   <div class="nav-tab" style="position:relative;margin-left:auto" id="moreNavTab" onclick="toggleMoreMenu(event)">≡<span class="tb"> もっと</span>
     <div id="moreMenu" style="display:none;position:fixed;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);min-width:160px;z-index:300;overflow:hidden">
       <div style="padding:4px 0">
@@ -725,6 +726,7 @@ textarea.input{height:80px;resize:none;font-family:inherit}
         <option value="hot">🔥 要フォロー</option>
         <option value="new">未架電</option>
         <option value="called">架電済み</option>
+        <option value="recall">🔁 再架電待ち</option>
         <option value="interest">興味あり</option>
         <option value="active">商談中/見積</option>
         <option value="apo">アポあり</option>
@@ -943,6 +945,31 @@ textarea.input{height:80px;resize:none;font-family:inherit}
   </div>
   <div id="wonAlert"></div>
   <div id="wonList"><div class="loading">読み込み中…</div></div>
+</div>
+
+<!-- ── フォーム管理 ────────────────────────────────────────── -->
+<div id="tab-forms" class="panel content">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <div>
+      <div style="font-size:14px;font-weight:700;color:#374151">📋 問い合わせフォーム管理</div>
+      <div style="font-size:12px;color:#6b7280">フォームで問い合わせ待ちの会社。送信したら「✅ 送信済み」ボタンを押す</div>
+    </div>
+    <button class="btn btn-sm" style="background:#0369a1;color:#fff" onclick="loadForms()">↺ 更新</button>
+  </div>
+  <!-- 送信待ちセクション -->
+  <div style="margin-bottom:16px">
+    <div style="font-size:12px;font-weight:700;color:#0369a1;margin-bottom:8px;padding:6px 10px;background:#e0f2fe;border-radius:8px">
+      📭 送信待ち <span id="form-pending-count" style="margin-left:4px"></span>
+    </div>
+    <div id="form-pending-list"></div>
+  </div>
+  <!-- 送信済みセクション -->
+  <div>
+    <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:8px;padding:6px 10px;background:#f3f4f6;border-radius:8px;cursor:pointer" onclick="toggleFormSentSection()">
+      ✅ 送信済み <span id="form-sent-count" style="margin-left:4px"></span> <span id="form-sent-toggle" style="float:right">▼</span>
+    </div>
+    <div id="form-sent-list" style="display:none"></div>
+  </div>
 </div>
 
 <!-- ── 顧客管理 ──────────────────────────────────────────── -->
@@ -1462,7 +1489,7 @@ textarea.input{height:80px;resize:none;font-family:inherit}
         <div class="dp-flbl">📅 最終架電日</div>
         <div class="dpf-row">
           <input id="dp-calldate-val" class="dpf-in" data-col="14" placeholder="日付を選択" readonly onclick="showCal('dp-calldate-val',false,this)">
-          <button class="dpf-copy" onclick="showCal('dp-calldate-val',false,this)" title="カレンダー">📅</button>
+          <button class="dpf-copy" onclick="setCallDateToday()" title="今日の日付をセット">📅 今日</button>
         </div>
       </div>
       <div class="dpf">
@@ -1578,12 +1605,8 @@ textarea.input{height:80px;resize:none;font-family:inherit}
       <label class="lbl">内容・感触（次回のフックになることを書く）</label>
       <textarea class="input" id="callNote" rows="5" style="resize:vertical;min-height:80px" placeholder="例：来月予算確認後に連絡ほしいとのこと。省エネに興味あり。担当者は田中部長。次は〇〇を切り口に。"></textarea>
     </div>
-    <div style="margin-bottom:10px">
-      <label class="lbl">🎯 次のアクション（任意）</label>
-      <input class="input" id="callNextAction" placeholder="例：来月初旬に再架電 / 見積を送付 / 担当者に繋いでもらう">
-    </div>
     <div id="callbackTimeWrap" style="display:none;margin-bottom:10px">
-      <label class="lbl">📅 折り返し希望日時</label>
+      <label class="lbl">📅 再架電日</label>
       <input class="input" type="datetime-local" id="callbackTime">
     </div>
     <div style="margin-bottom:16px;background:#fefce8;border:1px solid #fde047;border-radius:8px;padding:10px">
@@ -1620,7 +1643,8 @@ var PRODUCT_PRESETS = [
   { label:'💡 LED改修',        kw:'工場',                                      product:'LED改修' },
   { label:'☀️ 太陽光・省エネ', kw:'物流会社',                                  product:'太陽光・省エネ' },
   { label:'🚗 EV充電器（設置先）', kw:'マンション管理会社',                     product:'EV充電器' },
-  { label:'🔋 EV充電インフラ事業者', kw:'EV充電インフラ事業者',                 product:'EV充電インフラ事業者' },
+  { label:'🔋 EV充電インフラ事業者', kw:'EV充電インフラ事業者',                 product:'EV充電インフラ事業者', useWeb:true },
+  { label:'👕 コインランドリーFC', kw:'コインランドリーフランチャイズ本部',      product:'コインランドリーFC', useWeb:true },
   { label:'🔧 設備保守',       kw:'ビル管理会社',                               product:'設備保守' },
   { label:'🤝 施工パートナー', kw:'設計事務所',                                 product:'施工パートナー' },
   { label:'🔌 キュービクル',   kw:'工場 製造業',                                product:'キュービクル' },
@@ -1632,11 +1656,13 @@ var PRODUCT_FILTER_MAP = {
   '太陽光・省エネ':      ['工場','倉庫','物流','農業','太陽光','省エネ','製造'],
   'EV充電器':            ['駐車場','マンション','ショッピング','ホテル','公共'],
   'EV充電インフラ事業者':['EV充電','充電インフラ','電気自動車','EVチャージ','充電設備','充電スタンド','充電ステーション','充電サービス'],
+  'コインランドリーFC':  ['コインランドリー','ランドリー','フランチャイズ','FC','洗濯','クリーニング'],
   '設備保守':            ['管理会社','ビル管','設備管理','マンション','病院','老人'],
   '施工パートナー':      ['設計事務所','工務店','建設','ゼネコン','建築','リフォーム'],
   'キュービクル':        ['工場','製造','大型','病院','学校','テナント','商業','物流','倉庫'],
 };
-var _selectedProduct = ''; // 現在選択中の商材
+var _selectedProduct = '';       // 現在選択中の商材
+var _selectedProductUseWeb = false; // Web検索モード（Maps不向きなカテゴリ用）
 
 function initProductPresets() {
   var el = document.getElementById('productPresets');
@@ -1648,6 +1674,7 @@ function initProductPresets() {
 function selectProduct(idx) {
   var p = PRODUCT_PRESETS[idx];
   _selectedProduct = p.product;
+  _selectedProductUseWeb = p.useWeb || false;
   document.getElementById('kw').value = p.kw;
   var badge = document.getElementById('selectedProductBadge');
   var name  = document.getElementById('selectedProductName');
@@ -1663,6 +1690,7 @@ function selectProduct(idx) {
 }
 function clearProduct() {
   _selectedProduct = '';
+  _selectedProductUseWeb = false;
   var badge = document.getElementById('selectedProductBadge');
   if (badge) badge.style.display = 'none';
   PRODUCT_PRESETS.forEach(function(_, i) {
@@ -1748,6 +1776,7 @@ function switchTab(name) {
   if(name==='meeting')  loadPhase('meeting');
   if(name==='followup') loadPhase('followup');
   if(name==='won')      loadPhase('won');
+  if(name==='forms')     loadForms();
   if(name==='customers') loadCustomers();
   if(name==='subcons')   loadSubcons();
   if(name==='kpi')       { loadKpi(); loadOpportunitiesKpi(); }
@@ -1842,8 +1871,10 @@ function _searchAreaLoop_(kw,areas,lt,idx){
   }); }
   var pct=Math.round(idx/areas.length*50);
   setProgress('🔍 '+areaLabel+(areas.length>1?' ('+(idx+1)+'/'+areas.length+')':'')+'…',_results.length,pct,'Googleマップから収集中…');
-  apiGet({action:'searchLeads',keyword:kw,area:area,quick:'1'},function(r){
+  var _useWeb = _selectedProductUseWeb ? '1' : '0';
+  apiGet({action:'searchLeads',keyword:kw,area:area,quick:'1',useWeb:_useWeb},function(r){
     if(r.error){ setBtn('searchBtn','🔍 検索',false); hideProgress(); alert2('searchAlert',r.error,'err'); return; }
+    if(r.note) alert2('searchAlert',r.note,'info');
     var fresh=(r.results||[]).filter(function(x){ return !known[x.name]; });
     tag(fresh);
     fresh.forEach(function(x){ _results.push(x); known[x.name]=true; });
@@ -1851,7 +1882,7 @@ function _searchAreaLoop_(kw,areas,lt,idx){
     document.getElementById('searchResultsWrap').style.display='block';
     document.getElementById('resultCount').textContent=_results.length+'件';
     setProgress('🤖 '+areaLabel+' 深掘り'+(areas.length>1?' ('+(idx+1)+'/'+areas.length+')':'')+'…',_results.length,pct+20,'AIが業種バリエーション生成＋エリア分割（15〜30秒）');
-    apiGet({action:'searchLeads',keyword:kw,area:area},function(r2){
+    apiGet({action:'searchLeads',keyword:kw,area:area,useWeb:_useWeb},function(r2){
       var deep=(r2.error?[]:r2.results||[]).filter(function(x){ return !known[x.name]; });
       tag(deep);
       deep.forEach(function(x){ _results.push(x); known[x.name]=true; });
@@ -1882,9 +1913,8 @@ function renderResults(list){
       +'</div>'
       +'<div class="r-meta">'
       +(p.phone?'<span>📞 '+esc(p.phone)+'</span>':'<span style="color:#fca5a5">📵 電話なし</span>')
-      +(p.website?'<span>🌐 '+shorten(p.website,30)+'</span>':'')
-      +(p.pref?'<span>📍 '+esc(p.pref)+'</span>':'')
-      +(p.address?'<span>'+esc(p.address.substring(0,40))+'</span>':'')
+      +(p.website?'<span>🌐 <a href="'+esc(p.website)+'" target="_blank" style="color:#4f46e5;text-decoration:none">'+esc(p.website)+'</a></span>':'')
+      +(p.address?'<span>📍 '+esc(p.address)+'</span>':'')
       +'</div></div></div>';
   });
   el.innerHTML=h;
@@ -1928,7 +1958,7 @@ function addSelected(){
 var COL_TO_KEY={1:'company',2:'industry',3:'pref',4:'stage',5:'aiScore',6:'topProduct',7:'contact',8:'role',9:'directPhone',10:'phone',11:'email',12:'url',13:'callCount',14:'callDate',15:'apo',16:'memo',17:'source',18:'listType',19:'corpNum',20:'contacts',21:'capital'};
 
 // ─── リスト ──────────────────────────────────────────────────────
-var _loadLimit = 300; // デフォルトは300件（全件必要なら「全件読み込む」ボタン）
+var _loadLimit = 99999; // 全件ロード（表示は200件ずつページング）
 function loadList(allRecords){
   var limit = allRecords ? 99999 : _loadLimit;
   document.getElementById('prospectList').innerHTML='<div class="loading">読み込み中…</div>';
@@ -2284,6 +2314,7 @@ function stageMatch(p,st){
   if(st==='won')      return stage==='受注';
   if(st==='ng')       return stage==='失注';
   if(st==='called')   return cc>0&&stage!=='アポ確定'&&stage!=='失注'&&stage!=='受注';
+  if(st==='recall')   return stage==='再架電待ち';
   return true;
 }
 var _filterTimer=null;
@@ -2343,6 +2374,10 @@ function buildRow(p){
     var aiM=memoStr.match(/【AI分析:.*?(★\d)/);
     if(aiM) aiBadge='<span class="ai-badge">AI '+aiM[1]+'</span>';
   }
+  // フォーム状態バッジ
+  var formBadge=p.formSent==='送信待ち'
+    ?'<span style="font-size:9px;background:#fff7ed;color:#c2410c;padding:1px 5px;border-radius:6px;font-weight:700">📋待機中</span>'
+    :(p.formSent?'<span style="font-size:9px;background:#e0f2fe;color:#0369a1;padding:1px 5px;border-radius:6px;font-weight:700">📋送信済</span>':'');
   // HPなしバッジ（URLが空 = Web未確認 = HP提案角度）
   var noWebBadge=!p.url?'<span style="font-size:9px;background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:6px;font-weight:700">HP未確認</span>':'';
   // 資本金バッジ
@@ -2365,6 +2400,7 @@ function buildRow(p){
     +'</div>'
     +'<div class="pr-right">'
     +hotBadge
+    +formBadge
     +noWebBadge
     +capitalBadge
     +prodBadge
@@ -2504,7 +2540,7 @@ function quickMailDirect(rowIndex, templateId) {
 function xlCallMenu(e,rowIndex){
   e.stopPropagation();
   var old=document.getElementById('xlCallMenu'); if(old) old.remove();
-  var items=[['✅ 興味あり','興味あり'],['📅 アポ取れた','アポ取れた'],['📞 折り返し依頼','折り返し依頼'],['🔁 要再架電','要再架電'],['💤 担当不在','担当不在'],['📼 留守電を残した','留守電'],['👤 担当者変更','担当者変更'],['🏚 廃業・閉業','廃業'],['✖ NG','NG']];
+  var items=[['✅ 興味あり','興味あり'],['📅 アポ取れた','アポ取れた'],['📞 折り返し依頼','折り返し依頼'],['🔁 要再架電','要再架電'],['📋 フォームに移す','問い合わせフォーム送信'],['💤 担当不在','担当不在'],['📼 留守電を残した','留守電'],['👤 担当者変更','担当者変更'],['🏚 廃業・閉業','廃業'],['✖ NG','NG']];
   var h='<div id="xlCallMenu">';
   items.forEach(function(it){ h+='<div class="xl-cm-item" onclick="xlStartLog('+rowIndex+',\''+it[1]+'\')">'+it[0]+'</div>'; });
   h+='</div>';
@@ -2525,7 +2561,11 @@ function xlStartLog(rowIndex,result){
   var cbWrap=document.getElementById('callbackTimeWrap');
   var showCb=['折り返し依頼','要再架電'].indexOf(result)!==-1;
   cbWrap.style.display=showCb?'block':'none';
-  if(showCb) document.getElementById('callbackTime').value='';
+  if(showCb){
+    document.getElementById('callbackTime').value='';
+    var lbl=cbWrap.querySelector('label');
+    if(lbl) lbl.textContent=result==='折り返し依頼'?'📅 折り返し予定日時':'📅 再架電日';
+  }
 
   // NG理由
   var ngWrap=document.getElementById('ngReasonWrap');
@@ -2567,14 +2607,12 @@ function submitCall(){
   var person=v('callPerson');
   var insight=v('callInsight');
   var cbTime=v('callbackTime');
-  var nextAction=(document.getElementById('callNextAction')||{}).value||'';
-  var cbStr=cbTime?'\n[折り返し希望: '+cbTime.replace('T',' ')+']\n':'';
+  var cbLabel=_pendingResult==='折り返し依頼'?'折り返し予定':'再架電日';
+  var cbStr=cbTime?'\n['+cbLabel+': '+cbTime.replace('T',' ')+']\n':'';
   var ngReason=v('ngReason');
   var ngStr=ngReason?'\n[NG理由: '+ngReason+']':'';
-  var nextStr=nextAction?'\n[次→ '+nextAction+']':'';
-  var fullNote=(person?'['+person+'] ':'')+note+cbStr+ngStr+nextStr+(insight?'\n[気づき: '+insight+']':'');
+  var fullNote=(person?'['+person+'] ':'')+note+cbStr+ngStr+(insight?'\n[気づき: '+insight+']':'');
   document.getElementById('callInsight').value='';
-  if(document.getElementById('callNextAction')) document.getElementById('callNextAction').value='';
   closeCallModal();
   var selP=_prospects.find(function(x){return x.rowIndex===_selRow;});
   _myCallRowIndices[_selRow]=true;
@@ -2586,6 +2624,7 @@ function submitCall(){
     if(p){
       p.callCount=r.callCount;
       var stageMap={'アポ取れた':'アポ確定','NG':'失注','興味あり':'興味あり','商談中':'商談中','追い中':'追い中','受注':'受注','折り返し依頼':'再架電待ち','要再架電':'再架電待ち','廃業':'廃業','担当者変更':'再架電待ち','留守電':'再架電待ち'};
+      if(_pendingResult==='問い合わせフォーム送信') p.formSent='送信待ち';
       if(stageMap[_pendingResult]) p.stage=stageMap[_pendingResult];
       // 架電キューにも反映（タブをまたいだ同期）
       var cqP=_cqQueue.find(function(x){return x.rowIndex===_selRow;});
@@ -2789,6 +2828,7 @@ function openDetail(rowIndex){
     +'<button class="call-btn cb-absent" onclick="xlStartLog('+rowIndex+',\'担当不在\')">💤 不在</button>'
     +'<button class="call-btn" style="background:#fef3c7;color:#92400e" onclick="xlStartLog('+rowIndex+',\'要再架電\')">🔁 要再架電</button>'
     +'<button class="call-btn" style="background:#e0f2fe;color:#0369a1" onclick="quickSendEmail('+rowIndex+',\'first\')">✉ メール送信</button>'
+    +'<button class="call-btn" style="background:#fff7ed;color:#c2410c;border:1px solid #fed7aa" onclick="xlStartLog('+rowIndex+',\'問い合わせフォーム送信\')">📋 フォーム送信</button>'
     +'<button class="call-btn cb-ng" onclick="xlStartLog('+rowIndex+',\'NG\')">✖ NG</button>';
 
   // ステージ遷移ボタン
@@ -2981,6 +3021,22 @@ function dpSet(id,val,col){
   var s=String(val||'');
   el.value=s; el.dataset.orig=s; el.dataset.col=String(col);
 }
+function setCallDateToday() {
+  if (!_detailRow) return;
+  var t = new Date();
+  var dateStr = t.getFullYear() + '/' + String(t.getMonth()+1).padStart(2,'0') + '/' + String(t.getDate()).padStart(2,'0');
+  var el = document.getElementById('dp-calldate-val');
+  if (el) { el.value = dateStr; el.dataset.orig = ''; }
+  // 架電日を保存
+  apiPost({ prospectAction:'updateCell', rowIndex:_detailRow, col:14, value:dateStr }, function(r){
+    if (!r.error) {
+      var p = _prospects.find(function(x){ return x.rowIndex === _detailRow; });
+      if (p) p.callDate = dateStr;
+      alert2('listAlert', '架電日を今日(' + dateStr + ')に設定しました', 'ok');
+    }
+  });
+}
+
 function dpSave(input){
   var val=input.value, col=parseInt(input.dataset.col);
   if(!_detailRow||!col||val===input.dataset.orig) return;
@@ -3593,6 +3649,111 @@ function renderCustomers() {
       + '</div>';
   });
   el.innerHTML = html;
+}
+
+// ─── フォーム管理 ────────────────────────────────────────────────
+function loadForms() {
+  document.getElementById('form-pending-list').innerHTML = '<div class="loading">読み込み中…</div>';
+  // _prospects が未ロードなら取得してからレンダリング
+  if (!_prospects.length) {
+    apiGet({ action:'getProspects', limit:500 }, function(d) {
+      _prospects = Array.isArray(d) ? d : [];
+      renderForms();
+    });
+  } else {
+    renderForms();
+  }
+}
+
+function renderForms() {
+  var pending = _prospects.filter(function(p){ return p.formSent === '送信待ち'; });
+  var sent    = _prospects.filter(function(p){ return p.formSent && p.formSent !== '送信待ち'; });
+
+  // バッジ更新
+  var cntEl = document.getElementById('cnt-forms');
+  if (cntEl) { cntEl.textContent = pending.length || ''; cntEl.style.display = pending.length ? '' : 'none'; }
+  var pcEl = document.getElementById('form-pending-count');
+  if (pcEl) pcEl.textContent = '(' + pending.length + '件)';
+  var scEl = document.getElementById('form-sent-count');
+  if (scEl) scEl.textContent = '(' + sent.length + '件)';
+
+  // 送信待ちリスト
+  var pel = document.getElementById('form-pending-list');
+  if (!pending.length) {
+    pel.innerHTML = '<div class="empty" style="padding:16px;color:#6b7280;text-align:center">送信待ちの会社はありません</div>';
+  } else {
+    pel.innerHTML = pending.map(function(p) {
+      var urlBtn = p.url ? '<a href="'+esc(p.url)+'" target="_blank" onclick="event.stopPropagation()" style="font-size:11px;color:#0369a1;word-break:break-all">🌐 '+esc(p.url.replace(/^https?:\/\//,'').slice(0,40))+'</a>' : '<span style="font-size:11px;color:#9ca3af">URLなし</span>';
+      var memo = p.memo ? p.memo.split('\n').slice(-1)[0].slice(0,60) : '';
+      return '<div style="background:#fff;border:1.5px solid #fed7aa;border-radius:10px;padding:12px 14px;margin-bottom:8px">'
+        + '<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px">'
+        + '<div style="flex:1;min-width:0">'
+        + '<div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:4px">'+esc(p.company)+'</div>'
+        + urlBtn
+        + (p.phone ? '<div style="font-size:11px;color:#374151;margin-top:3px">📞 '+esc(p.phone)+'</div>' : '')
+        + (memo ? '<div style="font-size:11px;color:#9ca3af;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📝 '+esc(memo)+'</div>' : '')
+        + '</div>'
+        + '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">'
+        + '<button onclick="doFormSent('+p.rowIndex+')" style="background:#15803d;color:#fff;border:none;padding:5px 10px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">✅ 送信した</button>'
+        + '<button onclick="doClearForm('+p.rowIndex+')" style="background:#f3f4f6;color:#6b7280;border:none;padding:4px 8px;border-radius:7px;font-size:11px;cursor:pointer">✕ 取消</button>'
+        + '</div></div></div>';
+    }).join('');
+  }
+
+  // 送信済みリスト
+  var sel = document.getElementById('form-sent-list');
+  if (!sent.length) {
+    sel.innerHTML = '<div class="empty" style="padding:12px;color:#6b7280;text-align:center">なし</div>';
+  } else {
+    sel.innerHTML = sent.map(function(p) {
+      return '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;gap:8px">'
+        + '<div style="flex:1;min-width:0">'
+        + '<span style="font-size:13px;font-weight:600;color:#374151">'+esc(p.company)+'</span>'
+        + '<span style="font-size:11px;color:#16a34a;margin-left:8px">'+esc(p.formSent)+'</span>'
+        + (p.url ? ' <a href="'+esc(p.url)+'" target="_blank" onclick="event.stopPropagation()" style="font-size:11px;color:#0369a1;margin-left:4px">🌐</a>' : '')
+        + '</div>'
+        + '<button onclick="doMarkFormPending('+p.rowIndex+')" style="background:#f3f4f6;color:#6b7280;border:none;padding:3px 8px;border-radius:6px;font-size:11px;cursor:pointer">↩ 待機に戻す</button>'
+        + '</div>';
+    }).join('');
+  }
+}
+
+function doFormSent(rowIndex) {
+  apiPost({ prospectAction:'markFormSent', rowIndex:rowIndex }, function(r) {
+    if (r.error) { alert2('listAlert', r.error, 'err'); return; }
+    var p = _prospects.find(function(x){ return x.rowIndex === rowIndex; });
+    if (p) p.formSent = r.date;
+    renderForms();
+    renderList(applyFilter(_prospects));
+  });
+}
+
+function doClearForm(rowIndex) {
+  apiPost({ prospectAction:'clearFormStatus', rowIndex:rowIndex }, function(r) {
+    if (r.error) return;
+    var p = _prospects.find(function(x){ return x.rowIndex === rowIndex; });
+    if (p) p.formSent = '';
+    renderForms();
+    renderList(applyFilter(_prospects));
+  });
+}
+
+function doMarkFormPending(rowIndex) {
+  apiPost({ prospectAction:'markFormPending', rowIndex:rowIndex }, function(r) {
+    if (r.error) return;
+    var p = _prospects.find(function(x){ return x.rowIndex === rowIndex; });
+    if (p) p.formSent = '送信待ち';
+    renderForms();
+  });
+}
+
+function toggleFormSentSection() {
+  var el = document.getElementById('form-sent-list');
+  var tog = document.getElementById('form-sent-toggle');
+  if (!el) return;
+  var isHidden = el.style.display === 'none';
+  el.style.display = isHidden ? 'block' : 'none';
+  if (tog) tog.textContent = isHidden ? '▲' : '▼';
 }
 
 function markContactedToday(rowIndex) {

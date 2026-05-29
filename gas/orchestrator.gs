@@ -112,47 +112,6 @@ function trigger_evening_18() {
 }
 
 /**
- * trigger_night_23 — 毎日23時: リード発掘バッチ①＋その他夜間処理
- */
-function trigger_night_23() {
-  const AGENT_ID = 'TRIGGER-NIGHT-23';
-  agentLog(AGENT_ID, 'START', nowStr());
-  _runSafe(AGENT_ID, '自動リード発掘①', function() { autoDiscoverLeads(); });
-  _runSafe(AGENT_ID, 'Web情報自動補完', function() { autoFillCompanyDetails(); });
-  _runSafe(AGENT_ID, '成約フォローアラート', function() { checkWonFollowups(); });
-  _runSafe(AGENT_ID, 'バッチAIスコアリング', function() { autoScoreLeads(); });
-  _runSafe(AGENT_ID, '資本金自動補完', function() { enrichCapitals(50); });
-  _runSafe(AGENT_ID, '社名略称変換', function() { convertCompanyNameFormats(); });
-  _runSafe(AGENT_ID, 'リスト機会分析', function() { analyzeListOpportunities(); });
-  agentLog(AGENT_ID, 'DONE', '夜間バッチ①完了');
-}
-
-/** trigger_night_1 — 毎日1時: リード発掘バッチ② + 条件フィルタ */
-function trigger_night_1() {
-  const AGENT_ID = 'TRIGGER-NIGHT-01';
-  agentLog(AGENT_ID, 'START', nowStr());
-  _runSafe(AGENT_ID, '自動リード発掘②', function() { autoDiscoverLeads(); });
-  _runSafe(AGENT_ID, 'リード条件フィルタ', function() { filterLeadsBatch(); });
-  agentLog(AGENT_ID, 'DONE', '夜間バッチ②完了');
-}
-
-/** trigger_night_3 — 毎日3時: リード発掘バッチ③ */
-function trigger_night_3() {
-  const AGENT_ID = 'TRIGGER-NIGHT-03';
-  agentLog(AGENT_ID, 'START', nowStr());
-  _runSafe(AGENT_ID, '自動リード発掘③', function() { autoDiscoverLeads(); });
-  agentLog(AGENT_ID, 'DONE', '夜間バッチ③完了');
-}
-
-/** trigger_night_5 — 毎日5時: リード発掘バッチ④ */
-function trigger_night_5() {
-  const AGENT_ID = 'TRIGGER-NIGHT-05';
-  agentLog(AGENT_ID, 'START', nowStr());
-  _runSafe(AGENT_ID, '自動リード発掘④', function() { autoDiscoverLeads(); });
-  agentLog(AGENT_ID, 'DONE', '夜間バッチ④完了');
-}
-
-/**
  * trigger_monday_8 — 毎週月曜8時に実行
  * A-04: 週次スケジュール管理・工程調整
  */
@@ -169,10 +128,6 @@ function trigger_monday_8() {
 
   _runSafe(AGENT_ID, 'A-04 スケジュール管理', function() {
     runScheduleManagerTeam();
-  });
-
-  _runSafe(AGENT_ID, '週次営業戦略レポート', function() {
-    sendWeeklyStrategyReport();
   });
 
   agentLog(AGENT_ID, 'DONE', '週次バッチ完了');
@@ -219,22 +174,6 @@ function trigger_monthly_1() {
  *   ?page=card  → 名刺登録フォーム（JECA用）
  *   デフォルト  → アースファスト作業報告書
  */
-function isAuthorized_() {
-  try {
-    var email = Session.getActiveUser().getEmail();
-    return email.endsWith('@marukendenkou.com');
-  } catch(e) { return false; }
-}
-
-function unauthorizedResponse_() {
-  return HtmlService.createHtmlOutput(
-    '<div style="font-family:sans-serif;padding:40px;text-align:center">' +
-    '<h2>アクセス権限がありません</h2>' +
-    '<p>このシステムはマルケン電工社員専用です。<br>会社アカウント（@marukendenkou.com）でGoogleにログインしてください。</p>' +
-    '</div>'
-  ).setTitle('アクセス拒否');
-}
-
 function doGet(e) {
   var page = (e && e.parameter && e.parameter.page) || 'arsfast';
   if (page === 'card') {
@@ -243,147 +182,17 @@ function doGet(e) {
       .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
   }
   if (page === 'prospecting') {
-    if (!isAuthorized_()) return unauthorizedResponse_();
-    var action = (e && e.parameter && e.parameter.action) || '';
-    if (action) {
-      return handleProspectingApi_(e);
-    }
-    var tmpl = HtmlService.createTemplateFromFile('index_prospecting');
-    tmpl.scriptUrl = ScriptApp.getService().getUrl();
-    return tmpl.evaluate()
-      .setTitle('営業リスト管理 | マルケン電工')
-      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+    // 営業AIシステムは hyperauto-prospecting プロジェクトに移転済み
+    return HtmlService.createHtmlOutput(
+      '<script>window.location="https://script.google.com/macros/s/AKfycbyDA5bT5XKTlr63KLgB-KI7tsYwOULRmdoeY6FeyOIN/exec";</script>' +
+      '<p>移転しました。自動的にリダイレクトされない場合は<a href="https://script.google.com/macros/s/AKfycbyDA5bT5XKTlr63KLgB-KI7tsYwOULRmdoeY6FeyOIN/exec">こちら</a>をクリックしてください。</p>'
+    );
   }
   return HtmlService.createHtmlOutputFromFile('index_arsfast')
     .setTitle('アースファスト作業報告書')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
-// ─── 営業リスト API（GETベース） ──────────────────────────────────
-
-// google.script.run 経由でHTMLから直接呼び出すディスパッチャ
-// fetch()不要 → CORS問題が発生しない
-function prospectApi(action, paramsJson) {
-  if (!isAuthorized_()) return { error: '認証エラー: 会社アカウントでログインしてください' };
-  var p = {};
-  try { p = paramsJson ? JSON.parse(paramsJson) : {}; } catch(e) {}
-  try {
-    // ─ GET系 ───────────────────────────────────────────────
-    if (action === 'getProspects')      return getProspects(parseInt(p.limit) || 300);
-    if (action === 'getStats')          return getStats();
-    if (action === 'searchLeads')       return searchLeads(p.keyword, p.area, p.source, parseInt(p.maxResults)||20, p.quick===true||p.quick==='1');
-    if (action === 'cleanSheet')        return cleanProspectSheet();
-    if (action === 'fillIndustry')      return fillMissingIndustry(parseInt(p.startRow)||2, parseInt(p.chunkSize)||0);
-    if (action === 'migrateAddUuids')   return migrateAddUuids();
-    if (action === 'cleanIndustry')     return cleanIndustryField();
-    if (action === 'fillCorpNum')       return autoFillCorpNum();
-    if (action === 'lookupCorpNum') {
-      if (!getProp('NTA_APP_ID')) return { error: 'NTA_APP_ID未設定' };
-      return { corpNum: lookupCorpNum_(p.name||'') };
-    }
-    if (action === 'autoDiscover')      return autoDiscoverLeads();
-    if (action === 'filterLeads')       return filterLeadsBatch();
-    if (action === 'analyzeFeedback')   return analyzeFeedback();
-    if (action === 'fillDetails')       return autoFillCompanyDetails();
-    if (action === 'bulkCleanup')       return bulkCleanup();
-    if (action === 'deleteUntouchedProspects') return deleteUntouchedProspects();
-    if (action === 'deleteNgProspects') return deleteNgProspects();
-    if (action === 'getCallStats')      return getCallStats(parseInt(p.days)||30);
-    if (action === 'resetStalledProspects') return resetStalledProspects(p.days);
-    if (action === 'autoArchiveOldNg')  return autoArchiveOldNg(p.days);
-    if (action === 'getHumanTasks')     return getHumanTasks();
-    if (action === 'getVisitList')      return getVisitList(p.area, p.maxCount);
-    if (action === 'weeklyReport')      return sendWeeklyStrategyReport();
-    if (action === 'ping')              return { ok: true };
-    if (action === 'getListOpportunities') return getListOpportunities();
-    if (action === 'getCustomers')      return getCustomers();
-    if (action === 'getSubcontractors') return getSubcontractors();
-    // ─ POST系 ──────────────────────────────────────────────
-    if (action === 'logCallResult')     return logCallResult(p.rowIndex, p.result, p.notes, p.uuid, p.company, p.caller||'');
-    if (action === 'addProspects')      return addProspects(p.places);
-    if (action === 'generateTalkScript') return generateTalkScript(p.rowIndex);
-    if (action === 'generatePersonalizedEmail') return generatePersonalizedEmail(p.rowIndex, p.templateId, p.note);
-    if (action === 'previewEmail')      return previewEmail(p.rowIndex, p.templateId, p.note);
-    if (action === 'sendProspectEmail') return sendProspectEmail(p.rowIndex, p.templateId, p.note, p.asDraft);
-    if (action === 'updateCell')        return updateProspectCell(p.rowIndex, p.col, p.value);
-    if (action === 'analyzeCompany')    return analyzeCompany(p.rowIndex);
-    if (action === 'analyzeCompanyDeep') return analyzeCompanyDeep(p.rowIndex);
-    if (action === 'generateCampaign')  return generateCampaign(p.product, p.limit);
-    if (action === 'addCustomer')       return addCustomer(p.data);
-    if (action === 'updateCustomerCell') return updateCustomerCell(p.rowIndex, p.col, p.value);
-    if (action === 'deleteCustomer')    return deleteCustomer(p.rowIndex);
-    if (action === 'addSubcontractor')  return addSubcontractor(p.data);
-    if (action === 'updateSubcontractorCell') return updateSubcontractorCell(p.rowIndex, p.col, p.value);
-    if (action === 'deleteSubcontractor') return deleteSubcontractor(p.rowIndex);
-    if (action === 'syncAllCustomersToProspects') return syncAllCustomersToProspects();
-    if (action === 'enrichCapitals')    return enrichCapitals(p.maxRows||30);
-    if (action === 'enrichCapitalForRow') return enrichCapitalForRow(p.rowIndex);
-    if (action === 'enrichRowIfEmpty')  return enrichRowIfEmpty(p.rowIndex);
-    if (action === 'convertCompanyNameFormats') return convertCompanyNameFormats();
-    if (action === 'migrateAddressFromMemo') return migrateAddressFromMemo();
-    if (action === 'deleteProspect')    return deleteProspect(p.rowIndex);
-    if (action === 'cancelApo')         return cancelApo(p.rowIndex, p.uuid||'', p.company||'');
-    if (action === 'importAllHiroshimaQuick') return importAllHiroshimaQuick();
-    if (action === 'analyzeListOpportunities') return analyzeListOpportunities();
-    if (action === 'syncWonToCustomers')        return syncWonToCustomers();
-    if (action === 'backfillCallerInLogs')      return backfillCallerInLogs(p.callerName, p.days);
-    if (action === 'revertWonProspect')         return revertWonProspect(p.rowIndex);
-    if (action === 'revertCustomerToProspect') return revertCustomerToProspect(p.rowIndex, p.stage);
-    if (action === 'getDeals')         return getDeals(p.customerName || '');
-    if (action === 'addDeal')          return addDeal(p);
-    if (action === 'updateDealStage')  return updateDealStage(p.dealId, p.stage);
-    if (action === 'deleteDeal')       return deleteDeal(p.dealId);
-    return { error: '不明なアクション: ' + action };
-  } catch(err) {
-    return { error: err.toString() };
-  }
-}
-
-function handleProspectingApi_(e) {
-  if (!isAuthorized_()) {
-    return ContentService.createTextOutput(JSON.stringify({ error: '認証エラー: 会社アカウントでログインしてください' }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-  var p      = e.parameter;
-  var action = p.action || '';
-  var result;
-  try {
-    if      (action === 'getProspects')  result = getProspects(parseInt(p.limit) || 100);
-    else if (action === 'getStats')      result = getStats();
-    else if (action === 'searchLeads')   result = searchLeads(p.keyword, p.area, p.source, parseInt(p.maxResults) || 20, p.quick === '1');
-    else if (action === 'cleanSheet')    result = cleanProspectSheet();
-    else if (action === 'fillIndustry')  result = fillMissingIndustry(parseInt(p.startRow)||2, parseInt(p.chunkSize)||0);
-    else if (action === 'migrateAddUuids') result = migrateAddUuids();
-    else if (action === 'cleanIndustry') result = cleanIndustryField();
-    else if (action === 'fillCorpNum')   result = autoFillCorpNum();
-    else if (action === 'lookupCorpNum') {
-      if (!getProp('NTA_APP_ID')) { result = { error: 'NTA_APP_ID未設定 — 国税庁Web-APIに登録してスクリプトプロパティに設定してください' }; }
-      else { result = { corpNum: lookupCorpNum_(p.name||'') }; }
-    }
-    else if (action === 'autoDiscover')  result = autoDiscoverLeads();
-    else if (action === 'filterLeads')   result = filterLeadsBatch();
-    else if (action === 'analyzeFeedback')   result = analyzeFeedback();
-    else if (action === 'fillDetails')       result = autoFillCompanyDetails();
-    else if (action === 'bulkCleanup')              result = bulkCleanup();
-    else if (action === 'deleteUntouchedProspects') result = deleteUntouchedProspects();
-    else if (action === 'deleteNgProspects')        result = deleteNgProspects();
-    else if (action === 'getCallStats')             result = getCallStats(parseInt(p.days)||30);
-    else if (action === 'resetStalledProspects')    result = resetStalledProspects(p.days);
-    else if (action === 'autoArchiveOldNg')         result = autoArchiveOldNg(p.days);
-    else if (action === 'getHumanTasks')     result = getHumanTasks();
-    else if (action === 'getVisitList')      result = getVisitList(p.area, p.maxCount);
-    else if (action === 'weeklyReport')      result = sendWeeklyStrategyReport();
-    else if (action === 'ping')                 result = { ok: true };
-    else if (action === 'getListOpportunities') result = getListOpportunities();
-    else if (action === 'getCustomers')         result = getCustomers();
-    else if (action === 'getSubcontractors') result = getSubcontractors();
-    else result = { error: '不明なアクション: ' + action };
-  } catch(err) {
-    result = { error: err.toString() };
-  }
-  return ContentService.createTextOutput(JSON.stringify(result))
-    .setMimeType(ContentService.MimeType.JSON);
-}
 
 function doPost(e) {
   if (!e || !e.postData || !e.postData.contents) {
@@ -396,43 +205,6 @@ function doPost(e) {
   } catch (parseErr) {
     Logger.log('Webhook JSON parse error: ' + parseErr);
     return _jsonResponse({ ok: false, error: 'invalid json' });
-  }
-
-  // 営業リスト POST API
-  if (body.prospectAction) {
-    var r;
-    try {
-      var a = body.prospectAction;
-      if      (a === 'logCallResult')             r = logCallResult(body.rowIndex, body.result, body.notes, body.uuid, body.company, body.caller||'');
-      else if (a === 'addProspects')              r = addProspects(body.places);
-      else if (a === 'generateTalkScript')        r = generateTalkScript(body.rowIndex);
-      else if (a === 'generatePersonalizedEmail') r = generatePersonalizedEmail(body.rowIndex, body.templateId, body.note);
-      else if (a === 'previewEmail')              r = previewEmail(body.rowIndex, body.templateId, body.note);
-      else if (a === 'sendProspectEmail')         r = sendProspectEmail(body.rowIndex, body.templateId, body.note, body.asDraft);
-      else if (a === 'updateCell')                r = updateProspectCell(body.rowIndex, body.col, body.value);
-      else if (a === 'analyzeCompany')            r = analyzeCompany(body.rowIndex);
-      else if (a === 'analyzeCompanyDeep')        r = analyzeCompanyDeep(body.rowIndex);
-      else if (a === 'generateCampaign')          r = generateCampaign(body.product, body.limit);
-      else if (a === 'addCustomer')               r = addCustomer(body.data);
-      else if (a === 'updateCustomerCell')        r = updateCustomerCell(body.rowIndex, body.col, body.value);
-      else if (a === 'deleteCustomer')            r = deleteCustomer(body.rowIndex);
-      else if (a === 'addSubcontractor')          r = addSubcontractor(body.data);
-      else if (a === 'updateSubcontractorCell')   r = updateSubcontractorCell(body.rowIndex, body.col, body.value);
-      else if (a === 'deleteSubcontractor')       r = deleteSubcontractor(body.rowIndex);
-      else if (a === 'syncAllCustomersToProspects')  r = syncAllCustomersToProspects();
-      else if (a === 'enrichCapitals')               r = enrichCapitals(body.maxRows || 30);
-      else if (a === 'enrichCapitalForRow')          r = enrichCapitalForRow(body.rowIndex);
-      else if (a === 'enrichRowIfEmpty')             r = enrichRowIfEmpty(body.rowIndex);
-      else if (a === 'convertCompanyNameFormats')    r = convertCompanyNameFormats();
-      else if (a === 'migrateAddressFromMemo')       r = migrateAddressFromMemo();
-      else if (a === 'deleteProspect')               r = deleteProspect(body.rowIndex);
-      else if (a === 'cancelApo')                    r = cancelApo(body.rowIndex, body.uuid||'', body.company||'');
-      else if (a === 'importAllHiroshimaQuick')     r = importAllHiroshimaQuick();
-      else if (a === 'analyzeListOpportunities')   r = analyzeListOpportunities();
-      else r = { error: '不明なアクション' };
-    } catch(err) { r = { error: err.toString() }; }
-    return ContentService.createTextOutput(JSON.stringify(r))
-      .setMimeType(ContentService.MimeType.JSON);
   }
 
   const events = body.events || [];
@@ -758,30 +530,15 @@ function setupAllTriggers() {
     .timeBased().atHour(8).everyDays(1).inTimezone('Asia/Tokyo').create();
   Logger.log('✅ trigger_monday_8: 毎日8時（月曜のみ実行・週次レポートLINE）');
 
-  // ─── 毎日23時: リード発掘バッチ①＋夜間処理 ─────────────
-  ScriptApp.newTrigger('trigger_night_23')
-    .timeBased().atHour(23).everyDays(1).inTimezone('Asia/Tokyo').create();
-  Logger.log('✅ trigger_night_23: 毎日23時（リード発掘①＋補完）');
+  // 夜間リード発掘トリガーは hyperauto-prospecting プロジェクトで管理
+  // → そちらの setupProspectingTriggers() を実行すること
 
-  // ─── 毎日1時・3時・5時: リード発掘バッチ②③④ ───────────
-  ScriptApp.newTrigger('trigger_night_1')
-    .timeBased().atHour(1).everyDays(1).inTimezone('Asia/Tokyo').create();
-  Logger.log('✅ trigger_night_1: 毎日1時（リード発掘②）');
-
-  ScriptApp.newTrigger('trigger_night_3')
-    .timeBased().atHour(3).everyDays(1).inTimezone('Asia/Tokyo').create();
-  Logger.log('✅ trigger_night_3: 毎日3時（リード発掘③）');
-
-  ScriptApp.newTrigger('trigger_night_5')
-    .timeBased().atHour(5).everyDays(1).inTimezone('Asia/Tokyo').create();
-  Logger.log('✅ trigger_night_5: 毎日5時（リード発掘④）');
-
-  Logger.log('=== トリガーセットアップ完了（6件）===');
+  Logger.log('=== トリガーセットアップ完了（5件）===');
 
   // 完了をLINEに通知
   try {
     sendLineToManager(
-      '⚙️ 全トリガーセットアップ完了\n' +
+      '⚙️ hyperauto トリガーセットアップ完了\n' +
       '─────────────────\n' +
       '・15分おき: メール受信(S-01)\n' +
       '・毎朝8時: 業務報告(A-01) + 請求書(F-01) + フォローアップ(S-04)\n' +
@@ -790,6 +547,7 @@ function setupAllTriggers() {
       '・毎週月曜8時: スケジュール管理(A-04)\n' +
       '・毎月1日8時: 月次報告(F-04) + 成長提案(A-03)\n' +
       '─────────────────\n' +
+      '※ 夜間リード発掘は hyperauto-prospecting で管理\n' +
       '設定完了: ' + nowStr()
     );
   } catch (lineErr) {
@@ -1736,6 +1494,30 @@ function _handleUnsubscribeMail(params, replyToken) {
 /**
  * _handleScheduleSend — 日程連絡の下書きをGmailに作成してLINEに通知
  */
+// ─── 自動リード発掘 一時停止／再開 ──────────────────────────────────
+function pauseAutoDiscover() {
+  PropertiesService.getScriptProperties().setProperty('AUTO_DISCOVER_PAUSED', 'true');
+  Logger.log('自動リード発掘を一時停止しました');
+}
+function resumeAutoDiscover() {
+  PropertiesService.getScriptProperties().setProperty('AUTO_DISCOVER_PAUSED', 'false');
+  Logger.log('自動リード発掘を再開しました');
+}
+
+// ─── 自動リード発掘トリガー削除（一度実行したら不要） ──────────────
+function deleteAutoDiscoverTriggers() {
+  var targets = ['trigger_night_23', 'trigger_night_1', 'trigger_night_3', 'trigger_night_5'];
+  var deleted = [];
+  ScriptApp.getProjectTriggers().forEach(function(t) {
+    if (targets.indexOf(t.getHandlerFunction()) !== -1) {
+      ScriptApp.deleteTrigger(t);
+      deleted.push(t.getHandlerFunction());
+    }
+  });
+  Logger.log('削除完了: ' + (deleted.length ? deleted.join(', ') : 'なし（既に削除済み）'));
+  return deleted;
+}
+
 function _handleScheduleSend(params, replyToken) {
   const msgId = params.id || '';
   const cached = CacheService.getScriptCache().get('email_' + msgId);
