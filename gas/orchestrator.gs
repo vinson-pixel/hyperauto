@@ -281,9 +281,9 @@ function _handleWebhookEvent(event) {
       _handleStatusUpdate(params, replyToken, '対応完了');
       break;
 
-    // スキップ（通知のみ）
+    // スキップ → スプシのステータスを「スキップ」に更新
     case 'skip':
-      _lineReply(replyToken, '🗑 スキップしました');
+      _handleStatusUpdate(params, replyToken, 'スキップ');
       break;
 
     // リードへの電話案内

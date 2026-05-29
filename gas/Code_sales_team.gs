@@ -216,8 +216,9 @@ ${context}`;
 
   const draft = callClaude(systemPrompt, userPrompt, 'claude-haiku-4-5-20251001', 1024);
 
-  if (!draft) {
-    agentLog('S-01-③', 'ERROR', 'Claude返信文生成失敗');
+  // callClaude はAPIエラー時に '__CLAUDE_ERR__:...' を返す場合があるため両方チェック
+  if (!draft || String(draft).indexOf('__CLAUDE_ERR__') === 0) {
+    agentLog('S-01-③', 'ERROR', 'Claude返信文生成失敗: ' + (draft || 'null'));
     return 'お世話になっております。株式会社マルケン電工でございます。\n\nご連絡いただきありがとうございます。\n担当者より改めてご連絡いたします。\n\nどうぞよろしくお願いいたします。';
   }
 
@@ -1056,8 +1057,8 @@ ${questionsText}`;
 
   const body = callClaude(systemPrompt, userPrompt, 'claude-haiku-4-5-20251001', 1024);
 
-  if (!body) {
-    agentLog('S-02-③', 'ERROR', 'Claude生成失敗 → フォールバック');
+  if (!body || String(body).indexOf('__CLAUDE_ERR__') === 0) {
+    agentLog('S-02-③', 'ERROR', 'Claude生成失敗 → フォールバック: ' + (body || 'null'));
     return `お世話になっております。株式会社マルケン電工でございます。
 
 この度はお見積のご依頼をいただきありがとうございます。
@@ -1484,8 +1485,8 @@ ${context}
 
   const body = callClaude(systemPrompt, userPrompt, 'claude-haiku-4-5-20251001', 800);
 
-  if (!body) {
-    agentLog('S-04-③', 'ERROR', 'フォローメール生成失敗 → フォールバック');
+  if (!body || String(body).indexOf('__CLAUDE_ERR__') === 0) {
+    agentLog('S-04-③', 'ERROR', 'フォローメール生成失敗 → フォールバック: ' + (body || 'null'));
     return `お世話になっております。株式会社マルケン電工でございます。
 
 先日はご依頼いただきありがとうございました。
