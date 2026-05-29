@@ -799,6 +799,28 @@ function adminRunAction(action) {
   if (action === 'checkTrigger') {
     return checkArsfastTrigger();
   }
+  if (action === 'testPipeline') {
+    // メール受信→AI分類→スプシ記録→LINE通知→Webhookシミュレーションの全ステップ統合テスト
+    try {
+      var r = runEmailPipelineIntegrationTest_();
+      var ok = r && r.ok;
+      var stepLines = (r && r.steps || []).map(function(s) {
+        return (s.ok ? '✅' : '❌') + ' ' + s.name + '\n  ' + s.detail;
+      }).join('\n');
+      return '🧪 パイプライン統合テスト完了（' + (r && r.elapsed || 0) + '秒）\n' +
+             (ok ? '🎉 全ステップ成功' : '❌ 失敗あり') + '\n\n' + stepLines;
+    } catch(e) {
+      return 'テスト実行エラー: ' + e.toString();
+    }
+  }
+  if (action === 'systemTest') {
+    try {
+      runFullSystemTest();
+      return '✅ フルシステムテストを実行しました。\nLINE通知で結果を確認してください。';
+    } catch(e) {
+      return 'エラー: ' + e.toString();
+    }
+  }
   return '不明なアクション: ' + action;
 }
 

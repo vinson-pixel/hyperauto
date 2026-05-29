@@ -146,6 +146,14 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
           <button class="btn" onclick="runAdminAction('debugNitori')" style="font-size:12px;padding:8px;background:#f0f0f0;">ニトリTO診断</button>
           <button class="btn" onclick="runAdminAction('diagnoseSketchers')" style="font-size:12px;padding:8px;background:#f0f0f0;">スケッチャーズ行を確認</button>
         </div>
+        <div style="margin-top:12px;border-top:1px solid #eee;padding-top:10px;">
+          <div style="font-size:11px;color:#999;margin-bottom:6px;font-weight:700">🧪 営業メールシステム診断</div>
+          <div class="admin-btns">
+            <button class="btn" onclick="if(confirm('パイプライン統合テストを実行します。\n\n・Grok/Claude API呼び出し（テスト用）\n・案件スプシへのテスト書き込み（自動削除）\n・LINEにテスト通知を送信\n・Webhookハンドラのシミュレーション\n\n実行しますか？')) runAdminAction('testPipeline')" style="font-size:12px;padding:8px;background:#4f46e5;color:#fff;">🔬 全パイプライン統合テスト</button>
+            <button class="btn" onclick="if(confirm('フルシステムテストを実行します。\nAPI疎通・スプシ接続・LINE送信等を確認しLINEに結果を送ります。')) runAdminAction('systemTest')" style="font-size:12px;padding:8px;background:#0ea5e9;color:#fff;">🧪 フルシステムテスト</button>
+          </div>
+          <div style="font-size:10px;color:#bbb;margin-top:4px;">統合テストはGrok/Claude APIを実際に呼び出します。テストデータはスプシに書き込み後自動削除されます。</div>
+        </div>
       </details>
       <div class="admin-result" id="adminResult" style="display:none;"></div>
     </div>
