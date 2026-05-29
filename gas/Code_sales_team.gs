@@ -261,7 +261,9 @@ function s01_crmWriter(emailData, result) {
     row[COL_S.STATUS    - 1] = '新規';
     // estAmountはAI推定値のため金額列に入れない。備考に[AI推定]として記録
     const estAmtNote = result.estAmount ? ' [AI推定金額:' + Number(result.estAmount).toLocaleString() + '円]' : '';
-    row[COL_S.NOTES     - 1] = dedupeKey + estAmtNote + ' ' + (result.notes || '');
+    // [ID:msgId] をLINEボタンのWebhook検索用に備考に埋め込む
+    const msgIdNote = emailData.id ? ' [ID:' + emailData.id + ']' : '';
+    row[COL_S.NOTES     - 1] = dedupeKey + msgIdNote + estAmtNote + ' ' + (result.notes || '');
 
     appendRow(sheet, row);
     agentLog('S-01-④', 'OK', '案件一覧に記録完了');

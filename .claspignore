@@ -1,2 +1,14 @@
 # 旧Agent-004 — Code_sales_team.gsに完全移行済み
 Code_agent004.gs
+
+# prospecting関連 — hyperauto-prospecting プロジェクトに移転済み
+Code_prospecting_ai.gs
+Code_prospecting_batch.gs
+Code_prospecting_core.gs
+Code_prospecting_ops.gs
+Code_prospecting_partner.gs
+Code_prospecting_search.gs
+Code_prospecting.gs.bak
+Code_crm.gs
+Code_hiroshima_list.gs
+index_prospecting.html

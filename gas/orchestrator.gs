@@ -326,6 +326,16 @@ function _handleWebhookEvent(event) {
       _lineReply(replyToken, '✅ 案件スプシに記録済みです');
       break;
 
+    // 返信必要メールの対応済みマーク（s01_replyNeededNotifier から呼ばれる）
+    case 'reply_done':
+      _lineReply(replyToken, '✅ 対応済みとして記録しました');
+      break;
+
+    // 返信必要メールの確認済みマーク
+    case 'reply_seen':
+      _lineReply(replyToken, '👁 確認済みとして記録しました');
+      break;
+
     // 返信不要メール: 削除
     case 'delete_mail':
       _handleDeleteMail(params, replyToken);
@@ -360,24 +370,28 @@ function _handleCalled(params, replyToken) {
   agentLog('WEBHOOK-CALLED', 'START', 'id=' + msgId);
 
   try {
-    // 案件管理スプシのステータスを「電話対応済み」に更新
     const sheet = getSheet('SHEET_ID', '案件一覧');
+    let updated = false;
     if (sheet && msgId) {
-      const rows = sheet.getDataRange().getValues();
-      for (let i = 1; i < rows.length; i++) {
-        // B列がメールID（COL.EMAIL_ID=2）
-        if (String(rows[i][1]) === msgId) {
-          // K列（STATUS=11）を「電話対応済み」に更新
-          sheet.getRange(i + 1, 11).setValue('電話対応済み');
-          sheet.getRange(i + 1, 15).setValue(nowStr() + ' [電話済]');
-          agentLog('WEBHOOK-CALLED', 'OK', 'row=' + (i + 1));
-          break;
+      const lastRow = sheet.getLastRow();
+      if (lastRow > 1) {
+        // M列（NOTES=13, index=12）の備考に [ID:msgId] が含まれる行を検索
+        const notesData = sheet.getRange(2, 13, lastRow - 1, 1).getValues();
+        for (let i = 0; i < notesData.length; i++) {
+          if (String(notesData[i][0]).includes('[ID:' + msgId + ']')) {
+            const rowNum = i + 2;
+            sheet.getRange(rowNum, 11).setValue('電話対応済み'); // K: ステータス
+            agentLog('WEBHOOK-CALLED', 'OK', 'row=' + rowNum);
+            updated = true;
+            break;
+          }
         }
       }
     }
-    _lineReply(replyToken, '📞 電話対応済みとして記録しました！\n' +
+    const statusMsg = updated ? 'スプシ更新済み ✅' : 'スプシ行が見つからず（手動確認してください）';
+    _lineReply(replyToken, '📞 電話対応済みとして記録しました\n' +
       (company ? '顧客: ' + company + '\n' : '') +
-      '記録時刻: ' + nowStr());
+      statusMsg + '\n記録時刻: ' + nowStr());
   } catch (e) {
     agentLog('WEBHOOK-CALLED', 'ERROR', e.toString());
     _lineReply(replyToken, '❌ スプシ更新に失敗しました\n' + e.toString().substring(0, 100));
@@ -468,16 +482,23 @@ function _handleStatusUpdate(params, replyToken, newStatus) {
   const msgId = params.id || '';
   try {
     const sheet = getSheet('SHEET_ID', '案件一覧');
+    let updated = false;
     if (sheet && msgId) {
-      const rows = sheet.getDataRange().getValues();
-      for (let i = 1; i < rows.length; i++) {
-        if (String(rows[i][1]) === msgId) {
-          sheet.getRange(i + 1, 11).setValue(newStatus);
-          break;
+      const lastRow = sheet.getLastRow();
+      if (lastRow > 1) {
+        // M列（NOTES=13, index=12）の備考に [ID:msgId] が含まれる行を検索
+        const notesData = sheet.getRange(2, 13, lastRow - 1, 1).getValues();
+        for (let i = 0; i < notesData.length; i++) {
+          if (String(notesData[i][0]).includes('[ID:' + msgId + ']')) {
+            sheet.getRange(i + 2, 11).setValue(newStatus); // K: ステータス
+            updated = true;
+            break;
+          }
         }
       }
     }
-    _lineReply(replyToken, '✅ ' + newStatus + 'として記録しました\n記録時刻: ' + nowStr());
+    const statusMsg = updated ? 'スプシ更新済み ✅' : 'スプシ行が見つからず（手動確認してください）';
+    _lineReply(replyToken, '✅ ' + newStatus + 'として記録しました\n' + statusMsg + '\n記録時刻: ' + nowStr());
   } catch (e) {
     _lineReply(replyToken, '❌ 更新失敗: ' + e.toString().substring(0, 100));
   }
