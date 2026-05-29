@@ -1556,33 +1556,12 @@ function _handleUnsubscribeMail(params, replyToken) {
   }
 }
 
+// 注: pauseAutoDiscover / resumeAutoDiscover は 2026-05-29 に hyperauto-prospecting へ移転。
+//     このプロジェクトには不要なため削除済み。
+
 /**
  * _handleScheduleSend — 日程連絡の下書きをGmailに作成してLINEに通知
  */
-// ─── 自動リード発掘 一時停止／再開 ──────────────────────────────────
-function pauseAutoDiscover() {
-  PropertiesService.getScriptProperties().setProperty('AUTO_DISCOVER_PAUSED', 'true');
-  Logger.log('自動リード発掘を一時停止しました');
-}
-function resumeAutoDiscover() {
-  PropertiesService.getScriptProperties().setProperty('AUTO_DISCOVER_PAUSED', 'false');
-  Logger.log('自動リード発掘を再開しました');
-}
-
-// ─── 自動リード発掘トリガー削除（一度実行したら不要） ──────────────
-function deleteAutoDiscoverTriggers() {
-  var targets = ['trigger_night_23', 'trigger_night_1', 'trigger_night_3', 'trigger_night_5'];
-  var deleted = [];
-  ScriptApp.getProjectTriggers().forEach(function(t) {
-    if (targets.indexOf(t.getHandlerFunction()) !== -1) {
-      ScriptApp.deleteTrigger(t);
-      deleted.push(t.getHandlerFunction());
-    }
-  });
-  Logger.log('削除完了: ' + (deleted.length ? deleted.join(', ') : 'なし（既に削除済み）'));
-  return deleted;
-}
-
 function _handleScheduleSend(params, replyToken) {
   const msgId = params.id || '';
   const cached = CacheService.getScriptCache().get('email_' + msgId);
