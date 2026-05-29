@@ -61,14 +61,21 @@
   - runEmailBackfill の forEach→for ループ修正（50件上限が機能するように）
   - 全角スペース含む重複チェック改善
 
+- [x] **hyperauto の古い prospecting ファイル削除**: Code_prospecting_*.gs, Code_crm.gs, Code_hiroshima_list.gs を削除（参照なし確認済み、2026-05-29）
+- [x] **メールAI精度の根本改善**: s01_classifier 完全再設計（2026-05-29）
+  - 「マルケン電工は受注側」を system prompt に明示
+  - few-shot 8例（案件/返信必要/不要）を追加
+  - 判断ルールを決定ツリー形式（✅/❌）に再構成
+  - `confidence` フィールド追加（0.0〜1.0）
+  - confidence < 0.7 の案件は「要確認」にダウングレード → スプシ自動登録なし
+  - `s01_uncertainNotifier` 追加: 🟠 LINE通知で人間が「📋 案件登録」「✅ 返信必要」「🗑 不要」を選択
+- [x] **checkProspectingSetup() 追加**: hyperauto-prospecting の GASエディタから実行するとスクリプトプロパティ・トリガーの設定状態を Logger に出力
+
 ---
 
 ## 📌 アーキテクチャ債務（将来対応）
 
-- **hyperauto の古い prospecting ファイル削除**: 慎重に確認してから削除（現状はそのまま残存）
-  - 対象: Code_prospecting_*.gs, Code_crm.gs, Code_hiroshima_list.gs
-- **スクリプトプロパティのコピー**: hyperauto-prospecting に CLAUDE_API_KEY, XAI_API_KEY, LINE_CHANNEL_ACCESS_TOKEN, LINE_USER_IDS, PROSPECT_SS_ID が設定されているか確認
-- **setupProspectingTriggers() の実行**: hyperauto-prospecting で夜間バッチトリガーを設定（不要なら実行しない）
+- **スクリプトプロパティの確認**: hyperauto-prospecting GASエディタで `checkProspectingSetup()` を実行して確認（CLAUDE_API_KEY, XAI_API_KEY, LINE_CHANNEL_ACCESS_TOKEN, LINE_USER_IDS, PROSPECT_SS_ID）
+- **setupProspectingTriggers() の実行**: hyperauto-prospecting GASエディタで手動実行（夜間バッチトリガー設定）。不要なら実行しない
 - **スプレッドシートスキーマのバージョン管理**: 列追加マイグレーションが散在
-- **メールAI精度の根本改善**: 新規案件の定義をAIに正確に理解させる再設計
 - **LINE button テスト**: 実際のメール受信→LINEボタン押下→スプシ更新フローを本番で確認
