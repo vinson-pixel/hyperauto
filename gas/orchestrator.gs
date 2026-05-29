@@ -898,6 +898,8 @@ function setupAllSheets() {
 /**
  * _setupCaseSheet — 案件管理シートのヘッダー設定
  * SHEET_ID プロパティで指定されたスプシに「案件一覧」シートを作成する。
+ * 【注意】既にデータがある場合はヘッダー行の上書きのみ行い、データは消さない。
+ *         列定義は COL_S（Code_sales_team.gs）と完全一致させること。
  */
 function _setupCaseSheet() {
   const ssId = getProp('SHEET_ID');
@@ -906,27 +908,37 @@ function _setupCaseSheet() {
   try {
     const ss       = SpreadsheetApp.openById(ssId);
     let   sheet    = ss.getSheetByName('案件一覧');
-    if (!sheet) {
+    const isNew = !sheet;
+    if (isNew) {
       sheet = ss.insertSheet('案件一覧');
       Logger.log('「案件一覧」シート新規作成');
     }
 
+    // ★ COL_S（Code_sales_team.gs）と完全一致 ★
     const headers = [
-      '記録日時',   // A
-      'メールID',   // B
-      '件名',       // C
-      '送信元',     // D
-      '分類',       // E （案件/返信必要）
-      '優先度',     // F （high/medium/low）
-      '顧客名',     // G
-      '現場住所',   // H
-      '工事種別',   // I
-      '推定金額',   // J
-      'ステータス', // K
-      '承認',       // L
-      '請求送付',   // M
-      'フォローアップ', // N
-      '備考',       // O
+      '会社名',     // A: COL_S.COMPANY
+      '現場名',     // B: COL_S.SITE
+      '施工内容',   // C: COL_S.WORK_TYPE
+      '施工日',     // D: COL_S.WORK_DATE
+      '完了日',     // E: COL_S.COMPLETE_DATE
+      'AIから転送日', // F: COL_S.AI_DATE
+      '担当者',     // G: COL_S.STAFF
+      '日程連絡',   // H: COL_S.SCHEDULE
+      'カレンダー入力', // I: COL_S.CALENDAR
+      '完了報告',   // J: COL_S.REPORT
+      'ステータス', // K: COL_S.STATUS
+      '金額',       // L: COL_S.AMOUNT
+      '備考',       // M: COL_S.NOTES（[ID:msgId]・重複防止キー等）
+      'グループ',   // N: COL_S.GROUP
+      '応援職人',   // O: COL_S.HELPER
+      '応援費',     // P: COL_S.HELPER_COST
+      '材料費',     // Q: COL_S.MATERIAL
+      '経費',       // R: COL_S.EXPENSE
+      '応援社員',   // S: COL_S.HELPER_STAFF
+      '作業区分',   // T: COL_S.WORK_CLASS
+      '開始時間',   // U: COL_S.START_TIME
+      '終了時間',   // V: COL_S.END_TIME
+      '日報URL',    // W: COL_S.REPORT_URL
     ];
 
     // ヘッダー行を設定（背景: 紺、文字: 白、太字）
@@ -937,25 +949,17 @@ function _setupCaseSheet() {
     headerRange.setFontWeight('bold');
     headerRange.setHorizontalAlignment('center');
 
-    // 列幅を調整
+    // 列幅を調整（主要列のみ）
     sheet.setFrozenRows(1);
-    sheet.setColumnWidth(1, 140);  // 記録日時
-    sheet.setColumnWidth(2, 180);  // メールID
-    sheet.setColumnWidth(3, 300);  // 件名
-    sheet.setColumnWidth(4, 200);  // 送信元
-    sheet.setColumnWidth(5, 90);   // 分類
-    sheet.setColumnWidth(6, 80);   // 優先度
-    sheet.setColumnWidth(7, 160);  // 顧客名
-    sheet.setColumnWidth(8, 200);  // 現場住所
-    sheet.setColumnWidth(9, 180);  // 工事種別
-    sheet.setColumnWidth(10, 100); // 推定金額
-    sheet.setColumnWidth(11, 120); // ステータス
-    sheet.setColumnWidth(12, 80);  // 承認
-    sheet.setColumnWidth(13, 90);  // 請求送付
-    sheet.setColumnWidth(14, 120); // フォローアップ
-    sheet.setColumnWidth(15, 300); // 備考
+    sheet.setColumnWidth(1,  160);  // A: 会社名
+    sheet.setColumnWidth(2,  200);  // B: 現場名
+    sheet.setColumnWidth(3,  180);  // C: 施工内容
+    sheet.setColumnWidth(4,  100);  // D: 施工日
+    sheet.setColumnWidth(6,  140);  // F: AIから転送日
+    sheet.setColumnWidth(11, 120);  // K: ステータス
+    sheet.setColumnWidth(13, 350);  // M: 備考
 
-    Logger.log('✅ 案件管理シート セットアップ完了');
+    Logger.log('✅ 案件管理シート セットアップ完了（' + (isNew ? '新規' : '更新') + '）');
   } catch (e) {
     Logger.log('❌ 案件管理シートエラー: ' + e);
   }

@@ -1921,6 +1921,7 @@ function generateTalkScriptAndNotify(companyName, industry, size) {
 
 /**
  * 案件管理スプシのヘッダーを初期設定する
+ * ★ COL_S 定義と必ず一致させること。orchestrator.gs の _setupCaseSheet() も同じ内容。
  */
 function setupMainSheet() {
   const sheetId = getProp('SHEET_ID');
@@ -1930,17 +1931,40 @@ function setupMainSheet() {
   let   sheet = ss.getSheetByName('案件一覧');
   if (!sheet) sheet = ss.insertSheet('案件一覧');
 
+  // COL_S（同ファイル上部）と完全一致
   const headers = [
-    '記録日時', 'メールID', '件名', '送信元', '分類', '優先度',
-    '顧客名', '現場住所', '工事種別', '推定金額', 'ステータス',
-    '地域', '緊急度', '備考',
+    '会社名',       // A: COL_S.COMPANY
+    '現場名',       // B: COL_S.SITE
+    '施工内容',     // C: COL_S.WORK_TYPE
+    '施工日',       // D: COL_S.WORK_DATE
+    '完了日',       // E: COL_S.COMPLETE_DATE
+    'AIから転送日', // F: COL_S.AI_DATE
+    '担当者',       // G: COL_S.STAFF
+    '日程連絡',     // H: COL_S.SCHEDULE
+    'カレンダー入力', // I: COL_S.CALENDAR
+    '完了報告',     // J: COL_S.REPORT
+    'ステータス',   // K: COL_S.STATUS
+    '金額',         // L: COL_S.AMOUNT
+    '備考',         // M: COL_S.NOTES（[ID:msgId]等）
+    'グループ',     // N: COL_S.GROUP
+    '応援職人',     // O: COL_S.HELPER
+    '応援費',       // P: COL_S.HELPER_COST
+    '材料費',       // Q: COL_S.MATERIAL
+    '経費',         // R: COL_S.EXPENSE
+    '応援社員',     // S: COL_S.HELPER_STAFF
+    '作業区分',     // T: COL_S.WORK_CLASS
+    '開始時間',     // U: COL_S.START_TIME
+    '終了時間',     // V: COL_S.END_TIME
+    '日報URL',      // W: COL_S.REPORT_URL
   ];
   sheet.getRange(1, 1, 1, headers.length).setValues([headers])
     .setBackground('#0D1B3E').setFontColor('#FFFFFF').setFontWeight('bold');
   sheet.setFrozenRows(1);
-  sheet.setColumnWidth(1, 140);
-  sheet.setColumnWidth(3, 280);
-  sheet.setColumnWidth(14, 300);
+  sheet.setColumnWidth(1,  160);  // A: 会社名
+  sheet.setColumnWidth(2,  200);  // B: 現場名
+  sheet.setColumnWidth(3,  180);  // C: 施工内容
+  sheet.setColumnWidth(11, 120);  // K: ステータス
+  sheet.setColumnWidth(13, 350);  // M: 備考
   Logger.log('✅ 案件管理スプシ セットアップ完了');
 }
 
