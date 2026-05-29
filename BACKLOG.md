@@ -14,6 +14,10 @@
 - [x] `callClaude __CLAUDE_ERR__` チェック漏れ修正: エラー文字列がGmail下書きに入る危険を排除（S-01/02/04）
 - [x] 移転済み自動リード発掘関数を削除: hyperauto側のpauseAutoDiscover等を削除（hyperauto-prospectingに移転済み）
 - [x] hyperauto-prospecting: callClaude __CLAUDE_ERR__ チェック漏れ修正（generatePersonalizedEmail / autoFillCompanyDetails）
+- [x] **全エージェント callClaude __CLAUDE_ERR__ 完全網羅**: 全デプロイ対象ファイルをスキャンしチェック漏れを全修正
+  - hyperauto: S-05スクリプト・断り文句、A-01/02/03 LINE報告、F-01請求書本文・メール添え状・F-04月次サマリー、E-04写真キャプション、P-02日報・P-03発注メール本文・写真キャプション、runSystemCheck
+  - hyperauto-prospecting: batch.gs 週次フィードバック・Gmail下書き、ops.gs 業種補完スプシ書き込み
+- [x] 自動発掘ステータスUI（統計タブ）のコミット漏れを解消: index_prospecting.html の変更をコミット＆clasp push
 
 ## ✅ 完了済み（2026-05-29 /goal 全件対応）
 
