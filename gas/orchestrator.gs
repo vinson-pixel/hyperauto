@@ -739,7 +739,7 @@ function runFullSystemTest() {
       'claude-haiku-4-5-20251001',
       10
     );
-    if (!res) throw new Error('Claude応答なし');
+    if (!res || String(res).indexOf('__CLAUDE_ERR__') === 0) throw new Error('Claude応答エラー: ' + (res || 'null'));
     Logger.log('Claude応答: ' + res.substring(0, 50));
   });
 
