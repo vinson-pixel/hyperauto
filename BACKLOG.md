@@ -78,8 +78,18 @@
 - [x] **スプレッドシートスキーマバージョン管理**: `checkAndMigrateSchema()` 実装。PROSPECT_HEADERS と実スプシを照合し不足列を末尾追加（べき等・安全）。UIから「🗂 スキーマ確認・修正」ボタンで実行可能
 - [x] **LINE button テストを診断ツールとして実装**: `testLineWebhookDiag_()` でToken・スプシ接続・LINE送信を3ステップ診断。UIから「📲 LINE疎通テスト」で実行可能。`runFullSystemTest()` にも [ID:msgId] 記録状況の診断を追加
 
+- [x] **パイプライン完全統合テスト実装**: `runEmailPipelineIntegrationTest_()` で全7ステップを自動実行
+  - Step1: Grok API でテストメールを「案件」に分類（実際のAPI呼び出し）
+  - Step2: Claude で返信文を生成（実際のAPI呼び出し）
+  - Step3: 案件スプシにテスト行を書き込み（[INTEGTEST]プレフィックス）
+  - Step4: LINE通知を送信（実際のLINE送信 + クイックリプライボタン）
+  - Step5: `_handleCalled` を直接実行（LINEボタン押下のシミュレーション）
+  - Step6: スプシのK列が「電話対応済み」に更新されたか確認
+  - Step7: テスト行を削除してクリーンアップ（べき等）
+  - **実行方法**: arsfast WebApp → ⚙️管理 → 開発者向けデバッグ → 「🔬 全パイプライン統合テスト」をクリック
+
 ---
 
-## 📌 残存課題（本番確認が必要）
+## 📌 残存課題（省力化済み・随時確認）
 
-- **LINE button 実際の本番フロー確認**: 実メール受信 → AI分類「案件」 → [ID:msgId] スプシ記録 → LINE通知 → ボタン押下 → スプシ更新、のエンドツーエンドを本番メールで確認（UIの「LINE疎通テスト」で接続確認後に実施）
+- **LINE button 本番エンドツーエンド確認**: arsfast WebApp管理パネルの「🔬 全パイプライン統合テスト」を実行すること（GASエディタ不要）。統合テストがLINEにテスト通知を送るので、届いたボタンを実際に押せばWebhookフロー全体を本番確認できる
