@@ -551,10 +551,30 @@ function setupAllTriggers() {
     .timeBased().atHour(8).everyDays(1).inTimezone('Asia/Tokyo').create();
   Logger.log('✅ trigger_monday_8: 毎日8時（月曜のみ実行・週次レポートLINE）');
 
+  // ─── 毎朝8時: 業務報告 / 請求書 / フォローアップ ──────────
+  ScriptApp.newTrigger('trigger_morning_8')
+    .timeBased().atHour(8).everyDays(1).inTimezone('Asia/Tokyo').create();
+  Logger.log('✅ trigger_morning_8: 毎朝8時（A-01 業務報告 / F-01 請求書 / S-04 フォローアップ）');
+
+  // ─── 毎日12時: Watchdog / 入金確認 ─────────────────────────
+  ScriptApp.newTrigger('trigger_noon_12')
+    .timeBased().atHour(12).everyDays(1).inTimezone('Asia/Tokyo').create();
+  Logger.log('✅ trigger_noon_12: 毎日12時（A-02 Watchdog / F-02 入金確認）');
+
+  // ─── 毎日18時: 日報集計 ─────────────────────────────────────
+  ScriptApp.newTrigger('trigger_evening_18')
+    .timeBased().atHour(18).everyDays(1).inTimezone('Asia/Tokyo').create();
+  Logger.log('✅ trigger_evening_18: 毎日18時（P-02 日報）');
+
+  // ─── 毎月1日: 月次報告 / 成長提案 ──────────────────────────
+  ScriptApp.newTrigger('trigger_monthly_1')
+    .timeBased().atHour(8).everyDays(1).inTimezone('Asia/Tokyo').create();
+  Logger.log('✅ trigger_monthly_1: 毎日8時（月初1日のみ実行・月次報告F-04 / 成長提案A-03）');
+
   // 夜間リード発掘トリガーは hyperauto-prospecting プロジェクトで管理
   // → そちらの setupProspectingTriggers() を実行すること
 
-  Logger.log('=== トリガーセットアップ完了（5件）===');
+  Logger.log('=== トリガーセットアップ完了（6件）===');
 
   // 完了をLINEに通知
   try {
@@ -568,6 +588,7 @@ function setupAllTriggers() {
       '・毎週月曜8時: スケジュール管理(A-04)\n' +
       '・毎月1日8時: 月次報告(F-04) + 成長提案(A-03)\n' +
       '─────────────────\n' +
+      '計6トリガー設定完了\n' +
       '※ 夜間リード発掘は hyperauto-prospecting で管理\n' +
       '設定完了: ' + nowStr()
     );

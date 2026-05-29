@@ -5,89 +5,47 @@
 
 ---
 
-## ✅ 完了済み
+## ✅ 完了済み（2026-05-29 /goal 全件対応）
 
-- [x] ⑬ 「追い中」をUI上「面談済み」に統一（内部ステージはそのまま）
-- [x] ⑭ 成約タブの受注日表示 `p.apo` → `p.callDate` に修正
-- [x] ⑤⑥ `syncWonToCustomers` でのN+1問題をバッチ書き込みに修正
-- [x] ⑥ `revertWonProspect` と `revertCustomerToProspect` を `_revertToProspect_()` に統合
-- [x] ⑨ 発信者名バックフィル機能（`backfillCallerInLogs`）＋設定タブUIボタン
-- [x] ⑳ GASエラーをUI上のバナーに表示する `_apiErrorHandler_()` を導入
-- [x] ⑰ 顧客ごとの連絡サイクル設定（CC.CYCLE_DAYS列追加、編集フォーム、per-customer計算）
-- [x] ② 顧客カードに「📞 今日」ワンタップボタン追加（最終連絡日を即日更新・再描画）
-- [x] EV充電インフラ事業者 商材プリセット追加（AIプロンプトに「事業者検索」ルール追記）
-- [x] 成約から面談済み管理への差し戻しボタン
-- [x] 顧客管理から面談済み管理への差し戻しボタン
+- [x] ① AI検索タイムアウト対策: 経過秒数カウンター表示 + 60秒ガイド（`_searchAreaLoop_`）
+- [x] ③ 架電ログ会社名検索: 統計タブに検索UI追加（`getCallLogs` APIも新規追加）
+- [x] ④ 下請け管理 全員要確認リセットボタン（`resetAllSubconStatus()`）
+- [x] ⑩ アポ日date picker改善: 明日/1週後/2週後/来週月曜 クイックボタン追加
+- [x] ⑪ 商談メモ改行保持: `white-space:pre-wrap` をフェーズカードメモに追加
+- [x] ⑫ 架電ログページネーション: `_callLogLimit=50` + 「もっと見る(+50件)」ボタン
+- [x] ⑯ 下請け管理 評価ソートトグルボタン（★評価順）
+- [x] ⑱ 面談済み管理フィルタ保持: 追い中/見積提出フィルタ + localStorage保持
+- [x] ⑲ 成約タブ 受注日新しい順ソート（apo→callDate降順）
+- [x] ㉑ モバイルタップ範囲: call-btn に min-height:44px（モバイル時）
+- [x] 緊急: 詳細パネルがオーバーレイクリックで閉じて入力が消えるバグ修正
+- [x] 自動発掘ステータスUI: 統計タブに⏸停止/▶再開ボタン追加（`getAutoDiscoverStatus` API）
+- [x] `_loadLimit = 99999`（全件表示）
+- [x] `prospectApi` limit `|| 300` → `|| 99999`
+- [x] `getSheetByGid_` を utils.gs に追加（ReferenceError修正）
+- [x] `pauseAutoDiscover` / `resumeAutoDiscover` を prospectApi に公開
+
+## ✅ 完了済み（以前のセッション）
+
+- [x] ⑬ 「追い中」をUI上「面談済み」に統一
+- [x] ⑭ 成約タブの受注日表示修正
+- [x] ⑤⑥ syncWonToCustomers N+1問題修正
+- [x] ⑨ 発信者名バックフィル機能
+- [x] ⑳ GASエラーをUI上バナー表示
+- [x] ⑰ 顧客ごとの連絡サイクル設定
+- [x] ② 顧客カードに「📞 今日」ワンタップボタン
+- [x] EV充電インフラ事業者 商材プリセット追加
+- [x] 成約/顧客管理から面談済み管理への差し戻しボタン
 - [x] 案件管理機能（見積→発注→工事→請求→完了）
-- [x] 受注ステージ会社の顧客管理への自動同期（`syncWonToCustomers`、タブ初回ロード時）
+- [x] 受注ステージ会社の顧客管理への自動同期
 - [x] ゴミデータフィルタ（電話・URL・住所が全部空ならスキップ）
-
----
-
-## 🔴 優先度：高
-
-### ① `google.script.run` のタイムアウト対策
-**問題**: 重い処理（AI検索など）で30秒タイムアウトになっても何も表示されない  
-**対策案**: ProgressBar + 非同期ポーリング or ユーザーへの「時間がかかることがあります」表示  
-**ファイル**: `index_prospecting.html` — `apiPost()`
-
-### ~~② 顧客管理の「最終連絡日」手動更新が手間~~ ✅ 修正済み
-
-### ③ 架電ログに会社名が記録されていない場合の検索不可
-**問題**: ログシートに電話番号しかない場合、会社名での絞り込みができない  
-**対策案**: 架電ログ保存時に会社名も必ず一緒に記録する  
-**ファイル**: `Code_prospecting_core.gs` — `logCall()`
-
----
-
-## 🟡 優先度：中
-
-### ⑩ アポ日の入力UI
-**問題**: アポ確定日の入力が文字列手打ちのため形式が統一されない  
-**対策案**: date input を使う or カレンダーピッカー  
-**ファイル**: `index_prospecting.html` — アポ入力モーダル
-
-### ⑪ 商談メモの改行が消える
-**問題**: `textarea` の改行が保存→表示で失われる  
-**対策案**: 保存時に `\n` を保持、表示時に `white-space:pre-wrap`  
-**ファイル**: `index_prospecting.html`, `Code_prospecting_core.gs`
-
-### ⑫ 架電ログ一覧のページネーション
-**問題**: ログが100件超えるとブラウザが重い  
-**対策案**: GAS側で最新N件に絞って返す（`getLogs(limit)` パラメータ追加）  
-**ファイル**: `Code_prospecting_core.gs` — `getLogs()`
-
-### ⑯ 下請け管理の評価ソート
-**問題**: 評価★順やエリア順にソートできない  
-**対策案**: `renderSubcons()` にソートオプション追加  
-**ファイル**: `index_prospecting.html`
-
-### ⑱ 面談済み管理のフィルタ保持
-**問題**: 別タブに移ってから戻るとフィルタがリセットされる  
-**対策案**: `_customerFilter` の値をタブ切り替え時に保持する（現状は `renderCustomers()` 呼び出しで上書きされない設計だが確認要）
-
-### ⑲ 成約タブの「受注日」表示でソート
-**問題**: 成約順（受注日）でカードが並んでいない  
-**対策案**: 受注日の新しい順にソート  
-**ファイル**: `index_prospecting.html` — 成約タブの描画部分
-
----
-
-## 🟢 優先度：低
-
-### ㉑ モバイルのタップ範囲改善
-**問題**: ボタンが小さくてスマホでタップしにくい  
-**対策案**: ボタン最小高さ `44px` の設定  
-**ファイル**: `index_prospecting.html` CSS
-
-### ④ 下請け管理の稼働状況一括更新
-**問題**: 全員「要確認」にリセットするボタンがない  
-**対策案**: 設定タブに「全員を要確認にリセット」ボタン追加  
-**ファイル**: `Code_crm.gs`, `index_prospecting.html`
+- [x] hyperauto-prospecting プロジェクト分離（2026-05-29）
 
 ---
 
 ## 📌 アーキテクチャ債務（将来対応）
 
-- **prospecting系を別GASプロジェクトに分割**: `Code_prospecting_*.gs`, `Code_crm.gs`, `index_prospecting.html` を独立したプロジェクトへ移行（`clasp create --type webapp` で新規作成）
-- **スプレッドシートスキーマのバージョン管理**: 列追加マイグレーションが `getXxxSheet_()` に散在している。まとめて `migrate_()` 関数化を検討
+- **hyperauto の古い prospecting ファイル削除**: 慎重に確認してから削除（現状はそのまま残存）
+- **スクリプトプロパティのコピー**: hyperauto-prospecting に CLAUDE_API_KEY, XAI_API_KEY, LINE_CHANNEL_ACCESS_TOKEN, LINE_USER_IDS, PROSPECT_SS_ID が設定されているか確認
+- **setupProspectingTriggers() の実行**: hyperauto-prospecting で夜間バッチトリガーを設定（不要なら実行しない）
+- **スプレッドシートスキーマのバージョン管理**: 列追加マイグレーションが散在
+- **メールAI精度の根本改善**: 新規案件の定義をAIに正確に理解させる再設計
