@@ -365,13 +365,14 @@ function _handleWebhookEvent(event) {
  * paramsに id（メールID）または company が含まれる想定。
  */
 function _handleCalled(params, replyToken) {
-  const msgId   = params.id || '';
-  const company = params.company || '';
+  const msgId = params.id || '';
   agentLog('WEBHOOK-CALLED', 'START', 'id=' + msgId);
 
   try {
     const sheet = getSheet('SHEET_ID', '案件一覧');
     let updated = false;
+    let companyName = '';
+    let siteName = '';
     if (sheet && msgId) {
       const lastRow = sheet.getLastRow();
       if (lastRow > 1) {
@@ -381,17 +382,24 @@ function _handleCalled(params, replyToken) {
           if (String(notesData[i][0]).includes('[ID:' + msgId + ']')) {
             const rowNum = i + 2;
             sheet.getRange(rowNum, 11).setValue('電話対応済み'); // K: ステータス
-            agentLog('WEBHOOK-CALLED', 'OK', 'row=' + rowNum);
+            // 顧客名・現場名を取得してLINEメッセージに含める
+            companyName = String(sheet.getRange(rowNum, 1).getValue() || ''); // A: 会社名
+            siteName    = String(sheet.getRange(rowNum, 2).getValue() || ''); // B: 現場名
+            agentLog('WEBHOOK-CALLED', 'OK', 'row=' + rowNum + ' company=' + companyName);
             updated = true;
             break;
           }
         }
       }
     }
-    const statusMsg = updated ? 'スプシ更新済み ✅' : 'スプシ行が見つからず（手動確認してください）';
-    _lineReply(replyToken, '📞 電話対応済みとして記録しました\n' +
-      (company ? '顧客: ' + company + '\n' : '') +
-      statusMsg + '\n記録時刻: ' + nowStr());
+    const infoLines = [
+      '📞 電話対応済みとして記録しました',
+      companyName ? '顧客: ' + companyName : null,
+      siteName    ? '現場: ' + siteName    : null,
+      updated ? 'スプシ更新済み ✅' : 'スプシ行が見つからず（手動確認してください）',
+      '記録時刻: ' + nowStr(),
+    ].filter(Boolean).join('\n');
+    _lineReply(replyToken, infoLines);
   } catch (e) {
     agentLog('WEBHOOK-CALLED', 'ERROR', e.toString());
     _lineReply(replyToken, '❌ スプシ更新に失敗しました\n' + e.toString().substring(0, 100));
@@ -483,6 +491,8 @@ function _handleStatusUpdate(params, replyToken, newStatus) {
   try {
     const sheet = getSheet('SHEET_ID', '案件一覧');
     let updated = false;
+    let companyName = '';
+    let siteName = '';
     if (sheet && msgId) {
       const lastRow = sheet.getLastRow();
       if (lastRow > 1) {
@@ -490,15 +500,24 @@ function _handleStatusUpdate(params, replyToken, newStatus) {
         const notesData = sheet.getRange(2, 13, lastRow - 1, 1).getValues();
         for (let i = 0; i < notesData.length; i++) {
           if (String(notesData[i][0]).includes('[ID:' + msgId + ']')) {
-            sheet.getRange(i + 2, 11).setValue(newStatus); // K: ステータス
+            const rowNum = i + 2;
+            sheet.getRange(rowNum, 11).setValue(newStatus); // K: ステータス
+            companyName = String(sheet.getRange(rowNum, 1).getValue() || ''); // A: 会社名
+            siteName    = String(sheet.getRange(rowNum, 2).getValue() || ''); // B: 現場名
             updated = true;
             break;
           }
         }
       }
     }
-    const statusMsg = updated ? 'スプシ更新済み ✅' : 'スプシ行が見つからず（手動確認してください）';
-    _lineReply(replyToken, '✅ ' + newStatus + 'として記録しました\n' + statusMsg + '\n記録時刻: ' + nowStr());
+    const infoLines = [
+      '✅ ' + newStatus + 'として記録しました',
+      companyName ? '顧客: ' + companyName : null,
+      siteName    ? '現場: ' + siteName    : null,
+      updated ? 'スプシ更新済み ✅' : 'スプシ行が見つからず（手動確認してください）',
+      '記録時刻: ' + nowStr(),
+    ].filter(Boolean).join('\n');
+    _lineReply(replyToken, infoLines);
   } catch (e) {
     _lineReply(replyToken, '❌ 更新失敗: ' + e.toString().substring(0, 100));
   }
