@@ -73,9 +73,13 @@
 
 ---
 
-## 📌 アーキテクチャ債務（将来対応）
+- [x] **スクリプトプロパティ確認をWebUIで実行可能に**: 統計タブに `getSetupStatus` パネル追加。プロパティ設定済み/未設定を色付きで表示
+- [x] **setupProspectingTriggers() をWebUIから実行可能に**: 「⚙️ トリガーを設定する」ボタンをUIに追加（GASエディタ不要）
+- [x] **スプレッドシートスキーマバージョン管理**: `checkAndMigrateSchema()` 実装。PROSPECT_HEADERS と実スプシを照合し不足列を末尾追加（べき等・安全）。UIから「🗂 スキーマ確認・修正」ボタンで実行可能
+- [x] **LINE button テストを診断ツールとして実装**: `testLineWebhookDiag_()` でToken・スプシ接続・LINE送信を3ステップ診断。UIから「📲 LINE疎通テスト」で実行可能。`runFullSystemTest()` にも [ID:msgId] 記録状況の診断を追加
 
-- **スクリプトプロパティの確認**: hyperauto-prospecting GASエディタで `checkProspectingSetup()` を実行して確認（CLAUDE_API_KEY, XAI_API_KEY, LINE_CHANNEL_ACCESS_TOKEN, LINE_USER_IDS, PROSPECT_SS_ID）
-- **setupProspectingTriggers() の実行**: hyperauto-prospecting GASエディタで手動実行（夜間バッチトリガー設定）。不要なら実行しない
-- **スプレッドシートスキーマのバージョン管理**: 列追加マイグレーションが散在
-- **LINE button テスト**: 実際のメール受信→LINEボタン押下→スプシ更新フローを本番で確認
+---
+
+## 📌 残存課題（本番確認が必要）
+
+- **LINE button 実際の本番フロー確認**: 実メール受信 → AI分類「案件」 → [ID:msgId] スプシ記録 → LINE通知 → ボタン押下 → スプシ更新、のエンドツーエンドを本番メールで確認（UIの「LINE疎通テスト」で接続確認後に実施）
