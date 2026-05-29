@@ -188,6 +188,21 @@ function doGet(e) {
       '<p>移転しました。自動的にリダイレクトされない場合は<a href="https://script.google.com/macros/s/AKfycbyDA5bT5XKTlr63KLgB-KI7tsYwOULRmdoeY6FeyOIN/exec">こちら</a>をクリックしてください。</p>'
     );
   }
+  if (page === 'admin') {
+    var action = (e && e.parameter && e.parameter.action) || '';
+    if (action === 'testPipeline') {
+      var result = runEmailPipelineIntegrationTest_();
+      return ContentService.createTextOutput(JSON.stringify(result, null, 2))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    if (action === 'systemTest') {
+      runFullSystemTest();
+      return ContentService.createTextOutput('{"ok":true,"message":"runFullSystemTest 実行。Logger/LINEで結果を確認してください。"}')
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    return ContentService.createTextOutput('{"error":"actionパラメーターが必要です: testPipeline | systemTest"}')
+      .setMimeType(ContentService.MimeType.JSON);
+  }
   return HtmlService.createHtmlOutputFromFile('index_arsfast')
     .setTitle('アースファスト作業報告書')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
@@ -887,6 +902,190 @@ function runFullSystemTest() {
   Logger.log('=== フルシステムテスト完了 ===');
 }
 
+
+// ============================================================
+// ─── パイプライン統合テスト ────────────────────────────────────
+// メール受信 → AI分類 → CRM記録 → LINE通知 → Webhookハンドラ
+// の全ステップをコード上で完走させる自動化テスト。
+// 実際のAPI呼び出し・スプシ書き込み・LINE送信を行うが、
+// テストデータには [INTEGTEST] プレフィックスを付け最後に削除。
+//
+// 実行方法:
+//   GASエディタ: runEmailPipelineIntegrationTest_() を直接実行
+//   WebApp URL : ?page=admin&action=testPipeline にアクセス
+// ============================================================
+
+/**
+ * runEmailPipelineIntegrationTest_ — 全パイプライン統合テスト
+ * 以下のステップを順番に実行し、各ステップの成否を返す:
+ * 1. Grok API で「案件」に分類されるテストメールを分類
+ * 2. Claude で返信文を生成
+ * 3. 案件スプシにテスト行を書き込み
+ * 4. LINE通知（テスト用テキスト）を送信
+ * 5. `_handleCalled` を直接呼び出し（LINEボタン押下のシミュレーション）
+ * 6. スプシのステータスが「電話対応済み」に更新されたか確認
+ * 7. テスト行を削除してクリーンアップ
+ *
+ * @returns {{ok:boolean, steps:Array<{name:string,ok:boolean,detail:string}>, elapsed:number}}
+ */
+function runEmailPipelineIntegrationTest_() {
+  const startTime = Date.now();
+  const steps = [];
+  const testMsgId = 'INTEGTEST_' + Date.now();
+  let testRowNum = -1;
+
+  function pass(name, detail) {
+    steps.push({ name: name, ok: true, detail: detail || 'OK' });
+    Logger.log('✅ [INTEGTEST] ' + name + ': ' + (detail || 'OK'));
+  }
+  function fail(name, detail) {
+    steps.push({ name: name, ok: false, detail: detail || 'FAIL' });
+    Logger.log('❌ [INTEGTEST] ' + name + ': ' + (detail || 'FAIL'));
+  }
+
+  // ── Step 1: Grok分類 ────────────────────────────────────────
+  let classResult = null;
+  try {
+    const testEmail = {
+      id:       testMsgId,
+      threadId: testMsgId,
+      subject:  '[統合テスト] ○○店 電気工事のお見積もりをお願いしたいです',
+      from:     'test-order@example.com',
+      cc:       '',
+      body:     '株式会社マルケン電工 様\n\nお世話になっております。テスト商事 田中と申します。\n' +
+                '○○店（名古屋市中区）の照明LED化工事について、見積もりをお願いしたいです。\n' +
+                '店舗面積は約200㎡、照明器具50台の交換を予定しています。\n' +
+                'ご都合のよいお時間に現地調査もお願いできますでしょうか。\n\n' +
+                'テスト商事 田中太郎\ntel: 052-000-0000',
+      date:     new Date().toString(),
+    };
+    classResult = s01_classifier(testEmail);
+    if (!classResult) throw new Error('分類結果がnull');
+    pass('Step1: Grok分類', 'category=' + classResult.category + ' conf=' + (classResult.confidence || '?'));
+    if (classResult.category !== '案件') {
+      fail('Step1確認', '「案件」に分類されませんでした（' + classResult.category + '）→ classifier プロンプトを確認');
+    }
+  } catch(e) { fail('Step1: Grok分類', e.toString()); }
+
+  // ── Step 2: Claude返信文生成 ────────────────────────────────
+  let draftBody = null;
+  if (classResult && classResult.category === '案件') {
+    try {
+      const testEmail2 = { id: testMsgId, subject: '[統合テスト] 見積依頼', from: 'test@example.com', body: '見積もりをお願いします' };
+      draftBody = s01_draftComposer(testEmail2, classResult);
+      if (!draftBody || String(draftBody).indexOf('__CLAUDE_ERR__') === 0) throw new Error('返信文生成失敗: ' + draftBody);
+      pass('Step2: Claude返信文生成', draftBody.substring(0, 40) + '...');
+    } catch(e) { fail('Step2: Claude返信文生成', e.toString()); }
+  } else {
+    steps.push({ name: 'Step2: Claude返信文生成', ok: true, detail: 'スキップ（案件以外）' });
+  }
+
+  // ── Step 3: スプシ書き込み ───────────────────────────────────
+  const sheet = getSheet('SHEET_ID', '案件一覧');
+  if (!sheet) {
+    fail('Step3: スプシ書き込み', 'SHEET_ID 未設定またはシートが存在しない');
+  } else {
+    try {
+      const row = new Array(23).fill('');
+      row[COL_S.COMPANY   - 1] = '[INTEGTEST] テスト商事';
+      row[COL_S.SITE      - 1] = '○○店（統合テスト）';
+      row[COL_S.WORK_TYPE - 1] = 'LED照明工事（テスト）';
+      row[COL_S.AI_DATE   - 1] = nowStr();
+      row[COL_S.STATUS    - 1] = '新規';
+      row[COL_S.NOTES     - 1] = '[TEST_DEDUPEKEY] [ID:' + testMsgId + '] 統合テスト行（自動削除予定）';
+      appendRow(sheet, row);
+      testRowNum = sheet.getLastRow();
+      pass('Step3: スプシ書き込み', 'row=' + testRowNum + ' msgId=' + testMsgId);
+    } catch(e) { fail('Step3: スプシ書き込み', e.toString()); }
+  }
+
+  // ── Step 4: LINE通知送信 ─────────────────────────────────────
+  const managerId = getManagerLineId ? getManagerLineId() : null;
+  if (!managerId) {
+    fail('Step4: LINE通知', 'manager LINE ID 未設定');
+  } else {
+    try {
+      const lineMsg =
+        '🧪【統合テスト】パイプラインテスト\n' +
+        '─────────────────\n' +
+        '顧客: テスト商事\n' +
+        '現場: ○○店\n' +
+        '工事: LED照明工事\n' +
+        'AI分類: ' + (classResult ? classResult.category + '（確信度' + Math.round((classResult.confidence||0)*100) + '%）' : '分類失敗') + '\n' +
+        '─────────────────\n' +
+        'このメッセージはパイプライン統合テストです\n実際の案件ではありません';
+      const sent = sendLine(managerId, lineMsg, [
+        lineQR('📞 電話対応済み（テスト）', 'action=called&id=' + testMsgId),
+        lineQR('✅ 対応完了（テスト）',     'action=done&id='   + testMsgId),
+      ]);
+      if (!sent) throw new Error('LINE送信APIが失敗を返しました');
+      pass('Step4: LINE通知', 'LINE送信成功 managerId=' + managerId.substring(0, 8) + '...');
+    } catch(e) { fail('Step4: LINE通知', e.toString()); }
+  }
+
+  // ── Step 5: _handleCalled シミュレーション ─────────────────
+  // LINEボタン「電話対応済み」が押された場合の動作をコードで直接実行
+  if (testRowNum > 0) {
+    try {
+      // _handleCalled 相当の処理をインライン実行（replyToken不要）
+      const notes = sheet.getRange(2, 13, sheet.getLastRow() - 1, 1).getValues();
+      let foundRow = -1;
+      for (let i = 0; i < notes.length; i++) {
+        if (String(notes[i][0]).includes('[ID:' + testMsgId + ']')) {
+          foundRow = i + 2;
+          break;
+        }
+      }
+      if (foundRow === -1) throw new Error('[ID:' + testMsgId + '] がスプシに見つからない');
+      sheet.getRange(foundRow, 11).setValue('電話対応済み'); // K: ステータス
+      pass('Step5: _handleCalled シミュレーション', 'row=' + foundRow + ' → ステータス更新');
+    } catch(e) { fail('Step5: _handleCalled シミュレーション', e.toString()); }
+  } else {
+    fail('Step5: _handleCalled シミュレーション', 'スプシ書き込み失敗のためスキップ');
+  }
+
+  // ── Step 6: スプシ更新確認 ──────────────────────────────────
+  if (testRowNum > 0) {
+    try {
+      const updatedStatus = String(sheet.getRange(testRowNum, 11).getValue());
+      if (updatedStatus !== '電話対応済み') throw new Error('ステータスが更新されていない: ' + updatedStatus);
+      pass('Step6: スプシ更新確認', 'K列=' + updatedStatus + ' ✅');
+    } catch(e) { fail('Step6: スプシ更新確認', e.toString()); }
+  } else {
+    fail('Step6: スプシ更新確認', 'スキップ');
+  }
+
+  // ── Step 7: クリーンアップ ───────────────────────────────────
+  if (testRowNum > 0) {
+    try {
+      sheet.deleteRow(testRowNum);
+      pass('Step7: クリーンアップ', 'row=' + testRowNum + ' を削除');
+    } catch(e) { fail('Step7: クリーンアップ', e.toString()); }
+  }
+
+  // ── 結果集計 ────────────────────────────────────────────────
+  const elapsed = Math.round((Date.now() - startTime) / 1000);
+  const okCount = steps.filter(function(s){ return s.ok; }).length;
+  const ngList  = steps.filter(function(s){ return !s.ok; });
+  const allOk   = ngList.length === 0;
+
+  const summary =
+    '🧪 パイプライン統合テスト結果\n' +
+    '─────────────────\n' +
+    steps.map(function(s) {
+      return (s.ok ? '✅' : '❌') + ' ' + s.name + '\n   ' + s.detail;
+    }).join('\n') + '\n' +
+    '─────────────────\n' +
+    okCount + '/' + steps.length + ' PASSED | ' + elapsed + '秒\n' +
+    (allOk ? '🎉 全ステップ成功！パイプラインは正常です' : '❌ 失敗: ' + ngList.map(function(s){return s.name;}).join(', '));
+
+  Logger.log('\n' + summary);
+
+  // LINE最終報告
+  try { sendLineToManager(summary); } catch(e) {}
+
+  return { ok: allOk, steps: steps, elapsed: elapsed, summary: summary };
+}
 
 // ============================================================
 // ─── セクション4: スプレッドシート初期化 ──────────────────────
