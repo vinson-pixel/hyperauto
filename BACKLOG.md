@@ -5,6 +5,16 @@
 
 ---
 
+## ✅ 完了済み（2026-05-29 本セッション対応）
+
+- [x] `setupAllTriggers()` 欠落トリガー追加: morning_8/noon_12/evening_18/monthly_1 が未作成だったバグ修正（6件に）
+- [x] LINEボタン応答改善: 電話対応済み・対応完了ボタン押下時にスプシから顧客名・現場名を読んで返信に含める
+- [x] `_setupCaseSheet()` / `setupMainSheet()` ヘッダーをCOL_S定義（23列）と統一（古い14列定義が混在していた）
+- [x] `skip` アクションのスプシ更新漏れ修正: LINEの🗑スキップがステータスを「スキップ」に更新するよう修正
+- [x] `callClaude __CLAUDE_ERR__` チェック漏れ修正: エラー文字列がGmail下書きに入る危険を排除（S-01/02/04）
+- [x] 移転済み自動リード発掘関数を削除: hyperauto側のpauseAutoDiscover等を削除（hyperauto-prospectingに移転済み）
+- [x] hyperauto-prospecting: callClaude __CLAUDE_ERR__ チェック漏れ修正（generatePersonalizedEmail / autoFillCompanyDetails）
+
 ## ✅ 完了済み（2026-05-29 /goal 全件対応）
 
 - [x] ① AI検索タイムアウト対策: 経過秒数カウンター表示 + 60秒ガイド（`_searchAreaLoop_`）
@@ -39,13 +49,22 @@
 - [x] 受注ステージ会社の顧客管理への自動同期
 - [x] ゴミデータフィルタ（電話・URL・住所が全部空ならスキップ）
 - [x] hyperauto-prospecting プロジェクト分離（2026-05-29）
+- [x] メールAI判定・LINEボタン・スプシ登録の大規模修正（2026-05-29）
+  - classifier プロンプト改善（完了報告・請求を「返信必要」に）
+  - s01_crmWriter を「案件」のみに限定（「返信必要」はスプシ登録しない）
+  - [ID:msgId] を備考列に埋め込み、LINEボタンのWebhook検索に使用
+  - _handleCalled / _handleStatusUpdate をM列（備考）検索に修正
+  - runEmailBackfill の forEach→for ループ修正（50件上限が機能するように）
+  - 全角スペース含む重複チェック改善
 
 ---
 
 ## 📌 アーキテクチャ債務（将来対応）
 
 - **hyperauto の古い prospecting ファイル削除**: 慎重に確認してから削除（現状はそのまま残存）
+  - 対象: Code_prospecting_*.gs, Code_crm.gs, Code_hiroshima_list.gs
 - **スクリプトプロパティのコピー**: hyperauto-prospecting に CLAUDE_API_KEY, XAI_API_KEY, LINE_CHANNEL_ACCESS_TOKEN, LINE_USER_IDS, PROSPECT_SS_ID が設定されているか確認
 - **setupProspectingTriggers() の実行**: hyperauto-prospecting で夜間バッチトリガーを設定（不要なら実行しない）
 - **スプレッドシートスキーマのバージョン管理**: 列追加マイグレーションが散在
 - **メールAI精度の根本改善**: 新規案件の定義をAIに正確に理解させる再設計
+- **LINE button テスト**: 実際のメール受信→LINEボタン押下→スプシ更新フローを本番で確認
